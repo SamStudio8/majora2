@@ -4,6 +4,18 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Submit, Row, Column
 from crispy_forms.bootstrap import FormActions
 
+class RegistrationForm(forms.Form):
+    username = forms.CharField(max_length=150)
+    first_name = forms.CharField(max_length=30)
+    last_name = forms.CharField(max_length=150)
+    email = forms.EmailField()
+    password1 = forms.CharField(widget=forms.PasswordInput(), label="Password")
+    password2 = forms.CharField(widget=forms.PasswordInput(), label="Confirm password")
+
+    organisation = forms.CharField(max_length=100)
+    ssh_key = forms.CharField(widget=forms.Textarea)
+
+
 class TestSampleForm(forms.Form):
 
     host_id = forms.CharField(

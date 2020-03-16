@@ -39,7 +39,7 @@ urlpatterns = [
 
     # FORMS ####################################################################
     path('forms/testsample/', views.form_sampletest, name='form_sampletest'),
-    path('actions/add-sample/', views.form_sampletest, name='form_sampletest'),
+    path('forms/register/', views.form_register, name='form_register'),
     
     # OCARINA ##################################################################
     path('ocarina/api/command/update/', csrf_exempt(views.ocarina_update_command), name='ocarina_update_command'),
