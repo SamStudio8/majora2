@@ -27,6 +27,8 @@ class TestSampleForm(forms.Form):
             label="Outward postcode",
             max_length=10,
     )
+    submitting_username = forms.CharField(disabled=True)
+    submitting_organisation = forms.CharField(disabled=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -51,6 +53,13 @@ class TestSampleForm(forms.Form):
             Fieldset("Key dates",
                 Row(
                     Column('collection_date', css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                )
+            ),
+            Fieldset("Submitting site",
+                Row(
+                    Column('submitting_username', css_class="form-group col-md-6 mb-0"),
+                    Column('submitting_organisation', css_class="form-group col-md-6 mb-0"),
                     css_class="form-row",
                 )
             ),

@@ -287,7 +287,12 @@ def form_sampletest(request):
                 "success": True,
             }), content_type="application/json")
     else:
-        form = forms.TestSampleForm()
+        form = forms.TestSampleForm(
+            initial={
+                'submitting_username': request.user.username,
+                'submitting_organisation': request.user.profile.organisation if hasattr(request.user, "profile") else ""
+            },
+        )
     return render(request, 'forms/testsample.html', {'form': form})
 
 
