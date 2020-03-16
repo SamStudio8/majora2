@@ -798,6 +798,11 @@ class Favourite(models.Model):
             groups[cls].append(a.group)
         return groups
 
+class Profile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    organisation = models.CharField(max_length=100)
+    ssh_key = models.TextField(blank=True, null=True)
+
 #TODO How to properly link models?
 class MajoraMetaRecord(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
