@@ -12,7 +12,6 @@ import datetime
 import dateutil.parser
 from django.contrib.auth.models import User
 
-
 #from django.contrib.auth.decorators import user_passes_test
 #def user_check(user):
 #    return user.email.endswith('.ac.uk')
@@ -277,22 +276,7 @@ def tabulate_artifact(request):
 
 ##############################################################################
 # Forms
-from django.views.decorators.debug import sensitive_post_parameters
 ##############################################################################
-@sensitive_post_parameters('password', 'password2')
-def form_register(request):
-    if request.method == "POST":
-        form = forms.RegistrationForm(request.POST)
-        if form.is_valid():
-            # do stuff
-            return HttpResponse(json.dumps({
-                "success": True,
-            }), content_type="application/json")
-    else:
-        form = forms.RegistrationForm()
-    return render(request, 'forms/register.html', {'form': form})
-
-
 def form_sampletest(request):
     if request.method == "POST":
         form = forms.TestSampleForm(request.POST)

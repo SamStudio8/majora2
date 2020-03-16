@@ -5,7 +5,7 @@ from crispy_forms.layout import Layout, Fieldset, Submit, Row, Column
 from crispy_forms.bootstrap import FormActions
 
 class RegistrationForm(forms.Form):
-    username = forms.CharField(max_length=150, disabled=True)
+    username = forms.CharField(max_length=150, disabled=True, required=False)
     first_name = forms.CharField(max_length=30)
     last_name = forms.CharField(max_length=150)
     email = forms.EmailField()
@@ -24,6 +24,11 @@ class RegistrationForm(forms.Form):
                 Row(
                     Column('username', css_class="form-group col-md-6 mb-0"),
                     Column('email', css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                ),
+                Row(
+                    Column('password1', css_class="form-group col-md-6 mb-0"),
+                    Column('password2', css_class="form-group col-md-6 mb-0"),
                     css_class="form-row",
                 )
             ),
