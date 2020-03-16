@@ -13,7 +13,7 @@ class RegistrationForm(forms.Form):
     password2 = forms.CharField(widget=forms.PasswordInput(), label="Confirm password")
 
     organisation = forms.CharField(max_length=100)
-    ssh_key = forms.CharField(widget=forms.Textarea, label="SSH Key")
+    ssh_key = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}), label="SSH Key")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
