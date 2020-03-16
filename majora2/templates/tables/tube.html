@@ -1,0 +1,23 @@
+{% load humanize %}
+<div class="table-responsive">
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th>Dice Name</th>
+            <th>Box Name</th>
+            <th>Source</th>
+            <th>Received</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for artifact in gitems %}
+    <tr>
+        <td><a href="{% url 'detail_artifact' artifact.id %}"><b>{{ artifact.dice_name }}</b></a></td>
+        <td><a href="{% url 'group_artifact' artifact.box.id %}"><b>{{ artifact.location }}</b></a></td>
+        <td><a href="{% url 'group_artifact' artifact.sample.source.id %}"><b>{{ artifact.sample.source.name }}</b></a></td>
+        <td>{{ artifact.created.process.when | naturaltime }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>

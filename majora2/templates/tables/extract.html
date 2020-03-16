@@ -1,0 +1,69 @@
+{% load humanize %}
+<div class="table-responsive">
+<table class="table table-hover table-active text-center">
+    <thead class="thead-dark">
+        <tr>
+            <th>Biosamples</th>
+            <th>Missing</th>
+            <th>Unexpected</th>
+            <th>Confusing</th>
+            <th>Damaged</th>
+            <th>Accepted</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr style="font-size: 2em;">
+            <td>{{ process.records.count }}</td>
+            <td>{{ process.missing.count }}</td>
+            <td>{{ process.unexpected.count }}</td>
+            <td>{{ process.confusing.count }}</td>
+            <td>{{ process.damaged.count }}</td>
+            <td>{{ process.accepted.count }}</td>
+        </tr>
+    </tbody>
+</table>
+</div>
+<hr>
+
+<h3>Extractions</h3>
+
+<div class="table-responsive">
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th>Biosample</th>
+            <th>Tube</th>
+            <th>Location</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for record in process.records.all %}
+    <tr class="{% if record.missing or record.damaged %}table-danger{% elif record.confusing %}table-warning{% endif %}">
+        <td>
+            {% if record.in_artifact %}
+            <b><a href="{% url 'detail_artifact' record.in_artifact.id %}">{{ record.in_artifact.name }}</a></b>
+            {% endif %}
+        </td>
+        <td>
+            {% if record.out_artifact %}
+            <b><a href="{% url 'detail_artifact' record.out_artifact.id %}">{{ record.out_artifact.name }}</a></b><br>
+            {% endif %}
+        </td>
+        <td>
+            {% if record.out_artifact %}
+            <b><a href="{% url 'group_artifact' record.out_artifact.box.id %}">{{ record.out_artifact.box.dice_name }}</a></b><br>
+            {% endif %}
+        </td>
+        <td>
+            {% if record.out_artifact %}
+            <img src="{% url 'barcode' record.out_artifact.id %}" height=50 />
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+
+

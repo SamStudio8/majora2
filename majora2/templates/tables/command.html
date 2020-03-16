@@ -1,0 +1,39 @@
+{% load humanize %}
+<code>
+    {{ process.cmd_str }}
+</code>
+<div class="table-responsive">
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th></th>
+            <th>Before</th>
+            <th>After</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for record in process.records.all %}
+    <tr>
+        <td>
+        {% if record.in_artifact %}
+        <a href="{% url 'detail_artifact' record.in_artifact.id %}">{{ record.in_artifact.path }}</a>
+        {% endif %}
+        </td>
+        <td>
+            {{ record.before_size | filesizeformat }}
+        </td>
+        <td>
+            {{ record.after_size | filesizeformat }}
+        </td>
+        <td>
+        {% if record.out_artifact %}
+        <a href="{% url 'detail_artifact' record.out_artifact.id %}">{{ record.out_artifact.path }}</a>
+        {% endif %}
+        </td>
+
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>

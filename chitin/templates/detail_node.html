@@ -1,0 +1,80 @@
+{% load humanize %}
+{% include 'header.html' %}
+<div class="mast" style="margin-bottom:0">
+    <div class="container">
+        <div class="row">
+        <div class="col-md-6">
+            <span class="badge badge-info">Node</span>
+            <span class="uuid-mast" style="margin-top:0; padding-top:0;">{{ node.id }}</span>
+        </div>
+        <div class="col-md-6 text-right">
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-md-12">
+                <h2>{{ node.name }}</h2>
+        </div>
+        </div>
+    </div>
+</div>
+<div class="mast2">
+</div>
+
+
+<div class="container">
+
+
+<h2>Recent Commands</h2>
+<div class="table-responsive">
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th>Command</th>
+            <th class="text-right">Timestamp</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% if recent_commands %}
+    {% for command in recent_commands %}
+        {% if command.return_code != 0 %}
+            <tr class="table-danger">
+        {% else %}
+            <tr>
+        {% endif %}
+        <td>
+            <a href="{% url 'detail_command' command.id %}"><pre style="white-space: pre-wrap; width: auto; font-size:0.75em; margin:0"><code>{{ command.cmd_str|truncatechars:96 | escape }}</code></pre></a>
+        </td>
+        <td class="text-right" style="white-space:nowrap;">
+            {{ command.finished_at | naturaltime }}<br/>
+            <span style="font-size:0.75em;">{{ command.finished_at }}</span>
+        </td>
+    </tr>
+    {% endfor %}
+    {% else %}
+    <tr>
+        <td>No history.</td>
+    </tr>
+    {% endif %}
+    </tbody>
+</table>
+</div>
+
+
+
+<h2>Grouped Resources</h2>
+
+<table class="table">
+    <thead>
+    </thead>
+    <tbody>
+    {% for group in groups %}
+    <tr>
+        <td><a href="{% url 'list_resources' group.id %}">{{ group.current_path }}</a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+{% include 'footer.html' %}
+

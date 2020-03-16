@@ -1,0 +1,160 @@
+{% load humanize %}
+<div class="table-responsive">
+<table class="table table-hover table-active data-table">
+    <thead class="thead-dark">
+        <tr>
+            <th>File Name</th>
+            <th>File Kind</th>
+            <th>Size</th>
+            <th>Hash</th>
+            <th>Last Updated</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for artifact in gitems %}
+    <tr>
+        <td><a href="{% url 'detail_artifact' artifact.id %}"><b>{{ artifact.current_name }}</b></a></td>
+        <td>{{ artifact.current_kind }}</td>
+        <td>{{ artifact.current_size | filesizeformat }}</td>
+        <td><code>{{ artifact.current_hash }}</code></td>
+        <td>{{ artifact.observed.process.when | naturaltime }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot class="thead-dark">
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+    </tfoot>
+</table>
+</div>
+
+<script>
+$(document).ready(function() {
+    // https://datatables.net/plug-ins/sorting/file-size#Example
+    // regex updated to account for the &nbsp; space inserted by django | filesizeformat
+    jQuery.fn.dataTable.ext.type.order['file-size-pre'] = function ( data ) {
+        var matches = data.match( /^(\d+(?:\.\d+)?)&nbsp;([a-z]+)/i );
+        var multipliers = {
+            b:  1,
+            bytes: 1,
+            kb: 1000,
+            kib: 1024,
+            mb: 1000000,
+            mib: 1048576,
+            gb: 1000000000,
+            gib: 1073741824,
+            tb: 1000000000000,
+            tib: 1099511627776,
+            pb: 1000000000000000,
+            pib: 1125899906842624
+        };
+
+        if (matches) {
+            var multiplier = multipliers[matches[2].toLowerCase()];
+            return parseFloat( matches[1] ) * multiplier;
+        } else {
+            return -1;
+        };
+    };
+
+   var table = $('.data-table').DataTable({
+      'columnDefs': [
+          { type: 'file-size', targets: 2 }
+      ],
+      'order': [[0, 'asc']],
+
+        initComplete: function () {
+            this.api().columns(  function ( idx, data, node ){ if(idx == 1){ return true }; return false;}  ).every( function () {
+                var column = this;
+                var select = $('<select><option value=""></option></select>')
+                    .appendTo( $(column.footer()).empty() )
+                    .on( 'change', function () {
+                        var val = $.fn.dataTable.util.escapeRegex(
+                            $(this).val()
+                        );
+ 
+                        column
+                            .search( val ? '^'+val+'$' : '', true, false )
+                            .draw();
+                    } );
+ 
+                column.data().unique().sort().each( function ( d, j ) {
+                    select.append( '<option value="'+d+'">'+d+'</option>' )
+                } );
+            } );
+        }
+   });
+
+   // Handle change event for "Show selected records" control
+   $('#ctrl-show-selected').on('change', function(){
+      var val = $(this).val();
+
+      // If all records should be displayed
+      if(val === 'all'){
+         $.fn.dataTable.ext.search.pop();
+         table.draw();
+      }
+
+      // If selected records should be displayed
+      if(val === 'selected'){
+         $.fn.dataTable.ext.search.pop();
+         $.fn.dataTable.ext.search.push(
+            function (settings, data, dataIndex){
+               return ($(table.row(dataIndex).node()).hasClass('selected')) ? true : false;
+            }
+         );
+
+         table.draw();
+      }
+
+      // If selected records should not be displayed
+      if(val === 'not-selected'){
+         $.fn.dataTable.ext.search.pop();
+         $.fn.dataTable.ext.search.push(
+            function (settings, data, dataIndex){
+               return ($(table.row(dataIndex).node()).hasClass('selected')) ? false : true;
+            }
+         );
+
+         table.draw();
+      }
+   });
+
+   // https://www.gyrocode.com/projects/jquery-datatables-checkboxes/
+   // Handle form submission event 
+   $('#frm-example').on('submit', function(e){
+      var form = this;
+      
+      var rows_selected = table.column(0).checkboxes.selected();
+
+      // Iterate over all selected checkboxes
+      $.each(rows_selected, function(index, rowId){
+         // Create a hidden element 
+         $(form).append(
+             $('<input>')
+                .attr('type', 'hidden')
+                .attr('name', 'id[]')
+                .val(rowId)
+         );
+      });
+
+      // FOR DEMONSTRATION ONLY
+      // The code below is not needed in production
+      
+      // Output form data to a console     
+      $('#example-console-rows').text(rows_selected.join(","));
+      
+      // Output form data to a console     
+      $('#example-console-form').text($(form).serialize());
+       
+      // Remove added elements
+      $('input[name="id\[\]"]', form).remove();
+       
+      // Prevent actual form submission
+      e.preventDefault();
+   });   
+});
+</script>

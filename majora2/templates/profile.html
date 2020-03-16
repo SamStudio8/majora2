@@ -1,0 +1,139 @@
+{% include 'header.html' %}
+{% load humanize %}
+<div class="mast" style="margin-bottom:0">
+    <div class="container">
+        <div class="row">
+        <div class="col-md-6">
+            <span class="badge badge-warning">User</span>
+            <span class="uuid-mast" style="margin-top:0; padding-top:0;">{{ user.id }}</span>
+        </div>
+        <div class="col-md-6 text-right">
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-md-12">
+            <h1>{{ user.username }}</h1>
+        </div>
+        </div>
+    </div>
+</div>
+<div class="mast2">
+</div>
+
+<div class="container">
+
+<div class="row">
+<div class="col-md-8">
+
+<h2>Process Groups</h2>
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th>Pipe</th>
+            <th>#Groups</th>
+            <th>#Commands</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if pgroups.count > 0 %}
+        {% for fav in pgroups %}
+        <tr>
+            <td><b><a href="{% url 'group_process' fav.pgroup.id %}">{{ fav.pgroup.name }}</a></td>
+            <td>{{ fav.pgroup.n_groups_t }}</td>
+            <td>{{ fav.pgroup.n_processes_t }}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr><td>This is not a pipe.</tr></td>
+        {% endif %}
+    </tbody>
+</table>
+
+<h2>Artifact Groups</h2>
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th>Group</th>
+            <th>Kind</th>
+            <th>Dice</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if groups.count > 0 %}
+        {% for fav in groups %}
+        <tr>
+            <td><b><a href="{% url 'group_artifact' fav.group.id %}">{{ fav.group.name }}</a></td>
+            <td>{{ fav.group.group_kind }}</td>
+            <td>{{ fav.group.dice_name }}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr><td>No groups.</tr></td>
+        {% endif %}
+    </tbody>
+</table>
+
+
+</div>
+<div class="col-md-4">
+    <h3>Recent Activity</h3>
+    <table class="table table-hover table-active">
+        <thead class="thead-dark">
+            <tr>
+                <th>Kind</th>
+                <th>Records</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% if processes %}
+        {% for process in processes %}
+        {% if process.n_records > 0 %}
+        <tr>
+            <td><a href="{% url 'detail_process' process.id %}">{{ process.process_kind }}</a></td>
+            <td>{{ process.n_records }}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="3">You've done nothing.</td>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+
+
+    <hr>
+    <h3>Metadata</h3>
+    <p>Extra information tagged to this User</p>
+    <table class="table table-hover table-active">
+        <thead class="thead-dark">
+            <tr>
+                <th>Tag</th>
+                <th>Name</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% if group.metadata %}
+        {% for metadatum in group.metadata.all %}
+        <tr>
+            <td>{{ metadatum.meta_tag }}</td>
+            <td>{{ metadatum.meta_name }}</td>
+            <td>{{ metadatum.translate }}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="3">Not much to say.</td>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+</div>
+</div>
+</div>
+
+{% include 'footer.html' %}
+
+

@@ -1,0 +1,30 @@
+{% load humanize %}
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th>Tag</th>
+            <th>Name</th>
+            <th>Value</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% if thing.metadata.all %}
+    {% for metadatum in thing.metadata.all %}
+    <tr>
+        <td>{{ metadatum.meta_tag }}</td>
+        <td>{{ metadatum.meta_name }}</td>
+        <td><b>{{ metadatum.translate }}</b></td>
+        <td class="text-right" style="white-space:nowrap;">
+            {{ metadatum.timestamp | naturaltime }}<br/>
+            <span style="font-size:0.75em;">{{ metadatum.timestamp }}</span>
+        </td>
+    </tr>
+    {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="4">Not much to say.</td>
+        </tr>
+    {% endif %}
+    </tbody>
+</table>

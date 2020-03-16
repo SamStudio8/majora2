@@ -1,0 +1,173 @@
+{% include 'header.html' %}
+{% load humanize %}
+<div class="mast" style="margin-bottom:0">
+    <div class="container">
+        <div class="row">
+        <div class="col-md-6">
+            <span class="badge badge-info">Resource Group</span>
+            {% if group.physical %}
+                <span class="badge badge-info">Physical</span>
+            {% else %}
+                <span class="badge badge-info">Virtual</span>
+            {% endif %}
+            <span class="uuid-mast" style="margin-top:0; padding-top:0;">{{ group.id }}</span>
+        </div>
+        <div class="col-md-6 text-right">
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-md-12">
+            {% if group.physical %}
+                <h2>{{ group.current_node.name }}:{{ group.current_path }}</h2>
+            {% else %}
+                <h2>{{ group.name }}</h2>
+            {% endif %}
+        </div>
+        </div>
+    </div>
+</div>
+<div class="mast2">
+    <div class="container">
+          {% if group.physical %}
+            <a href="{% url 'detail_node' group.current_node.id %}"><span class="badge" style="background-color:#000">{{ group.current_node.name }}</span></a> ►
+            <a href="{% url 'list_resources' group.id %}"><span class="badge" style="background-color:#000">{{ group.display_name }}</span></a>
+          {% endif %}
+    </div>
+</div>
+
+<div class="container">
+
+<div class="row">
+<div class="col-md-8">
+
+{% if group.tagged_groups.all %}
+<h2>Associated Groups</h2>
+<div class="table-responsive">
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th>Name</th>
+            <th class="text-right">Resources</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for sub_group in group.tagged_groups.all %}
+    <tr>
+        <td><a href="{% url 'list_resources' sub_group.id %}"><b>{{ sub_group.name }}</b></a></td>
+        <td class="text-right">{{ sub_group.tagged_resources.count }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+<hr/>
+{% endif %}
+
+{% if group.physical %}
+<h2>Physical Resources</h2>
+<p>Resources that physically reside in this Group's path</p>
+<div class="table-responsive">
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th>Basename</th>
+            <th>Size</th>
+            <th>Last Seen</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for resource in resources %}
+    <tr>
+        <td><a href="{% url 'detail_resource' resource.id %}"><b>{{ resource.basename }}</b></a></td>
+        <td>{{ resource.current_size | filesizeformat }}</td>
+        <td>{{ resource.last_effect.command.finished_at | naturaltime }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<h2>Tagged Resources</h2>
+<p>Resources tagged as a member of this Group</p>
+<div class="table-responsive">
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th>Basename</th>
+            <th>Size</th>
+            <th>Last Seen</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for resource in group.tagged_resources.all %}
+    <tr>
+        <td><a href="{% url 'detail_resource' resource.id %}"><b>{{ resource.basename }}</b></a></td>
+        <td>{{ resource.current_size | filesizeformat }}</td>
+        <td>{{ resource.last_effect.command.finished_at | naturaltime }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endif %}
+
+</div>
+<div class="col-md-4">
+    <h3>Parents</h3>
+    <p>Groups above this Group</p>
+    <table class="table table-hover table-active">
+        <thead class="thead-dark">
+            <tr>
+                <th>Group</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% if group.groups.all.count %}
+        {% for parent in group.groups.all %}
+        <tr>
+            <td>
+                <a href="{% url 'list_resources' parent.id %}"><span class="badge" style="background-color:#000">{{ parent.display_name }}</span></a>
+            </td>
+        </tr>
+        {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="1">Orphaned.</td>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+
+    <h3>Metadata</h3>
+    <p>Extra information tagged to this Group</p>
+    <table class="table table-hover table-active">
+        <thead class="thead-dark">
+            <tr>
+                <th>Tag</th>
+                <th>Name</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% if group.metadata %}
+        {% for metadatum in group.metadata %}
+        <tr>
+            <td>{{ metadatum.meta_tag }}</td>
+            <td>{{ metadatum.meta_name }}</td>
+            <td>{{ metadatum.translate }}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="3">Not much to say.</td>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+</div>
+</div>
+</div>
+
+{% include 'footer.html' %}
+
+

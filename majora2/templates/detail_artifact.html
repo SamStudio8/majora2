@@ -1,0 +1,414 @@
+{% load humanize %}
+
+{% include 'header.html' %}
+<div class="mast" style="margin-bottom:0">
+    <div class="container">
+        <div class="row">
+        <div class="col-sm-10">
+            <span class="badge badge-success">{{ artifact.artifact_kind }}</span>
+            {% if artifact.ghost %}
+            <strike>
+                <span class="uuid-mast" style="margin-top:0; padding-top:0;">{{ artifact.id }}</span>
+            </strike>
+            {% else %}
+                <span class="uuid-mast" style="margin-top:0; padding-top:0;">{{ artifact.id }}</span>
+            {% endif %}
+            <h1>{{ artifact.name }}</h1>
+
+        </div>
+
+        <div class="col-sm-1">
+
+            {% if artifact.lid_label %}
+            <div class="text-center align-middle" style="border-radius: 100%; border-color: white; border-style: solid; width:100%; margin-top: 10px; padding-top: 5px;">
+                <b>{{ artifact.lid_label | linebreaksbr }}</b>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-sm-1" style="padding: 0">
+            <img style="pull-right" src="{% url 'barcode' artifact.id %}" height=80 />
+        </div>
+        </div>
+    </div>
+</div>
+<div class="mast2">
+    <div class="container">
+        {% if artifact.ghost %}
+            <span class="badge badge-danger">Deleted</span>
+        {% endif %}
+        {% if artifact.primary_group.parent_group %}
+            {% with hierarchy=artifact.primary_group.hierarchy %}
+                {% include 'breadcrumbs.html' %} ►
+            {% endwith %}
+        {% endif %}
+        <a href="{% url 'detail_artifact' artifact.id %}"><span class="badge badge-success">{{ artifact.name }}</span></a>
+    </div>
+</div>
+
+<div class="container">
+{% if artifact.artifact_kind == 'Sample Tube' %}
+<div class="row">
+<div class="col-md-6">
+    {% if artifact.samples|length == 1 %}
+    <h2>Biosample Source</h2>
+    <table class="table table-hover table-active">
+        <tbody>
+        {% for sample in artifact.samples %}
+        <tr>
+            <th>Sample</th>
+            <td><b><a href="{% url 'detail_artifact' sample.id %}">{{ sample.name }}</a></b></td>
+        </tr>
+        <tr>
+            <th>Source</th>
+            <td><b><a href="{% url 'group_artifact' sample.primary_group.id %}">{{ sample.primary_group }}</a></b></td>
+        </tr>
+        <tr>
+            <th>Longitude</th>
+            <td>{{ sample.sample_longitude }}</td>
+        </tr>
+        <tr>
+            <th>Type</th>
+            <td>{{ sample.sample_type }}</td>
+        </tr>
+        <tr>
+            <th>Specimen</th>
+            <td>{{ sample.specimen_type }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% elif artifact.samples|length > 1 %}
+    <h2>Biosample Sources</h2>
+    <table class="table table-hover table-active">
+        <thead class="thead-dark">
+            <tr>
+                <th>Sample</th>
+                <th>Source</th>
+                <th>Longitude</th>
+                <th>Type</th>
+                <th>Specimen</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for sample in artifact.samples %}
+        <tr>
+            <td>
+                <b><a href="{% url 'detail_artifact' sample.id %}">{{ sample.name }}</a></b><br>
+            </td>
+            <td>{{ sample.primary_group }}</td>
+            <td>{{ sample.sample_longitude }}</td>
+            <td>{{ sample.sample_type }}</td>
+            <td>{{ sample.specimen_type }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <hr/>
+    {% else %}
+    {% endif %}
+</div>
+<div class="col-md-6">
+    <h2>Sample Tube</h2>
+    <table class="table table-hover table-active">
+        <tbody>
+        <tr>
+            <th>Location</th>
+            <td>{{ artifact.location }}</td>
+        </tr>
+        <tr>
+            <th>Tube Form</th>
+            <td>{{ artifact.tube_form }}</td>
+        </tr>
+        <tr>
+            <th>Sample Form</th>
+            <td>{{ artifact.sample_form }}</td>
+        </tr>
+        <tr>
+            <th>Storage Medium</th>
+            <td>{{ artifact.storage_medium }}</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td>
+            {% if artifact.is_quarantined %}
+                <span class="badge badge-danger">Quarantined</span> <a href="{% url 'detail_artifact' artifact.is_quarantined.id %}">{{ artifact.quarantined_reason }}</a>
+            {% else %}
+                <span class="badge badge-success">Accepted</span>
+            {% endif %}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</div>
+<hr/>
+{% endif %}
+
+
+
+
+
+
+
+
+
+{% if artifact.artifact_kind == 'Digital Resource' %}
+<div class="row">
+<div class="col-md-6">
+    <h2>Digital Resource</h2>
+    <table class="table table-hover table-active">
+        <tbody>
+        <tr>
+            <th>Name</th>
+            <td><b>{{ artifact.name }}</b></td>
+        </tr>
+        <tr>
+            <th>Type</th>
+            <td>{{ artifact.current_kind }}</td>
+        </tr>
+            <th>Node</th>
+            <td><b><a href="{% url 'group_artifact' artifact.primary_group.root_group.id %}">{{ artifact.primary_group.root_group.name }}</a></b></td>
+        </tr>
+        <tr>
+            <th>Directory</th>
+            <td><b><a href="{% url 'group_artifact' artifact.primary_group.id %}">{{ artifact.primary_group.name }}</a></b></td>
+        </tr>
+        <tr>
+            <th>{% if artifact.ghost %}Last{% else %}Current{% endif %} Size</th>
+            <td>{{ artifact.current_size | filesizeformat }}</td>
+        </tr>
+        <tr>
+            <th>{% if artifact.ghost %}Last{% else %}Current{% endif %} Hash</th>
+            <td><code>{{ artifact.current_hash }}</code></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div class="col-md-6">
+    <h2>Brief History</h2>
+    <table class="table table-hover table-active">
+        <tbody>
+        <tr>
+            <th>Created</th>
+            <td class="text-right">{{ artifact.created.process.when | naturaltime }}</br>
+                by {{ artifact.created.process.who }}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <table class="table table-hover table-active">
+        <tbody>
+            <th>Last Modifed</th>
+            <td class="text-right">{{ artifact.modified.process.when | naturaltime }}</br>
+                by {{ artifact.created.process.who }}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <table class="table table-hover table-active">
+        <tbody>
+        <tr>
+            <th>Last Seen</th>
+            <td class="text-right">{{ artifact.observed.process.when | naturaltime }}</br>
+                by {{ artifact.created.process.who }}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</div>
+<hr/>
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="row">
+<div class="col-md-5">
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th>Artifact</th>
+            <th class="text-right"></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for record in artifact.artifact_tree reversed %}
+            {% with thing=record %}
+            {% include 'tables/row_small.html' %}
+            {% endwith %}
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<div class="col-md-7">
+<div class="table-responsive">
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th>Process History</th>
+            <th class="text-right"></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for record in artifact.process_tree %}
+    <tr>
+        <td class="text-left">
+            <b><a href="{% url 'detail_process' record.process.id %}">{{ record.process.process_kind }}</a><br/>
+            <span style="font-size:0.75em;">by {{ record.process.who }}</span>
+        </td>
+        <td class="text-right" style="white-space:nowrap;">
+            {{ record.process.when | naturaltime }}<br/>
+            <span style="font-size:0.75em;">{{ record.process.when }}</span>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+
+
+</div>
+<hr>
+
+
+
+
+
+<div class="row">
+<div class="col-md-6">
+
+
+
+    <h3>Clones</h3>
+    <table class="table table-hover table-active">
+        <tbody>
+        {% if artifact.clones %}
+        {% for res in artifact.clones %}
+            {% with thing=res %}
+            {% include 'tables/row_small.html' %}
+            {% endwith %}
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan=2>No clones :(</td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+    <hr>
+    <h3>Siblings</h3>
+    <table class="table table-hover table-active">
+        <tbody>
+        {% if artifact.siblings %}
+        {% for res in artifact.siblings %}
+            {% with thing=res %}
+            {% include 'tables/row_small.html' %}
+            {% endwith %}
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan=2>No siblings</td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+    <hr>
+    <h3>Children</h3>
+    <table class="table table-hover table-active">
+        <tbody>
+        {% if artifact.children %}
+        {% for res in artifact.children %}
+            {% with thing=res %}
+            {% include 'tables/row_small.html' %}
+            {% endwith %}
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan=2>No children</td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+
+    <hr>
+    <h3>Ghosts</h3>
+    <table class="table table-hover table-active">
+        <tbody>
+        {% if artifact.ghosts %}
+        {% for res_ghost in artifact.ghosts %}
+        <tr>
+            <td>
+                <a href="{% url 'detail_artifact' res_ghost.id %}">
+                    <span class="badge badge-success" style="margin: 0; font-size: 1.1em;">
+                            <span style="font-size:0.8em;">&#128065;</span>
+                            <!--<span class="little-text"> {{ res_ghost.id }}</span>-->
+                    </span>
+                </a>
+            </td>
+            <td>
+                <code style="color:#5cb85c;">{{ res_ghost.current_hash }}</code>
+            </td>
+            <td>
+                {{ res_ghost.current_size | filesizeformat }}
+            </td>
+            <td class="text-right">{{ res_ghost.last_effect.command.finished_at | naturaltime }}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="2">This file is not haunted.</td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+</div>
+<div class="col-md-6">
+    <h3>Metadata</h3>
+    {% with thing=artifact %}
+    {% include 'tables/metadata.html' %}
+    {% endwith %}
+</div>
+</div>
+
+
+<div class="row">
+<div class="col-md-12 text-center">
+    <hr>
+    <h3>Groups</h3>
+    <table class="table table-hover table-active">
+        <tbody>
+        {% if artifact.groups.all %}
+        <tr><td>
+        {% for group in artifact.groups.all %}
+                <a href="{% url 'group_artifact' group.id %}"><span class="badge" style="background-color:#000">{{ group.name }}</span></a>
+        {% endfor %}
+            </td></tr>
+        {% else %}
+            <tr>
+                <td colspan="1">Not in any cliques :(</td>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+
+</div>
+</div>
+
+{% include 'footer.html' %}
+

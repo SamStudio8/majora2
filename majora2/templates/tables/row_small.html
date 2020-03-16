@@ -1,0 +1,20 @@
+{% load humanize %}
+<tr><td><span class="badge badge-info">{{ thing.artifact_kind }}</span>
+{% if thing.artifact_kind == 'Sample Tube' %}
+        <b><a href="{% url 'detail_artifact' thing.id %}">{{ thing.dice_name }}</a></b><br>{{ thing.location }}
+    </td>
+    <td class="text-right">{{ thing.observed.process.when | naturaltime }}</td>
+{% elif thing.artifact_kind == 'Digital Resource' %}
+        <b><a href="{% url 'detail_artifact' thing.id %}">{{ thing.path }}</a></b><br>{{ thing.current_kind }} ({{ thing.current_size | filesizeformat }})
+    </td>
+    <td class="text-right">{{ thing.observed.process.when | naturaltime }}</td>
+{% elif thing.artifact_kind == 'Biosample' %}
+        <b><a href="{% url 'detail_artifact' thing.id %}">{{ thing.name }}</a></b><br>{{ thing.location }}
+    </td>
+    <td class="text-right">{{ thing.observed.process.when | naturaltime }}</td>
+{% else %}
+        <b><a href="{% url 'detail_artifact' thing.id %}">{{ thing }}</a></b><br>
+    </td>
+    <td class="text-right">{{ thing.observed.process.when | naturaltime }}</td>
+{% endif %}
+</tr>

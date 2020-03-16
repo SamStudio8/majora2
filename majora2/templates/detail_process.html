@@ -1,0 +1,180 @@
+{% load humanize %}
+{% include 'header.html' %}
+<div class="mast" style="margin-bottom:0">
+    <div class="container">
+        <div class="row">
+        <div class="col-md-6">
+            <span class="badge badge-danger">{{ process.process_kind }}</span>
+            <span class="uuid-mast" style="margin-top:0; padding-top:0;">{{ process.id }}</span>
+        </div>
+        <div class="col-md-6 text-right">
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-md-12">
+            <h1>{{ process.long_name }}</h1>
+        </div>
+        </div>
+    </div>
+</div>
+<div class="mast2">
+    <div class="container">
+    {% if process.group.parent_group %}
+        {% for hgroup in process.group.hierarchy %}
+            <a href="{% url 'group_process' hgroup.id %}"><span class="badge badge-info">{{ hgroup.name }}</span></a> ►
+        {% endfor %}
+    {% endif %}
+    <a href="{% url 'detail_process' process.id %}"><span class="badge badge-danger">{{ process.short_name }}</span></a>
+    </div>
+</div>
+
+<div class="container">
+<!--<div style="background-color:#DDD; padding:10px; margin-bottom:15px;" class="row">
+<div class="col-md-4">
+    <span class="badge badge-danger">◄ Prev</span>
+    <span class="uuid-mast" style="margin-top:0; padding-top:0;"><a href="{% url 'detail_process' process.id %}">{{ process.id }}</a></span>
+</div>
+<div class="col-md-4 text-center">
+    <span class="badge badge-warning">Group</span>
+    <span class="uuid-mast" style="margin-top:0; padding-top:0;"><a href="{% url 'detail_process' process.id %}">{{ process.id }}</a></span>
+</div>
+<div class="col-md-4 text-right">
+    <span class="badge badge-danger">Next ►</span>
+    <span class="uuid-mast" style="margin-top:0; padding-top:0;"><a href="{% url 'detail_process' process.id %}">{{ process.id }}</a></span>
+</div>
+</div>-->
+
+<div class="row">
+    <div class="col-md-6">
+        <table class="table table-active table-borderless">
+        <thead class="thead-dark">
+                <td class="text-left">
+                    <b><a href="{% url 'detail_process' process.id %}">{{ process.process_kind }}</a><br/>
+                    <span style="font-size:0.75em;">by {{ process.who }}</span>
+                </td>
+                <td class="text-right" style="white-space:nowrap;">
+                    {{ process.when | naturaltime }}<br/>
+                    <span style="font-size:0.75em;">{{ process.when }}</span>
+                </td>
+        </tbody>
+        </table>
+    </div>
+    <div class="col-md-6">
+        <table class="table table-active table-borderless">
+        <tbody>
+            {% if process.d %}
+            {% for k,v in process.d.items %}
+            <tr>
+                <th class="table-dark">{{ k }}</th>
+                <td>{{ v }}</td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr><td>Nothing to say...</td></tr>
+            {% endif %}
+        </tbody>
+        </table>
+    </div>
+</div>
+
+{% if process.process_kind == "Sample Check-In" %}
+<div class="row">
+<div class="col-md-12">
+{% include 'tables/checkin.html' %}
+</div>
+</div>
+
+{% elif process.process_kind == "Sample Extraction" %}
+<div class="row">
+<div class="col-md-12">
+{% include 'tables/extract.html' %}
+</div>
+</div>
+
+{% elif process.process_kind == "Command" %}
+<div class="row">
+<div class="col-md-12">
+{% include 'tables/command.html' %}
+</div>
+</div>
+
+{% else %}
+
+<h3>Process Info</h3>
+
+<div class="row">
+<div class="col-md-12">
+<table class="table table-active table-borderless">
+<tbody>
+    {% if process.d %}
+    {% for k,v in process.d.items %}
+    <tr>
+        <th class="table-dark">{{ k }}</th>
+        <td>{{ v }}</td>
+    </tr>
+    {% endfor %}
+    {% else %}
+    <tr><td>Nothing to say...</td></tr>
+    {% endif %}
+</tbody>
+</table>
+<h3>Records</h3>
+    {% for record in process.records.all %}
+    <table class="table table-active table-borderless">
+        <tbody>
+        <tr>
+            <th class="table-dark table-borderless">Input</th>
+            <td>
+            {% if record.in_artifact %}
+            <b><a href="{% url 'detail_artifact' record.in_artifact.id %}">{{ record.in_artifact.artifact_kind}} : {{ record.in_artifact.name }}</a></b>
+            {% endif %}
+            </td>
+        </tr>
+
+        {% for k,v in record.d.items %}
+        <tr>
+            <th class="table-dark">{{ k }}</th>
+            <td>{{ v }}</td>
+        </tr>
+        {% endfor %}
+
+        <tr>
+            <th class="table-dark">Output</th>
+            <td>
+            {% if record.out_artifact %}
+            <b><a href="{% url 'detail_artifact' record.out_artifact.id %}">{{ record.out_artifact.artifact_kind}} : {{ record.out_artifact.name }}</a></b><br>
+            {% endif %}
+            </td>
+        </td>
+    </tr>
+        </tbody>
+    </table>
+    {% endfor %}
+
+    <hr>
+    <h3>Comments</h3>
+    <table class="table table-hover table-active">
+        <tbody>
+        {% if process.comments.all %}
+        {% for comment in process.comments.all %}
+            <tr><td>{{ comment.text }}</td></tr>
+        {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="1">Nothing to say.</td>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+</div>
+</div>
+
+
+
+
+{% endif %}
+</div>
+
+
+{% include 'footer.html' %}
+

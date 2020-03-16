@@ -1,0 +1,3 @@
+{% for hgroup in hierarchy %}
+<a href="{% url 'group_artifact' hgroup.id %}"><span class="badge badge-info">{{ hgroup.full_name }}</span></a>{% if forloop.last %}{% else %} ► {% endif %}
+{% endfor %}

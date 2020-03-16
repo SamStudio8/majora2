@@ -1,0 +1,239 @@
+{% include 'header.html' %}
+{% load humanize %}
+<div class="mast" style="margin-bottom:0">
+    <div class="container">
+        <div class="row">
+        <div class="col-md-6">
+            <span class="badge badge-info">{{ group.group_kind }}</span>
+            {% if group.physical %}
+                <span class="badge badge-info">Physical</span>
+            {% else %}
+                <span class="badge badge-info">Virtual</span>
+            {% endif %}
+            <span class="uuid-mast" style="margin-top:0; padding-top:0;">{{ group.id }}</span>
+        </div>
+        <div class="col-md-6 text-right">
+            <a href="{% url 'group_favourite' group.id %}">
+            {% if favourite %}
+                <span class="badge badge-warning" style="font-size:1em">Favourite</span>
+            {% else %}
+                <span class="badge" style="background-color:black; font-size:1em">Favourite</span>
+            {% endif %}
+            </a>
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-md-12">
+            <h1>{{ group.name }}</h1>
+        </div>
+        </div>
+    </div>
+</div>
+<div class="mast2">
+    <div class="container">
+        {% with hierarchy=group.hierarchy %}
+            {% include 'breadcrumbs.html' %}
+        {% endwith %}
+    </div>
+</div>
+
+<div class="container">
+
+<div class="row">
+<div class="col-md-12">
+
+{% if group.tagged_groups.all %}
+<h2>Associated Groups</h2>
+<div class="table-responsive">
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Artifacts</th>
+            <th>Tagged</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for sub_group in group.tagged_groups.all %}
+    <tr>
+        <td><a href="{% url 'group_artifact' sub_group.id %}"><b>{{ sub_group.name }}</b></a></td>
+        <td>{{ sub_group.group_kind }}</td>
+        <td>{{ sub_group.n_child_artifacts }}</td>
+        <td>{{ sub_group.n_tagged_artifacts }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+<hr/>
+{% endif %}
+
+{% if group.group_kind == 'Tube Container' %}
+<h2>Container Map</h2>
+<div class="table-responsive">
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th></th>
+            {% for dimension in group.dimensions_y %}
+            <th>{{ forloop.counter }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+    {% for d_x in group.grid %}
+    <tr>
+        <th width="5" class="table-dark">{{ forloop.counter }}</th>
+        {% for cell in d_x %}
+        <td width=100/group.dimensions_y {% if group.contains_tubes and cell.quarantined %}class="table-danger"{% endif %}>
+        {% if cell and group.contains_tubes %}
+            <div class="text-center align-middle" style="border-radius: 100%; border-color: white; border-style: solid; height:80px; width:80px;">
+                {% if cell.lid_label %}
+                <b><a href="{% url 'detail_artifact' cell.id %}">{{ cell.lid_label | linebreaksbr }}</a></b></br>
+                <span style="font-size: 0.25em"><b><a href="{% url 'detail_artifact' cell.id %}">{{ cell.name }}</a></b></span>
+                {% else %}
+                <b><a href="{% url 'detail_artifact' cell.id %}">{{ cell.name }}</a></b>
+                {% endif %}
+            </div>
+            </div>
+        {% elif cell and not group.contains_tubes %}
+            <b><a href="{% url 'group_artifact' cell.id %}">{{ cell.name }}</a></b>
+        {% else %}
+        -<br/>-<br/>-
+        {% endif %}
+        </td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endif %}
+
+{% if group.group_kind != 'Tube Container' %}
+{% if group.children.all %}
+<h2>Groups</h2>
+<div class="table-responsive">
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th>Name</th>
+            <th>Kind</th>
+            <th>Last Seen</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for g in group.children.all %}
+    <tr>
+        <td><a href="{% url 'group_artifact' g.id %}"><b>{{ g.name }}</b></a></td>
+        <td>{{ g.group_kind }}</td>
+        <td>{{ resource.last_effect.command.finished_at | naturaltime }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endif %}
+{% if group.processes.all %}
+<hr/>
+<h2>Associated Process Groups</h2>
+<div class="table-responsive">
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Artifacts</th>
+            <th>Tagged</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for sub_group in group.processes.all %}
+    <tr>
+        <td><a href="{% url 'group_process' sub_group.id %}"><b>{{ sub_group.name }}</b></a></td>
+        <td>{{ sub_group.group_kind }}</td>
+        <td>{{ sub_group.n_child_artifacts }}</td>
+        <td>{{ sub_group.n_tagged_artifacts }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endif %}
+
+
+{% if group.group_tagged_artifacts %}
+<hr/>
+<h2>Artifacts</h2>
+{% for gname, gitems in group.group_tagged_artifacts.items %}
+<h3>{{ gname.artifact_kind }}</h3>
+
+{% if gname.artifact_kind == "Sample Tube" %}
+    {% include 'tables/tube.html' %}
+{% elif gname.artifact_kind == "Digital Resource" %}
+    {% include 'tables/digitalresource.html' %}
+{% elif gname.artifact_kind == "Biosample" %}
+    {% include 'tables/biosample.html' %}
+{% else %}
+    {% include 'tables/default.html' %}
+{% endif %}
+{% endfor %}
+
+{% endif %}
+{% endif %}
+
+
+
+
+
+
+
+</div>
+</div>
+
+<hr>
+<div class="row">
+<div class="col-md-6">
+    <h3>Metadata</h3>
+    {% with thing=group %}
+    {% include 'tables/metadata.html' %}
+    {% endwith %}
+</div>
+<div class="col-md-6">
+    <h3>Links</h3>
+    <div class="table-responsive">
+    <table class="table table-hover table-active">
+        <thead class="thead-dark">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Artifacts</th>
+                <th>Tagged</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% if group.groups.all %}
+        {% for sub_group in group.groups.all %}
+        <tr>
+            <td><a href="{% url 'group_artifact' sub_group.id %}"><b>{{ sub_group.name }}</b></a></td>
+            <td>{{ sub_group.group_kind }}</td>
+            <td>{{ sub_group.n_child_artifacts }}</td>
+            <td>{{ sub_group.n_tagged_artifacts }}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="3">No links.</td>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+    </div>
+</div>
+</div>
+</div>
+
+{% include 'footer.html' %}
+
+

@@ -1,0 +1,188 @@
+{% include 'header.html' %}
+{% load humanize %}
+<div class="mast" style="margin-bottom:0">
+    <div class="container">
+        <div class="row">
+        <div class="col-md-6">
+            <span class="badge badge-info">{{ group.group_kind }}</span>
+            {% if group.physical %}
+                <span class="badge badge-info">Physical</span>
+            {% else %}
+                <span class="badge badge-info">Virtual</span>
+            {% endif %}
+            <span class="uuid-mast" style="margin-top:0; padding-top:0;">{{ group.id }}</span>
+        </div>
+        <div class="col-md-6 text-right">
+            <a href="{% url 'pgroup_favourite' group.id %}">
+            {% if favourite %}
+                <span class="badge badge-warning" style="font-size:1em">Favourite</span>
+            {% else %}
+                <span class="badge" style="background-color:black; font-size:1em">Favourite</span>
+            {% endif %}
+            </a>
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-md-12">
+            <h1>{{ group.name }}</h1>
+        </div>
+        </div>
+    </div>
+</div>
+<div class="mast2">
+    <div class="container">
+        {% for hgroup in group.hierarchy %}
+        <a href="{% url 'group_process' hgroup.id %}"><span class="badge badge-info">{{ hgroup.name }}</span></a>{% if forloop.last %}{% else %} ► {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<div class="container">
+
+<div class="row">
+<div class="col-md-8">
+
+{% if group.tagged_groups.all %}
+<h2>Associated Groups</h2>
+<div class="table-responsive">
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Artifacts</th>
+            <th>Tagged</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for sub_group in group.tagged_groups.all %}
+    <tr>
+        <td><a href="{% url 'group_process' sub_group.id %}"><b>{{ sub_group.name }}</b></a></td>
+        <td>{{ sub_group.group_kind }}</td>
+        <td>{{ sub_group.n_child_artifacts }}</td>
+        <td>{{ sub_group.n_tagged_artifacts }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+<hr/>
+{% endif %}
+
+{% if group.group_kind == 'Tube Container' %}
+<h2>Container Map</h2>
+<div class="table-responsive">
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th></th>
+            {% for dimension in group.dimensions_y %}
+            <th>{{ forloop.counter }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+    {% for d_x in group.grid %}
+    <tr>
+        <th class="table-dark">{{ forloop.counter }}</th>
+        {% for cell in d_x %}
+        {% if cell and group.contains_tubes %}
+            <td><b><a href="{% url 'detail_artifact' cell.id %}">{{ cell.name }}</a></b></td>
+        {% elif cell and not group.contains_tubes %}
+            <td><b><a href="{% url 'group_artifact' cell.id %}">{{ cell.name }}</a></b></td>
+        {% else %}
+            <td>-</td>
+        {% endif %}
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endif %}
+
+<h2>Pipes</h2>
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th>Pipe</th>
+            <th>Name</th>
+            <th>#Groups</th>
+            <th>#Commands</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if group.process_groups.count > 0 %}
+        {% for pipe in group.process_groups.all %}
+        <tr>
+            <td><b><a href="{% url 'group_process' pipe.id %}">{{ pipe.id }}</a></td>
+            <td>{{ pipe.group_name }}</td>
+            <td>{{ pipe.n_groups_t }}</td>
+            <td>{{ pipe.n_processes_t }}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr><td>This is not a pipe.</tr></td>
+        {% endif %}
+    </tbody>
+</table>
+
+<h2>Commands</h2>
+<table class="table table-hover table-active">
+    <thead class="thead-dark">
+        <tr>
+            <th>Pipe</th>
+            <th>Name</th>
+            <th>#Groups</th>
+            <th>#Commands</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if group.processes.count > 0 %}
+        {% for pipe in group.processes.all %}
+        <tr>
+            <td><b><a href="{% url 'detail_process' pipe.id %}">{{ pipe.id }}</a></td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr><td>No commands.</tr></td>
+        {% endif %}
+    </tbody>
+</table>
+
+
+</div>
+<div class="col-md-4">
+    <h3>Metadata</h3>
+    <p>Extra information tagged to this Group</p>
+    <table class="table table-hover table-active">
+        <thead class="thead-dark">
+            <tr>
+                <th>Tag</th>
+                <th>Name</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% if group.metadata %}
+        {% for metadatum in group.metadata.all %}
+        <tr>
+            <td>{{ metadatum.meta_tag }}</td>
+            <td>{{ metadatum.meta_name }}</td>
+            <td>{{ metadatum.translate }}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="3">Not much to say.</td>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+</div>
+</div>
+</div>
+
+{% include 'footer.html' %}
+
+
