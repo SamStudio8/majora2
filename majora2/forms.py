@@ -5,7 +5,7 @@ from crispy_forms.layout import Layout, Fieldset, Submit, Row, Column
 from crispy_forms.bootstrap import FormActions
 
 class RegistrationForm(forms.Form):
-    username = forms.CharField(max_length=150)
+    username = forms.CharField(max_length=150, disabled=True)
     first_name = forms.CharField(max_length=30)
     last_name = forms.CharField(max_length=150)
     email = forms.EmailField()
@@ -15,6 +15,39 @@ class RegistrationForm(forms.Form):
     organisation = forms.CharField(max_length=100)
     ssh_key = forms.CharField(widget=forms.Textarea)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset("User",
+                Row(
+                    Column('username', css_class="form-group col-md-6 mb-0"),
+                    Column('email', css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                )
+            ),
+            Fieldset("Name",
+                Row(
+                    Column('first_name', css_class="form-group col-md-6 mb-0"),
+                    Column('last_name', css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                )
+            ),
+            Fieldset("Organisation",
+                Row(
+                    Column('organisation', css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                )
+            ),
+            Fieldset("SSH Key",
+                'ssh_key'
+            ),
+            FormActions(
+                    Submit('save', 'Register'),
+                    css_class="text-right",
+            )
+        )
 
 class TestSampleForm(forms.Form):
 
