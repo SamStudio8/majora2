@@ -1,0 +1,17 @@
+{% load crispy_forms_tags %}
+{% include 'header.html' %}
+<div class="mast2">
+    <div class="container">
+    </div>
+</div>
+<div class="container">
+
+<h1>Register for a COGPHUK CLIMB account</h1>
+<hr>
+
+<form action="{% url 'form_register' %}" method="post">
+    {% csrf_token %}
+    {% crispy form %}
+</form>
+</div>
+{% include 'footer.html' %}
