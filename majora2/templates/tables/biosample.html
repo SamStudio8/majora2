@@ -6,7 +6,6 @@
             <th>Dice Name</th>
             <th>Source</th>
             <th>Type</th>
-            <th>Specimen</th>
             <th>Sampled</th>
             <th>Checked in</th>
         </tr>
@@ -17,7 +16,6 @@
         <td><a href="{% url 'detail_artifact' artifact.id %}"><b>{{ artifact.unique_name }}</b></a></td>
         <td>{{ artifact.source.unique_name }}</td>
         <td>{{ artifact.sample_type }}</td>
-        <td>{{ artifact.specimen_type }}</td>
         <td>{{ artifact.collection.when }}</td>
         <td>{{ artifact.created.process.when | naturaltime }}</td>
     </tr>
