@@ -217,11 +217,13 @@ class MajoraProcessGroup2(MajoraGroup):
     @property
     def group_kind(self):
         return 'Process Group'
-"""
 
+"""
 # TODO This will become the MajoraGroup
 class MajoraArtifactGroup(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
+    unique_name = models.CharField(max_length=48, blank=True, null=True, unique=True) #TODO graduate away from meta_name
+
     dice_name = models.CharField(max_length=48, blank=True, null=True, unique=True) 
     meta_name = models.CharField(max_length=48, blank=True, null=True) # TODO force unique?
 
