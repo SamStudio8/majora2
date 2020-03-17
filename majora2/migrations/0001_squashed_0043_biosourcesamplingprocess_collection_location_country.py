@@ -360,9 +360,9 @@ class Migration(migrations.Migration):
                 ('majoraartifactprocessrecord_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='majora2.MajoraArtifactProcessRecord')),
                 ('before_hash', models.CharField(max_length=64)),
                 ('before_size', models.BigIntegerField(default=0)),
-                ('after_hash', models.CharField(default='', max_length=64)),
+                ('after_hash', models.CharField(max_length=64)),
                 ('after_size', models.BigIntegerField(default=0)),
-                ('effect_status', models.CharField(default='X', max_length=1)),
+                ('effect_status', models.CharField(max_length=1)),
             ],
             options={
                 'abstract': False,
