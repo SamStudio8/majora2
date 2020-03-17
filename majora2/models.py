@@ -690,6 +690,7 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
         return 'Sample Collection'
 
     collection_date = models.DateField(blank=True, null=True)
+    collection_by = models.CharField(max_length=100, blank=True, null=True)
     collection_location_adm0 = models.CharField(max_length=100, blank=True, null=True)
     collection_location_adm1 = models.CharField(max_length=100, blank=True, null=True)
 
