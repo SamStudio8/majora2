@@ -73,10 +73,18 @@ class TestSampleForm(forms.Form):
 
     host_id = forms.CharField(
             label="Pseudonymised patient identifier", max_length=56)
+    orig_sample_id = forms.CharField(
+            label="Existing sample identifier", max_length=56, required=False,
+            help_text="Leave blank if not applicable or available"
+    )
     sample_id = forms.CharField(
-            label="Sample identifier as assigned by WTSI", max_length=56)
+            label="Sample identifier", max_length=56,
+            help_text="Sample ID as assigned by WTSI"
+    )
     collection_date = forms.DateField(
-            label="Collection date (YYYY-MM-DD)")
+            label="Collection date",
+            help_text="YYYY-MM-DD"
+    )
     country = forms.CharField(initial="United Kingdom", disabled=True)
     adm0 = forms.ChoiceField(
             label="Region",
@@ -95,6 +103,19 @@ class TestSampleForm(forms.Form):
     submitting_username = forms.CharField(disabled=True)
     submitting_organisation = forms.CharField(disabled=True)
 
+    sample_type = forms.ChoiceField(
+        choices= [
+            ("matrix", "matrix"),
+            ("DNA", "DNA"),
+            ("cDNA", "cDNA"),
+        ],
+    )
+    specimen_type = forms.ChoiceField(
+        choices= [
+            ("nasal swab", "nasal swab"),
+        ],
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -102,8 +123,16 @@ class TestSampleForm(forms.Form):
         self.helper.layout = Layout(
             Fieldset("Identifiers",
                 Row(
-                    Column('host_id', css_class="form-group col-md-6 mb-0"),
-                    Column('sample_id', css_class="form-group col-md-6 mb-0"),
+                    Column('host_id', css_class="form-group col-md-4 mb-0"),
+                    Column('orig_sample_id', css_class="form-group col-md-4 mb-0"),
+                    Column('sample_id', css_class="form-group col-md-4 mb-0"),
+                    css_class="form-row",
+                )
+            ),
+            Fieldset("Form",
+                Row(
+                    Column('sample_type', css_class="form-group col-md-6 mb-0"),
+                    Column('specimen_type', css_class="form-group col-md-6 mb-0"),
                     css_class="form-row",
                 )
             ),

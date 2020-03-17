@@ -480,7 +480,7 @@ class TubeArtifact(MajoraArtifact):
         return " // ".join(a)
 
 class BiosampleArtifact(MajoraArtifact):
-    sample_orig_id = models.CharField(max_length=24)
+    sample_orig_id = models.CharField(max_length=24, blank=True, null=True)
     sample_type = models.CharField(max_length=24)        #THIS should be a lookup
     specimen_type = models.CharField(max_length=24)
 
