@@ -488,6 +488,9 @@ class BiosampleArtifact(MajoraArtifact):
     sample_batch = models.PositiveSmallIntegerField(default=0)
     sample_batch_longitude = models.PositiveSmallIntegerField(default=0)
 
+    #NOTE Trying something different, Biosamples almost exclusively come from a sampling event, so let's hard link it here
+    collection = models.ForeignKey("BiosourceSamplingProcess", blank=True, null=True, on_delete=models.PROTECT, related_name="biosamples")
+
     @property
     def artifact_kind(self):
         return 'Biosample'
