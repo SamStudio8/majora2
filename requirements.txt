@@ -1,0 +1,11 @@
+Django==2.1.4
+django-autocomplete-light
+diceware
+slackclient
+django-slack
+django-polymorphic
+pylibdmtx
+Pillow
+python-dateutil
+django-crispy-forms
+mysqlclient
