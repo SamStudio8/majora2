@@ -79,7 +79,7 @@ def home(request):
     return render(request, 'search.html', {
         'user': request.user,
         'groups': models.Favourite.group_groups(models.Favourite.objects.filter(user=request.user.id).exclude(group__isnull=True)),
-        'processes': models.MajoraArtifactProcess.group(models.MajoraArtifactProcess.objects.filter(who=request.user.id).order_by('-when')),
+        #'processes': models.MajoraArtifactProcess.group(models.MajoraArtifactProcess.objects.filter(who=request.user.id).order_by('-when')),
     })
 
 @login_required
