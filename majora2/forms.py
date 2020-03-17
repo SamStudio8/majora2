@@ -1,8 +1,12 @@
 from django import forms
 
+from django.contrib.auth.models import User
+
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Submit, Row, Column
 from crispy_forms.bootstrap import FormActions
+
+from .account_views import generate_username
 
 class RegistrationForm(forms.Form):
     username = forms.CharField(max_length=150, disabled=True, required=False)
@@ -59,6 +63,11 @@ class RegistrationForm(forms.Form):
         if cleaned_data.get("password1") != cleaned_data.get("password2"):
             self.add_error("password1", "Passwords do not match.")
             self.add_error("password2", "Passwords do not match.")
+
+        if User.objects.filter(username=generate_username(cleaned_data)).count() > 0:
+            #raise forms.ValidationError('This username has already been registered. You may be in the approval queue.')
+            self.add_error("username", 'This username has already been registered. You may be in the approval queue.')
+
 
 class TestSampleForm(forms.Form):
 
