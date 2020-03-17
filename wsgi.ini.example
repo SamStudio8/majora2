@@ -1,0 +1,13 @@
+[uwsgi]
+chdir=/var/www/majora/
+module=mylims.wsgi:application
+master=True
+pidfile=/tmp/majora.pid
+vacuum=True
+max-requests=5000
+daemonize=/var/www/majora.log
+socket=127.0.0.1:8001
+plugin=python36
+home=/var/www/majora/venv
+env="DJANGO_SETTINGS_MODULE=mylims.settings"
+

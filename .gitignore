@@ -6,3 +6,6 @@ static/*
 *.sqlite3
 *.orig
 ignore/*
+venv*/
+wsgi.ini
+restart.sh
