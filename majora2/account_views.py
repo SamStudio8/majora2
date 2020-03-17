@@ -5,9 +5,11 @@ from django.views.decorators.debug import sensitive_post_parameters
 
 from django.contrib.auth.models import User
 from django.conf import settings
+
 from . import models
 from . import util
 from . import forms
+from . import signals
 
 import json
 
@@ -33,6 +35,7 @@ def form_register(request):
             p.ssh_key = form.cleaned_data['ssh_key']
             p.save()
 
+            signals.new_registration.send(sender=request, username=u.username, first_name=u.first_name, last_name=u.last_name, email=u.email)
             return HttpResponse(json.dumps({
                 "success": True,
             }), content_type="application/json")
