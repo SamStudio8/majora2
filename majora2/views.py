@@ -281,6 +281,7 @@ def tabulate_artifact(request):
 @login_required
 def form_sampletest(request):
     fixed_data={
+        'source_type': "human",
         'country': "United Kingdom",
         'submitting_username': request.user.username,
         'submitting_organisation': request.user.profile.organisation if hasattr(request.user, "profile") else ""
@@ -335,6 +336,7 @@ def form_sampletest(request):
                     group = sample_pgroup,
                     collection_date = collection_date,
                     collection_by = form.cleaned_data["submitting_organisation"],
+                    collection_location_country = form.cleaned_data["country"],
                     collection_location_adm0 = form.cleaned_data["adm0"],
                     collection_location_adm1 = form.cleaned_data["adm1"],
                 )
@@ -352,7 +354,6 @@ def form_sampletest(request):
             signals.new_sample.send(sender=request, sample_id=sample.unique_name, submitter=sample_p.collection_by)
             return HttpResponse(json.dumps({
                 "success": True,
-                "collection_date": str(collection_date)
             }), content_type="application/json")
     else:
         form = forms.TestSampleForm(
