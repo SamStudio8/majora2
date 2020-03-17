@@ -27,7 +27,8 @@ urlpatterns = [
             'site_title': 'Majora',
             'title': 'Authenticate',
             'next': '/accounts/profile/',
-        })
+        }),
+        name="login",
     ),
     path('accounts/logout/', auth_views.LogoutView.as_view(
         next_page='/',
