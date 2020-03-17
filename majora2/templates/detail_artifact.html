@@ -345,7 +345,7 @@
     {% for record in artifact.process_tree %}
     <tr>
         <td class="text-left">
-            <b><a href="{% url 'detail_process' record.process.id %}">{{ record.process.process_kind }}</a><br/>
+            <b>{{ record.process.process_kind }}<br/>
             <span style="font-size:0.75em;">by {{ record.process.who }}</span>
         </td>
         <td class="text-right" style="white-space:nowrap;">
