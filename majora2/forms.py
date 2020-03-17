@@ -112,16 +112,19 @@ class TestSampleForm(forms.Form):
     )
     sample_type = forms.ChoiceField(
         choices= [
-            ("matrix", "matrix"),
-            ("DNA", "DNA"),
-            ("cDNA", "cDNA"),
+            ("swab", "swab"),
+            ("sputum", "sputum"),
+            ("BAL", "BAL"),
+            ("extract", "extract"),
         ],
     )
     sample_site = forms.ChoiceField(
         choices= [
+            ("", "NA"),
             ("nose", "nose"),
             ("throat", "throat"),
         ],
+        help_text="Provide only if sample_type is swab",
     )
 
     def __init__(self, *args, **kwargs):
