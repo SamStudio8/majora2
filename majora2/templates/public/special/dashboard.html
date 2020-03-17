@@ -1,0 +1,27 @@
+{% load crispy_forms_tags %}
+{% include 'header.html' %}
+<div class="mast2">
+    <div class="container">
+    </div>
+</div>
+<div class="container">
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Site</th>
+            <th>Samples</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in collections %}
+        <tr>
+            <td>{{ entry.collection_by }}</td>
+            <td>{{ entry.collection_by__count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</div>
+{% include 'footer.html' %}

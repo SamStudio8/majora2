@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from . import views
 from . import account_views
 from . import bot_views
+from . import public_views
 
 urlpatterns = [
     #search
@@ -50,6 +51,10 @@ urlpatterns = [
 
     # BOT ######################################################################
     path('bot/accounts/approve', csrf_exempt(bot_views.bot_approve_registration)),
+
+    # PUBLIC
+    path('public/dashboard', public_views.sample_sequence_count_dashboard),
+
 
 
     # Home
