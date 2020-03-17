@@ -14,8 +14,8 @@
     <tbody>
     {% for artifact in gitems %}
     <tr>
-        <td><a href="{% url 'detail_artifact' artifact.id %}"><b>{{ artifact.sample_orig_id }}</b></a></td>
-        <td>{{ artifact.source.name }}</td>
+        <td><a href="{% url 'detail_artifact' artifact.id %}"><b>{{ artifact.unique_name }}</b></a></td>
+        <td>{{ artifact.source.unique_name }}</td>
         <td>{{ artifact.sample_type }}</td>
         <td>{{ artifact.specimen_type }}</td>
         <td>{{ artifact.collection.when }}</td>
