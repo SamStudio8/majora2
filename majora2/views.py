@@ -299,6 +299,7 @@ def form_sampletest(request):
                 source = models.BiosampleSource(
                     unique_name = form.cleaned_data["host_id"],
                     meta_name = form.cleaned_data["host_id"],
+                    dice_name = form.cleaned_data["host_id"],
                     source_type = form.cleaned_data["source_type"],
                     physical = True,
                 )
@@ -318,6 +319,7 @@ def form_sampletest(request):
                 sample = models.BiosampleArtifact(
                     unique_name = form.cleaned_data["sample_id"],
                     meta_name = form.cleaned_data["sample_id"],
+                    dice_name = form.cleaned_data["sample_id"],
                     sample_orig_id = form.cleaned_data["orig_sample_id"],
 
                     sample_type = form.cleaned_data["sample_type"],
@@ -351,7 +353,7 @@ def form_sampletest(request):
                 )
                 sampling_rec.save()
 
-            signals.new_sample.send(sender=request, sample_id=sample.unique_name, submitter=sample_p.collection_by)
+                signals.new_sample.send(sender=request, sample_id=sample.unique_name, submitter=sample.collection.collection_by)
             return HttpResponse(json.dumps({
                 "success": True,
             }), content_type="application/json")
