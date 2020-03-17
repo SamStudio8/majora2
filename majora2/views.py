@@ -277,6 +277,7 @@ def tabulate_artifact(request):
 ##############################################################################
 # Forms
 ##############################################################################
+@login_required
 def form_sampletest(request):
     if request.method == "POST":
         form = forms.TestSampleForm(request.POST)
