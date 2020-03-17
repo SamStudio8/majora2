@@ -10,3 +10,6 @@ def quarantine_artifact(process, artifact):
     )
     qr.save()
     artifact.save()
+
+def create_biosample(self):
+    pass

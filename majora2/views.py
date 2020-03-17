@@ -6,6 +6,7 @@ from django.db.models import Q
 from . import models
 from . import util
 from . import forms
+from . import signals
 
 import json
 import datetime
@@ -279,19 +280,83 @@ def tabulate_artifact(request):
 ##############################################################################
 @login_required
 def form_sampletest(request):
+    fixed_data={
+        'country': "United Kingdom",
+        'submitting_username': request.user.username,
+        'submitting_organisation': request.user.profile.organisation if hasattr(request.user, "profile") else ""
+    }
+
     if request.method == "POST":
         form = forms.TestSampleForm(request.POST)
         if form.is_valid():
-            # do stuff
+            form.cleaned_data.update(fixed_data)
+
+            # Create the BiosampleSource
+            try:
+                source = models.BiosampleSource.objects.get(unique_name=form.cleaned_data["host_id"])
+            except:
+                source = models.BiosampleSource(
+                    unique_name = form.cleaned_data["host_id"],
+                    meta_name = form.cleaned_data["host_id"],
+                    source_type = form.cleaned_data["source_type"],
+                    physical = True,
+                )
+                source.save()
+
+            collection_date = form.cleaned_data["collection_date"]
+            #try:
+            #    collection_date = dateutil.parser.parse(form.cleaned_data["collection_date"])
+            #except Exception as e:
+            #    collection_date = None
+
+            # Create the Biosample
+            try:
+                sample = models.BiosampleArtifact.objects.get(unique_name=form.cleaned_data["sample_id"], sample_orig_id=form.cleaned_data["orig_sample_id"])
+            except:
+
+                sample = models.BiosampleArtifact(
+                    unique_name = form.cleaned_data["sample_id"],
+                    meta_name = form.cleaned_data["sample_id"],
+                    sample_orig_id = form.cleaned_data["orig_sample_id"],
+
+                    sample_type = form.cleaned_data["sample_type"],
+                    #sample_site =
+
+                    primary_group = source,
+                )
+                sample.save()
+
+                # Create the sampling event
+                sample_pgroup = models.MajoraArtifactProcessGroup()
+                sample_pgroup.save()
+                sample_p = models.BiosourceSamplingProcess(
+                    who = request.user,
+                    when = collection_date,
+                    group = sample_pgroup,
+                    collection_date = collection_date,
+                    collection_by = form.cleaned_data["submitting_organisation"],
+                    collection_location_adm0 = form.cleaned_data["adm0"],
+                    collection_location_adm1 = form.cleaned_data["adm1"],
+                )
+                sample_p.save()
+                sample.collection = sample_p # Set the sample collection process
+                sample.save()
+
+                sampling_rec = models.BiosourceSamplingProcessRecord(
+                    process=sample_p,
+                    in_group=source,
+                    out_artifact=sample,
+                )
+                sampling_rec.save()
+
+            signals.new_sample.send(sender=request, sample_id=sample.unique_name, submitter=sample_p.collection_by)
             return HttpResponse(json.dumps({
                 "success": True,
+                "collection_date": str(collection_date)
             }), content_type="application/json")
     else:
         form = forms.TestSampleForm(
-            initial={
-                'submitting_username': request.user.username,
-                'submitting_organisation': request.user.profile.organisation if hasattr(request.user, "profile") else ""
-            },
+            initial=fixed_data,
         )
     return render(request, 'forms/testsample.html', {'form': form})
 

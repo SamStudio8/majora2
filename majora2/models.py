@@ -14,6 +14,7 @@ class MajoraArtifact(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # 
     dice_name = models.CharField(max_length=48, blank=True, null=True, unique=True)
     meta_name = models.CharField(max_length=48, blank=True, null=True)
+    unique_name = models.CharField(max_length=48, blank=True, null=True, unique=True) #TODO graduate away from meta_name, needs to be project unique rather than global, but it will work here 
 
     root_artifact = models.ForeignKey('MajoraArtifact', blank=True, null=True, on_delete=models.PROTECT, related_name="descendants")
     quarantined = models.BooleanField(default=False)
@@ -222,7 +223,7 @@ class MajoraProcessGroup2(MajoraGroup):
 # TODO This will become the MajoraGroup
 class MajoraArtifactGroup(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
-    unique_name = models.CharField(max_length=48, blank=True, null=True, unique=True) #TODO graduate away from meta_name
+    unique_name = models.CharField(max_length=48, blank=True, null=True, unique=True) #TODO graduate away from meta_name, needs to be project unique rather than global, but it will work here 
 
     dice_name = models.CharField(max_length=48, blank=True, null=True, unique=True) 
     meta_name = models.CharField(max_length=48, blank=True, null=True) # TODO force unique?
@@ -483,8 +484,8 @@ class TubeArtifact(MajoraArtifact):
 
 class BiosampleArtifact(MajoraArtifact):
     sample_orig_id = models.CharField(max_length=24, blank=True, null=True)
-    sample_type = models.CharField(max_length=24)        #THIS should be a lookup
-    specimen_type = models.CharField(max_length=24)
+    sample_type = models.CharField(max_length=24, blank=True, null=True)        #THIS should be a lookup
+    specimen_type = models.CharField(max_length=24, blank=True, null=True)
 
     sample_longitude = models.PositiveSmallIntegerField(default=0)
     sample_batch = models.PositiveSmallIntegerField(default=0)
@@ -521,7 +522,7 @@ class BiosampleSource(MajoraArtifactGroup):
 
 class MajoraArtifactProcessRecord(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
-    process = models.ForeignKey('MajoraArtifactProcess', on_delete=models.PROTECT, related_name="records")
+    process = models.ForeignKey('MajoraArtifactProcess', on_delete=models.CASCADE, related_name="records")
 
     in_group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, related_name='before_process', on_delete=models.PROTECT)
     in_artifact = models.ForeignKey('MajoraArtifact', blank=True, null=True, related_name='before_process', on_delete=models.PROTECT)
@@ -534,7 +535,7 @@ class MajoraArtifactProcess(PolymorphicModel):
     #when_time_valid = models.BooleanField()
     who = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True)
     #howseen? eg. manual entry, LIMS API update...
-    group = models.ForeignKey('MajoraArtifactProcessGroup', on_delete=models.PROTECT, related_name="processes") #TODO do we really need this
+    group = models.ForeignKey('MajoraArtifactProcessGroup', on_delete=models.PROTECT, related_name="processes", blank=True, null=True) #TODO do we really need this
 
     class Meta:
         ordering = ["-when"]
@@ -553,7 +554,7 @@ class MajoraArtifactProcess(PolymorphicModel):
         return self.records.count()
 
     @staticmethod
-    def group(proc_list):
+    def get_groups(proc_list):
         groups = {}
         for a in proc_list:
             if a.n_records == 0:

@@ -100,9 +100,16 @@ class TestSampleForm(forms.Form):
             label="Outward postcode",
             max_length=10,
     )
-    submitting_username = forms.CharField(disabled=True)
-    submitting_organisation = forms.CharField(disabled=True)
+    submitting_username = forms.CharField(disabled=True, required=False)
+    submitting_organisation = forms.CharField(disabled=True, required=False)
 
+    source_type = forms.ChoiceField(
+        choices = [
+            ("human", "human"),
+        ],
+        initial = "human",
+        disabled = True,
+    )
     sample_type = forms.ChoiceField(
         choices= [
             ("matrix", "matrix"),
@@ -110,9 +117,10 @@ class TestSampleForm(forms.Form):
             ("cDNA", "cDNA"),
         ],
     )
-    specimen_type = forms.ChoiceField(
+    sample_site = forms.ChoiceField(
         choices= [
-            ("nasal swab", "nasal swab"),
+            ("nose", "nose"),
+            ("throat", "throat"),
         ],
     )
 
@@ -131,8 +139,9 @@ class TestSampleForm(forms.Form):
             ),
             Fieldset("Form",
                 Row(
-                    Column('sample_type', css_class="form-group col-md-6 mb-0"),
-                    Column('specimen_type', css_class="form-group col-md-6 mb-0"),
+                    Column('source_type', css_class="form-group col-md-3 mb-0"),
+                    Column('sample_type', css_class="form-group col-md-3 mb-0"),
+                    Column('sample_site', css_class="form-group col-md-3 mb-0"),
                     css_class="form-row",
                 )
             ),
