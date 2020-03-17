@@ -42,10 +42,3 @@ def form_register(request):
     else:
         form = forms.RegistrationForm()
     return render(request, 'forms/register.html', {'form': form})
-
-    def clean(self):
-        cleaned_data = super().clean()
-        if cleaned_data.get("password1") != cleaned_data.get("password2"):
-            self.add_error("password1", "Passwords do not match.")
-            self.add_error("password2", "Passwords do not match.")
-
