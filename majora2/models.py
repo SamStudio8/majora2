@@ -480,11 +480,10 @@ class TubeArtifact(MajoraArtifact):
         return " // ".join(a)
 
 class BiosampleArtifact(MajoraArtifact):
-    sample_orig_id = models.CharField(max_length=24) #TODO this should be unique ffs
-    sample_type = models.CharField(max_length=24)        # lookup
+    sample_orig_id = models.CharField(max_length=24)
+    sample_type = models.CharField(max_length=24)        #THIS should be a lookup
     specimen_type = models.CharField(max_length=24)
 
-    collection_date = models.DateField(blank=True, null=True)
     sample_longitude = models.PositiveSmallIntegerField(default=0)
     sample_batch = models.PositiveSmallIntegerField(default=0)
     sample_batch_longitude = models.PositiveSmallIntegerField(default=0)
@@ -686,6 +685,11 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
     @property
     def process_kind(self):
         return 'Sample Collection'
+
+    collection_date = models.DateField(blank=True, null=True)
+    collection_location_adm0 = models.CharField(max_length=100, blank=True, null=True)
+    collection_location_adm1 = models.CharField(max_length=100, blank=True, null=True)
+
 
 class BiosourceSamplingProcessRecord(MajoraArtifactProcessRecord):
     pass
