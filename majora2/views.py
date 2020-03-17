@@ -287,6 +287,30 @@ def form_sampletest(request):
         'submitting_organisation': request.user.profile.organisation if hasattr(request.user, "profile") else ""
     }
 
+    # TODO Very quick and dirty, lets ensure some basic groups exist
+    try:
+        all_sources = models.MajoraArtifactGroup.objects.get(unique_name = "COGPHUK All Hosts")
+    except:
+        all_sources = models.MajoraArtifactGroup(
+            unique_name = "COGPHUK All Hosts",
+            meta_name = "COGPHUK All Hosts",
+            dice_name = "COGPHUK All Hosts",
+            physical=False,
+        )
+        all_sources.save()
+
+    try:
+        all_samples = models.MajoraArtifactGroup.objects.get(unique_name = "COGPHUK All Samples")
+    except:
+        all_samples = models.MajoraArtifactGroup(
+            unique_name = "COGPHUK All Samples",
+            meta_name = "COGPHUK All Samples",
+            dice_name = "COGPHUK All Samples",
+            physical=False,
+        )
+        all_samples.save()
+
+
     if request.method == "POST":
         form = forms.TestSampleForm(request.POST)
         if form.is_valid():
@@ -301,9 +325,25 @@ def form_sampletest(request):
                     meta_name = form.cleaned_data["host_id"],
                     dice_name = form.cleaned_data["host_id"],
                     source_type = form.cleaned_data["source_type"],
+                    parent_group = all_sources,
                     physical = True,
                 )
                 source.save()
+                source.groups.add(all_sources)
+                source.save()
+
+            site_sample_group_name = "COGPHUK %s Samples" % form.cleaned_data["submitting_organisation"]
+            try:
+                site_sample_group = models.MajoraArtifactGroup.objects.get(unique_name = site_sample_group_name)
+            except:
+                site_sample_group = models.MajoraArtifactGroup(
+                    unique_name = site_sample_group_name,
+                    parent_group = all_samples,
+                    meta_name = site_sample_group_name,
+                    dice_name = site_sample_group_name,
+                    physical=False,
+                )
+                site_sample_group.save()
 
             collection_date = form.cleaned_data["collection_date"]
             #try:
@@ -327,6 +367,9 @@ def form_sampletest(request):
 
                     primary_group = source,
                 )
+                sample.save()
+                sample.groups.add(site_sample_group)
+                sample.groups.add(all_samples)
                 sample.save()
 
                 # Create the sampling event
