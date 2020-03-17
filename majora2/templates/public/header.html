@@ -87,30 +87,5 @@
     <span class="navbar-toggler-icon"></span>
   </button>
 
-  {% if user.is_authenticated %}
-  <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            {{ request.user.username }}
-        </a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" href="{% url 'profile' %}">Profile</a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href="{% url 'logout' %}">Log Out</a>
-        </div>
-      </li>
-    </ul>
-  </div>
-  {% endif %}
-    <form class="form-inline my-2 my-lg-0 navbar-right" action="{% url 'search' %}">
-        <div class="input-group">
-            <input class="form-control" name="q" type="text" placeholder="Search UUID or Dicename">
-            <div class="input-group-append">
-            <button class="btn btn-success" type="submit">&#128269;</button>
-            </div>
-        </div>
-    </form>
-  </div>
 </nav>
 
