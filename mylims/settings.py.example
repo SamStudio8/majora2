@@ -134,6 +134,7 @@ SLACK_TOKEN = ''
 SLACK_CHANNEL = '#general'
 SLACK_AS_USER = True
 SLACK_BACKEND = 'django_slack.backends.UrllibBackend'
+SLACK_USERS = []
 
 LOGIN_REDIRECT_URL = '/accounts/profile/'
 

@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from . import views
 from . import account_views
+from . import bot_views
 
 urlpatterns = [
     #search
@@ -46,6 +47,9 @@ urlpatterns = [
     path('ocarina/api/command/update/', csrf_exempt(views.ocarina_update_command), name='ocarina_update_command'),
     path('ocarina/api/command/new/', csrf_exempt(views.ocarina_new_command), name='ocarina_new_command'),
     path('ocarina/api/group/view/', csrf_exempt(views.ocarina_view_group), name='ocarina_view_group'),
+
+    # BOT ######################################################################
+    path('bot/accounts/approve', csrf_exempt(bot_views.bot_approve_registration)),
 
 
     # Home

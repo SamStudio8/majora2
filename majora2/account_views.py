@@ -35,11 +35,17 @@ def form_register(request):
             p.ssh_key = form.cleaned_data['ssh_key']
             p.save()
 
-            signals.new_registration.send(sender=request, username=u.username, first_name=u.first_name, last_name=u.last_name, email=u.email)
+            signals.new_registration.send(sender=request, username=u.username, first_name=u.first_name, last_name=u.last_name, email=u.email, organisation=p.organisation)
             return HttpResponse(json.dumps({
                 "success": True,
             }), content_type="application/json")
     else:
         form = forms.RegistrationForm()
     return render(request, 'forms/register.html', {'form': form})
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get("password1") != cleaned_data.get("password2"):
+            self.add_error("password1", "Passwords do not match.")
+            self.add_error("password2", "Passwords do not match.")
 
