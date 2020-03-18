@@ -816,6 +816,7 @@ class Favourite(models.Model):
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     organisation = models.CharField(max_length=100)
+    institute = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL)
     ssh_key = models.TextField(blank=True, null=True)
 
 #TODO How to properly link models?
@@ -844,3 +845,6 @@ class MajoraMetaRecord(PolymorphicModel):
                 return self.artifact
         return self.value
 
+class Institute(models.Model):
+    code = models.CharField(max_length=10)
+    name = models.CharField(max_length=100)
