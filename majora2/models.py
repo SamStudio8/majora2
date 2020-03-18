@@ -818,7 +818,7 @@ class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     institute = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL)
     ssh_key = models.TextField(blank=True, null=True)
-    api_key = models.TextField(default=uuid.uuid4())
+    api_key = models.CharField(max_length=128, default=uuid.uuid4)
 
 #TODO How to properly link models?
 class MajoraMetaRecord(PolymorphicModel):

@@ -53,7 +53,7 @@ def list_ssh_keys(request):
 
     token = request.META.get("MAJORA_TOKEN")
     token_valid = False
-    if token:
+    if token and len(token) > 1:
         if models.Profile.objects.get(api_key=token).count() > 0:
             # If at least one token exists, that seems good enough
             token_valid = True
