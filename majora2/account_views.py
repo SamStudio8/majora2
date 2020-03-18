@@ -37,9 +37,7 @@ def form_register(request):
             p.save()
 
             signals.new_registration.send(sender=request, username=u.username, first_name=u.first_name, last_name=u.last_name, email=u.email, organisation=p.institute.name)
-            return HttpResponse(json.dumps({
-                "success": True,
-            }), content_type="application/json")
+            return render(request, 'accounts/register_success.html')
     else:
         form = forms.RegistrationForm()
     return render(request, 'forms/register.html', {'form': form})
