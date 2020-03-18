@@ -26,12 +26,14 @@ urlpatterns = [
             'site_header': 'Majora',
             'site_title': 'Majora',
             'title': 'Authenticate',
-            'next': '/accounts/profile/',
+            #'next': '/accounts/profile/',
         }),
         name="login",
     ),
     path('accounts/logout/', auth_views.LogoutView.as_view(
         next_page='/',
     ), name="logout"),
+
+    path('accounts/', include('django.contrib.auth.urls')),
     path('', include('majora2.urls')),
 ]
