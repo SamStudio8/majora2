@@ -15,8 +15,8 @@ class RegistrationForm(forms.Form):
     first_name = forms.CharField(max_length=30)
     last_name = forms.CharField(max_length=150)
     email = forms.EmailField()
-    password1 = forms.CharField(widget=forms.PasswordInput(), label="Password")
-    password2 = forms.CharField(widget=forms.PasswordInput(), label="Confirm password")
+    password1 = forms.CharField(widget=forms.PasswordInput(), label="Password", min_length=8)
+    password2 = forms.CharField(widget=forms.PasswordInput(), label="Confirm password", min_length=8)
 
     organisation = forms.ModelChoiceField(queryset=models.Institute.objects.filter(~Q(code="?")).order_by("name"))
     ssh_key = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}), label="SSH Public Key")
