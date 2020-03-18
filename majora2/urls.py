@@ -55,10 +55,10 @@ urlpatterns = [
     # PUBLIC
     path('public/dashboard', public_views.sample_sequence_count_dashboard),
 
-
     # PRIV MAJORA-TOKEN
     path('accounts/keys/', account_views.list_ssh_keys, name='list_ssh_keys'),
     path('accounts/keys/<str:username>', account_views.list_ssh_keys, name='list_ssh_keys'),
+    path('accounts/keys/<str:username>/', account_views.list_ssh_keys, name='list_ssh_keys'), # Hack to prevent curl errors w and wo slash
     path('accounts/names/', account_views.list_user_names, name='list_user_names'),
 
     # Home
