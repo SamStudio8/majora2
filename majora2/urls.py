@@ -24,7 +24,6 @@ urlpatterns = [
     path('chain/<uuid:group_uuid>/', views.group_process, name='group_process'),
 
     path('accounts/profile/', views.profile, name='profile'),
-    path('accounts/keys/', account_views.list_ssh_keys, name='list_ssh_keys'),
 
     # API
     #path(r'api/command/update/$', csrf_exempt(views.update_command), name='update_command'),
@@ -57,6 +56,9 @@ urlpatterns = [
     path('public/dashboard', public_views.sample_sequence_count_dashboard),
 
 
+    # PRIV
+    path('accounts/keys/', account_views.list_ssh_keys, name='list_ssh_keys'),
+    path('accounts/names/', account_views.list_user_names, name='list_user_names'),
 
     # Home
     path('', views.home, name='home'),

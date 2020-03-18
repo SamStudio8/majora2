@@ -43,11 +43,26 @@ def form_register(request):
     return render(request, 'forms/register.html', {'form': form})
 
 
-@login_required
+@csrf_exempt
 def list_ssh_keys(request):
     keys = []
     for user in User.objects.all():
         if hasattr(user, "profile"):
             if user.profile.ssh_key and user.profile.ssh_key.startswith("ssh"):
                 keys.append(user.profile.ssh_key)
-    return HttpResponse("\n".join(keys), content_type="text/plain")
+
+    token = request.META.get("MAJORA_TOKEN")
+    token_valid = False
+    if token:
+        if models.Profile.objects.get(api_key=token).count() > 0:
+            # If at least one token exists, that seems good enough
+            token_valid = True
+
+    if request.user.is_authenticated() or token_valid:
+        return HttpResponse("\n".join(keys), content_type="text/plain")
+    else:
+        HttpResponseBadRequest() # bye
+
+@csrf_exempt
+def list_user_names(request):
+    pass
