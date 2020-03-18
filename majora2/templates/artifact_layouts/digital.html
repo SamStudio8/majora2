@@ -1,0 +1,66 @@
+<div class="row">
+<div class="col-md-6">
+    <h2>Digital Resource</h2>
+    <table class="table table-hover table-active">
+        <tbody>
+        <tr>
+            <th>Name</th>
+            <td><b>{{ artifact.name }}</b></td>
+        </tr>
+        <tr>
+            <th>Type</th>
+            <td>{{ artifact.current_kind }}</td>
+        </tr>
+            <th>Node</th>
+            <td><b><a href="{% url 'group_artifact' artifact.primary_group.root_group.id %}">{{ artifact.primary_group.root_group.name }}</a></b></td>
+        </tr>
+        <tr>
+            <th>Directory</th>
+            <td><b><a href="{% url 'group_artifact' artifact.primary_group.id %}">{{ artifact.primary_group.name }}</a></b></td>
+        </tr>
+        <tr>
+            <th>{% if artifact.ghost %}Last{% else %}Current{% endif %} Size</th>
+            <td>{{ artifact.current_size | filesizeformat }}</td>
+        </tr>
+        <tr>
+            <th>{% if artifact.ghost %}Last{% else %}Current{% endif %} Hash</th>
+            <td><code>{{ artifact.current_hash }}</code></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div class="col-md-6">
+    <h2>Brief History</h2>
+    <table class="table table-hover table-active">
+        <tbody>
+        <tr>
+            <th>Created</th>
+            <td class="text-right">{{ artifact.created.process.when | naturaltime }}</br>
+                by {{ artifact.created.process.who }}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <table class="table table-hover table-active">
+        <tbody>
+            <th>Last Modifed</th>
+            <td class="text-right">{{ artifact.modified.process.when | naturaltime }}</br>
+                by {{ artifact.created.process.who }}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <table class="table table-hover table-active">
+        <tbody>
+        <tr>
+            <th>Last Seen</th>
+            <td class="text-right">{{ artifact.observed.process.when | naturaltime }}</br>
+                by {{ artifact.created.process.who }}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</div>
+<hr/>
+

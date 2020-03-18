@@ -1,0 +1,96 @@
+<div class="row">
+<div class="col-md-6">
+    {% if artifact.samples|length == 1 %}
+    <h2>Biosample Source</h2>
+    <table class="table table-hover table-active">
+        <tbody>
+        {% for sample in artifact.samples %}
+        <tr>
+            <th>Sample</th>
+            <td><b><a href="{% url 'detail_artifact' sample.id %}">{{ sample.name }}</a></b></td>
+        </tr>
+        <tr>
+            <th>Source</th>
+            <td><b><a href="{% url 'group_artifact' sample.primary_group.id %}">{{ sample.primary_group }}</a></b></td>
+        </tr>
+        <tr>
+            <th>Longitude</th>
+            <td>{{ sample.sample_longitude }}</td>
+        </tr>
+        <tr>
+            <th>Type</th>
+            <td>{{ sample.sample_type }}</td>
+        </tr>
+        <tr>
+            <th>Specimen</th>
+            <td>{{ sample.specimen_type }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% elif artifact.samples|length > 1 %}
+    <h2>Biosample Sources</h2>
+    <table class="table table-hover table-active">
+        <thead class="thead-dark">
+            <tr>
+                <th>Sample</th>
+                <th>Source</th>
+                <th>Longitude</th>
+                <th>Type</th>
+                <th>Specimen</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for sample in artifact.samples %}
+        <tr>
+            <td>
+                <b><a href="{% url 'detail_artifact' sample.id %}">{{ sample.name }}</a></b><br>
+            </td>
+            <td>{{ sample.primary_group }}</td>
+            <td>{{ sample.sample_longitude }}</td>
+            <td>{{ sample.sample_type }}</td>
+            <td>{{ sample.specimen_type }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <hr/>
+    {% else %}
+    {% endif %}
+</div>
+<div class="col-md-6">
+    <h2>Sample Tube</h2>
+    <table class="table table-hover table-active">
+        <tbody>
+        <tr>
+            <th>Location</th>
+            <td>{{ artifact.location }}</td>
+        </tr>
+        <tr>
+            <th>Tube Form</th>
+            <td>{{ artifact.tube_form }}</td>
+        </tr>
+        <tr>
+            <th>Sample Form</th>
+            <td>{{ artifact.sample_form }}</td>
+        </tr>
+        <tr>
+            <th>Storage Medium</th>
+            <td>{{ artifact.storage_medium }}</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td>
+            {% if artifact.is_quarantined %}
+                <span class="badge badge-danger">Quarantined</span> <a href="{% url 'detail_artifact' artifact.is_quarantined.id %}">{{ artifact.quarantined_reason }}</a>
+            {% else %}
+                <span class="badge badge-success">Accepted</span>
+            {% endif %}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</div>
+<hr/>
+
