@@ -9,3 +9,4 @@ ignore/*
 venv*/
 wsgi.ini
 restart.sh
+private/*
