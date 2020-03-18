@@ -10,7 +10,7 @@ def bot_approve_registration(request):
         if request.POST.get('user_id', None) not in settings.SLACK_USERS:
             return HttpResponse(json.dumps({
                 "response_type": "ephemeral",
-                "text": "I'm sorry %. I'm afraid I can't do that." % request.POST.get('user_name', "User"),
+                "text": "I'm sorry %s. I'm afraid I can't do that." % request.POST.get('user_name', "User"),
             }), content_type="application/json")
 
         user = request.POST.get('text', None)
