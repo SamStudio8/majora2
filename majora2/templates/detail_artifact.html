@@ -63,7 +63,11 @@
         </tr>
         <tr>
             <th>Source</th>
+            {% if sample.primary_group %}
             <td><b><a href="{% url 'group_artifact' sample.primary_group.id %}">{{ sample.primary_group }}</a></b></td>
+            {% else %}
+            <td>Unknown</td>
+            {% endif %}
         </tr>
         <tr>
             <th>Longitude</th>

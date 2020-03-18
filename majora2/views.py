@@ -316,21 +316,24 @@ def form_sampletest(request):
         if form.is_valid():
             form.cleaned_data.update(fixed_data)
 
-            # Create the BiosampleSource
-            try:
-                source = models.BiosampleSource.objects.get(unique_name=form.cleaned_data["host_id"])
-            except:
-                source = models.BiosampleSource(
-                    unique_name = form.cleaned_data["host_id"],
-                    meta_name = form.cleaned_data["host_id"],
-                    dice_name = form.cleaned_data["host_id"],
-                    source_type = form.cleaned_data["source_type"],
-                    parent_group = all_sources,
-                    physical = True,
-                )
-                source.save()
-                source.groups.add(all_sources)
-                source.save()
+            if form.cleaned_data["host_id"]:
+                # Create the BiosampleSource
+                try:
+                    source = models.BiosampleSource.objects.get(unique_name=form.cleaned_data["host_id"])
+                except:
+                    source = models.BiosampleSource(
+                        unique_name = form.cleaned_data["host_id"],
+                        meta_name = form.cleaned_data["host_id"],
+                        dice_name = form.cleaned_data["host_id"],
+                        source_type = form.cleaned_data["source_type"],
+                        parent_group = all_sources,
+                        physical = True,
+                    )
+                    source.save()
+                    source.groups.add(all_sources)
+                    source.save()
+            else:
+                source = None
 
             site_sample_group_name = "COGPHUK %s Samples" % form.cleaned_data["submitting_organisation"]
             try:
@@ -365,7 +368,7 @@ def form_sampletest(request):
                     sample_type = form.cleaned_data["sample_type"],
                     #sample_site =
 
-                    primary_group = source,
+                    primary_group = source
                 )
                 sample.save()
                 sample.groups.add(site_sample_group)
@@ -383,8 +386,8 @@ def form_sampletest(request):
                     collection_by = form.cleaned_data["submitting_organisation"].name,
                     collection_org = form.cleaned_data["submitting_organisation"],
                     collection_location_country = form.cleaned_data["country"],
-                    collection_location_adm0 = form.cleaned_data["adm0"],
                     collection_location_adm1 = form.cleaned_data["adm1"],
+                    collection_location_adm2 = form.cleaned_data["adm2"],
                 )
                 sample_p.save()
                 sample.collection = sample_p # Set the sample collection process

@@ -74,33 +74,35 @@ class RegistrationForm(forms.Form):
 class TestSampleForm(forms.Form):
 
     host_id = forms.CharField(
-            label="Pseudonymised patient identifier", max_length=56)
+            label="Pseudonymous patient identifier", max_length=56,
+            help_text="Leave blank if not available. <b>DO NOT enter an NHS number here</b>", required=False)
     orig_sample_id = forms.CharField(
             label="Existing sample identifier", max_length=56, required=False,
-            help_text="Leave blank if not applicable or available"
+            help_text="Leave blank if not applicable or available. It will not be possible to collect private metadata for this sample without this"
     )
     sample_id = forms.CharField(
-            label="Sample identifier", max_length=56,
-            help_text="Sample ID as assigned by WTSI"
+            label="New sample identifier", max_length=56,
+            help_text="Sample ID as assigned by WSI COG-UK labelling scheme"
     )
     collection_date = forms.DateField(
             label="Collection date",
             help_text="YYYY-MM-DD"
     )
     country = forms.CharField(initial="United Kingdom", disabled=True)
-    adm0 = forms.ChoiceField(
+    adm1 = forms.ChoiceField(
             label="Region",
-            initial="",
             choices=[
+                (None, ""),
                 ("UK-ENG", "England"),
                 ("UK-SCT", "Scotland"),
                 ("UK-WLS", "Wales"),
                 ("UK-NIR", "Northern Ireland"),
             ],
     )
-    adm1 = forms.CharField(
+    adm2 = forms.CharField(
             label="Outward postcode",
             max_length=10,
+            required=False,
     )
     submitting_username = forms.CharField(disabled=True, required=False)
     submitting_organisation = forms.ModelChoiceField(queryset=models.Institute.objects.filter(~Q(code="?")).order_by("name"), disabled=True, required=False)
@@ -114,19 +116,22 @@ class TestSampleForm(forms.Form):
     )
     sample_type = forms.ChoiceField(
         choices= [
+            (None, "Unknown"),
             ("swab", "swab"),
             ("sputum", "sputum"),
             ("BAL", "BAL"),
             ("extract", "extract"),
         ],
+        required=False,
     )
     sample_site = forms.ChoiceField(
         choices= [
-            ("", "NA"),
+            (None, None),
             ("nose", "nose"),
             ("throat", "throat"),
         ],
         help_text="Provide only if sample_type is swab",
+        required=False,
     )
 
     def __init__(self, *args, **kwargs):
@@ -153,8 +158,8 @@ class TestSampleForm(forms.Form):
             Fieldset("Locality",
                 Row(
                     Column('country', css_class="form-group col-md-6 mb-0"),
-                    Column('adm0', css_class="form-group col-md-3 mb-0"),
                     Column('adm1', css_class="form-group col-md-3 mb-0"),
+                    Column('adm2', css_class="form-group col-md-3 mb-0"),
                     css_class="form-row",
                 )
             ),
