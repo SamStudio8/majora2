@@ -44,25 +44,48 @@ def form_register(request):
 
 
 @csrf_exempt
-def list_ssh_keys(request):
+def list_ssh_keys(request, username=None):
     keys = []
     for user in User.objects.all():
+        if username:
+            if user.username != username:
+                continue
         if hasattr(user, "profile"):
             if user.profile.ssh_key and user.profile.ssh_key.startswith("ssh"):
                 keys.append(user.profile.ssh_key)
 
-    token = request.META.get("MAJORA_TOKEN")
+    token = request.META.get("HTTP_MAJORA_TOKEN")
     token_valid = False
     if token and len(token) > 1:
-        if models.Profile.objects.get(api_key=token).count() > 0:
+        if models.Profile.objects.filter(api_key=token).count() > 0:
             # If at least one token exists, that seems good enough
             token_valid = True
 
-    if request.user.is_authenticated() or token_valid:
+    if request.user.is_authenticated or token_valid:
         return HttpResponse("\n".join(keys), content_type="text/plain")
     else:
-        HttpResponseBadRequest() # bye
+        return HttpResponseBadRequest() # bye
 
 @csrf_exempt
 def list_user_names(request):
-    pass
+    keys = []
+    for user in User.objects.all():
+        keys.append("\t".join([
+            user.username,
+            user.first_name,
+            user.last_name,
+            user.email,
+            user.profile.institute.code
+        ]))
+
+    token = request.META.get("HTTP_MAJORA_TOKEN")
+    token_valid = False
+    if token and len(token) > 1:
+        if models.Profile.objects.filter(api_key=token).count() > 0:
+            # If at least one token exists, that seems good enough
+            token_valid = True
+
+    if request.user.is_authenticated or token_valid:
+        return HttpResponse("\n".join(keys), content_type="text/plain")
+    else:
+        return HttpResponseBadRequest() # bye
