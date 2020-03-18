@@ -56,7 +56,7 @@ def list_ssh_keys(request, username=None):
                     if user.username != username:
                         continue
                 if hasattr(user, "profile"):
-                    if user.profile.ssh_key and user.profile.ssh_key.startswith("ssh"):
+                    if user.is_active and user.profile.ssh_key and user.profile.ssh_key.startswith("ssh"):
                         keys.append(user.profile.ssh_key)
             return HttpResponse("\n".join(keys), content_type="text/plain")
     return HttpResponseBadRequest() # bye
@@ -70,12 +70,13 @@ def list_user_names(request):
             # If at least one token exists, that seems good enough
             keys = []
             for user in User.objects.all():
-                keys.append("\t".join([
-                    user.username,
-                    user.first_name,
-                    user.last_name,
-                    user.email,
-                    user.profile.institute.code
-                ]))
+                if user.is_active:
+                    keys.append("\t".join([
+                        user.username,
+                        user.first_name,
+                        user.last_name,
+                        user.email,
+                        user.profile.institute.code
+                    ]))
             return HttpResponse("\n".join(keys), content_type="text/plain")
     return HttpResponseBadRequest() # bye
