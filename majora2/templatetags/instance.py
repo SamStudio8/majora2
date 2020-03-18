@@ -15,3 +15,6 @@ def footer():
 def instance_name():
     return mark_safe(getattr(settings, "INSTANCE_NAME", ""))
 
+@register.simple_tag
+def instance_colour():
+    return mark_safe(getattr(settings, "INSTANCE_COLOUR", ""))
