@@ -103,7 +103,7 @@ class TestSampleForm(forms.Form):
             max_length=10,
     )
     submitting_username = forms.CharField(disabled=True, required=False)
-    submitting_organisation = forms.CharField(disabled=True, required=False)
+    submitting_organisation = forms.ModelChoiceField(queryset=models.Institute.objects.filter(~Q(code="?")).order_by("name"), disabled=True, required=False)
 
     source_type = forms.ChoiceField(
         choices = [

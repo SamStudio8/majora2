@@ -31,11 +31,11 @@ def form_register(request):
             u.save()
 
             p = models.Profile(user=u)
-            p.organisation = form.cleaned_data['organisation']
+            p.institute = form.cleaned_data['organisation']
             p.ssh_key = form.cleaned_data['ssh_key']
             p.save()
 
-            signals.new_registration.send(sender=request, username=u.username, first_name=u.first_name, last_name=u.last_name, email=u.email, organisation=p.organisation)
+            signals.new_registration.send(sender=request, username=u.username, first_name=u.first_name, last_name=u.last_name, email=u.email, organisation=p.institute.name)
             return HttpResponse(json.dumps({
                 "success": True,
             }), content_type="application/json")

@@ -284,7 +284,7 @@ def form_sampletest(request):
         'source_type': "human",
         'country': "United Kingdom",
         'submitting_username': request.user.username,
-        'submitting_organisation': request.user.profile.organisation if hasattr(request.user, "profile") else ""
+        'submitting_organisation': request.user.profile.institute if hasattr(request.user, "profile") else ""
     }
 
     # TODO Very quick and dirty, lets ensure some basic groups exist
