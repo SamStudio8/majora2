@@ -694,6 +694,7 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
 
     collection_date = models.DateField(blank=True, null=True)
     collection_by = models.CharField(max_length=100, blank=True, null=True)
+    collection_org = models.ForeignKey("Institute", blank=Tue, null=True, on_delete=models.SET_NULL)
 
     collection_location_country = models.CharField(max_length=100, blank=True, null=True)
     collection_location_adm0 = models.CharField(max_length=100, blank=True, null=True)
@@ -815,7 +816,6 @@ class Favourite(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    organisation = models.CharField(max_length=100)
     institute = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL)
     ssh_key = models.TextField(blank=True, null=True)
 
