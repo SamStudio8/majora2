@@ -10,6 +10,8 @@ from crispy_forms.bootstrap import FormActions
 from .account_views import generate_username
 from . import models
 
+from sshpubkeys import SSHKey
+
 class RegistrationForm(forms.Form):
     username = forms.CharField(max_length=150, disabled=True, required=False)
     first_name = forms.CharField(max_length=30)
@@ -69,6 +71,18 @@ class RegistrationForm(forms.Form):
         if User.objects.filter(username=generate_username(cleaned_data)).count() > 0:
             #raise forms.ValidationError('This username has already been registered. You may be in the approval queue.')
             self.add_error("username", 'This username has already been registered. You may be in the approval queue.')
+
+    def clean_ssh_key(self):
+        ssh_key = self.cleaned_data["ssh_key"]
+        if '\n' in ssh_key or '\r' in ssh_key:
+            raise forms.ValidationError("Your public key should not contain any new line characters")
+
+        ssh_key = SSHKey(self.cleaned_data["ssh_key"], strict=True)
+        try:
+            ssh_key.parse()
+        except Exception as e:
+            raise forms.ValidationError("Unable to decode your key. Please ensure this is your public key and has been entered correctly.")
+        return ssh_key
 
 
 class TestSampleForm(forms.Form):

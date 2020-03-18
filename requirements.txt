@@ -9,3 +9,4 @@ Pillow
 python-dateutil
 django-crispy-forms
 mysqlclient
+sshpubkeys
