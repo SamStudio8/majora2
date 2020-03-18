@@ -26,3 +26,4 @@ admin.site.register(m.DigitalResourceCommandRecord)
 
 admin.site.register(m.MajoraMetaRecord)
 admin.site.register(m.Favourite)
+admin.site.register(m.Institute)
