@@ -3,6 +3,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.auth.models import User
 
 import json
+from . import signals
 
 def bot_approve_registration(request):
     if request.method == "POST":
@@ -28,6 +29,7 @@ def bot_approve_registration(request):
         else:
             user.is_active = True
             user.save()
+            signals.activated_registration.send(sender=request, username=u.username, email=u.email)
             return HttpResponse(json.dumps({
                 "response_type": "in_channel",
                 "text": "User %s is now active and able to authenticate." % user.username,

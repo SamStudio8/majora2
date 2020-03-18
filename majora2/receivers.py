@@ -6,6 +6,7 @@ from django.conf import settings
 from . import signals
 
 from django_slack import slack_message
+from django.core.mail import send_mail
 
 @receiver(signals.new_registration)
 def recv_new_registration(sender, username, first_name, last_name, organisation, **kwargs):
@@ -88,3 +89,18 @@ def recv_new_sample(sender, sample_id, submitter, **kwargs):
             ],
             "ts": int(time.time()),
         }])
+
+@receiver(signals.activated_registration)
+def recv_activated_registration(sender, username, email, **kwargs):
+    send_mail(
+        '[majora@climb] Your access request has been approved',
+        '''You're receiving this email because you requested a %s account. Your request has been approved.
+        Your username is %s
+
+        Please find guidance on using our systems and providing data via: https://docs.covid19.climb.ac.uk/.
+        ''' % (settings.INSTANCE_NAME, username),
+        None,
+        [email],
+        fail_silently=False,
+    )
+
