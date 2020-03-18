@@ -1,12 +1,14 @@
 from django import forms
 
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Submit, Row, Column
 from crispy_forms.bootstrap import FormActions
 
 from .account_views import generate_username
+from . import models
 
 class RegistrationForm(forms.Form):
     username = forms.CharField(max_length=150, disabled=True, required=False)
@@ -16,7 +18,7 @@ class RegistrationForm(forms.Form):
     password1 = forms.CharField(widget=forms.PasswordInput(), label="Password")
     password2 = forms.CharField(widget=forms.PasswordInput(), label="Confirm password")
 
-    organisation = forms.CharField(max_length=100)
+    organisation = forms.ModelChoiceField(queryset=models.Institute.objects.filter(~Q(code="?")).order_by("name"))
     ssh_key = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}), label="SSH Public Key")
 
     def __init__(self, *args, **kwargs):

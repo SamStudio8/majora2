@@ -694,7 +694,7 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
 
     collection_date = models.DateField(blank=True, null=True)
     collection_by = models.CharField(max_length=100, blank=True, null=True)
-    collection_org = models.ForeignKey("Institute", blank=Tue, null=True, on_delete=models.SET_NULL)
+    collection_org = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL)
 
     collection_location_country = models.CharField(max_length=100, blank=True, null=True)
     collection_location_adm0 = models.CharField(max_length=100, blank=True, null=True)
@@ -848,3 +848,7 @@ class MajoraMetaRecord(PolymorphicModel):
 class Institute(models.Model):
     code = models.CharField(max_length=10)
     name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return "[%s] %s" % (self.code, self.name)
+
