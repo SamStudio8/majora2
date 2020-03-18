@@ -103,6 +103,7 @@ class TestSampleForm(forms.Form):
             label="Outward postcode",
             max_length=10,
             required=False,
+            help_text="Enter the <b>first part</b> of the patients home postcode. Leave blank if this was not available."
     )
     submitting_username = forms.CharField(disabled=True, required=False)
     submitting_organisation = forms.ModelChoiceField(queryset=models.Institute.objects.filter(~Q(code="?")).order_by("name"), disabled=True, required=False)
@@ -187,3 +188,9 @@ class TestSampleForm(forms.Form):
         if not sample_id.startswith("WTSI"):
             raise forms.ValidationError("Sample identifier does not match the WTSI manifest.")
         return sample_id
+
+    def clean_adm2(self):
+        adm2 = self.cleaned_data["adm2"]
+        if " " in adm2:
+            raise forms.ValidationError("Enter the first part of the postcode only")
+        return adm2
