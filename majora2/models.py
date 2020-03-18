@@ -850,5 +850,5 @@ class Institute(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self):
-        return "[%s] %s" % (self.code, self.name)
+        return "%s: %s" % (self.code, self.name)
 
