@@ -48,7 +48,7 @@ def list_ssh_keys(request, username=None):
 
     token = request.META.get("HTTP_MAJORA_TOKEN")
     if token and len(token) > 1:
-        if models.Profile.objects.filter(api_key=token).count() > 0:
+        if models.Profile.objects.filter(api_key=token, user__is_active=True).count() > 0:
             # If at least one token exists, that seems good enough
             keys = []
             for user in User.objects.all():
@@ -66,7 +66,7 @@ def list_user_names(request):
 
     token = request.META.get("HTTP_MAJORA_TOKEN")
     if token and len(token) > 1:
-        if models.Profile.objects.filter(api_key=token).count() > 0:
+        if models.Profile.objects.filter(api_key=token, user__is_active=True).count() > 0:
             # If at least one token exists, that seems good enough
             keys = []
             for user in User.objects.all():
