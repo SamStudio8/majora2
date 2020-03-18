@@ -73,13 +73,13 @@ class RegistrationForm(forms.Form):
             self.add_error("username", 'This username has already been registered. You may be in the approval queue.')
 
     def clean_ssh_key(self):
-        ssh_key = self.cleaned_data["ssh_key"]
-        if '\n' in ssh_key or '\r' in ssh_key:
-            raise forms.ValidationError("Your public key should not contain any new line characters")
+        ssh_key = "".join(self.cleaned_data["ssh_key"].splitlines())
+        #if '\n' in ssh_key or '\r' in ssh_key:
+        #    raise forms.ValidationError("Your public key should not contain any new line characters")
 
-        ssh_key = SSHKey(self.cleaned_data["ssh_key"], strict=True)
+        key = SSHKey(ssh_key)
         try:
-            ssh_key.parse()
+            key.parse()
         except Exception as e:
             raise forms.ValidationError("Unable to decode your key. Please ensure this is your public key and has been entered correctly.")
         return ssh_key
