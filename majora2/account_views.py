@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
+from django.contrib.auth.decorators import login_required
 
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -42,3 +43,13 @@ def form_register(request):
     else:
         form = forms.RegistrationForm()
     return render(request, 'forms/register.html', {'form': form})
+
+
+@login_required
+def list_ssh_keys(request):
+    keys = []
+    for user in User.objects.all():
+        if hasattr(user, "profile"):
+            if user.profile.ssh_key and user.profile.ssh_key.startswith("ssh"):
+                keys.append(user.profile.ssh_key)
+    return HttpResponse("\n".join(keys), content_type="text/plain")

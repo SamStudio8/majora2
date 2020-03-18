@@ -24,6 +24,7 @@ urlpatterns = [
     path('chain/<uuid:group_uuid>/', views.group_process, name='group_process'),
 
     path('accounts/profile/', views.profile, name='profile'),
+    path('accounts/keys/', account_views.list_ssh_keys, name='list_ssh_keys'),
 
     # API
     #path(r'api/command/update/$', csrf_exempt(views.update_command), name='update_command'),
