@@ -96,7 +96,7 @@ class TestSampleForm(forms.Form):
     )
     sample_id = forms.CharField(
             label="New sample identifier", max_length=56,
-            help_text="Sample ID as assigned by WSI COG-UK labelling scheme"
+            help_text="Heron barcode assigned by WSI"
     )
     collection_date = forms.DateField(
             label="Collection date",
