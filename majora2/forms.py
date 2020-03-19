@@ -149,6 +149,16 @@ class TestSampleForm(forms.Form):
         required=False,
     )
 
+
+    #tube_dice = forms.CharField()
+    #box_dice = forms.CharField()
+    #tube_x = forms.IntegerField()
+    #tube_y = forms.IntegerField()
+    #current_sample_type = forms.ChoiceField()
+    #accepted = forms.BooleanField()
+    #quarantine_reason = forms.ChoiceField()
+    #received_date =
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
