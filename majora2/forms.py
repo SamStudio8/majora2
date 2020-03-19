@@ -114,6 +114,12 @@ class TestSampleForm(forms.Form):
             ],
     )
     age = forms.IntegerField(min_value=0, required=False, help_text="Age in years")
+    sex = forms.ChoiceField(choices=[
+            (None, ""),
+            ("F", "F"),
+            ("M", "M"),
+            ("Other", "Other"),
+        ], required=False, help_text="Reported sex")
     adm2 = forms.CharField(
             label="Town",
             max_length=10,
@@ -158,6 +164,16 @@ class TestSampleForm(forms.Form):
         required=False,
     )
 
+    override_heron = forms.BooleanField(
+            label="Override Heron validator",
+            help_text="Enable this checkbox if your sample has not been assigned a Heron identifier. <i>e.g.</i> The sample has already been submitted to GISAID",
+            required=False)
+    override_gisaid = forms.CharField(
+            max_length=256,
+            label="Override auto-assigned GISAID string",
+            help_text="New COG-UK samples will have GISAID strings automatically composed. If this sample has already been submitted to GISAID, provide the identifier here.",
+            required=False)
+
 
     #tube_dice = forms.CharField()
     #box_dice = forms.CharField()
@@ -198,10 +214,11 @@ class TestSampleForm(forms.Form):
                     css_class="form-row",
                 )
             ),
-            Fieldset("Key dates",
+            Fieldset("Key information",
                 Row(
                     Column('collection_date', css_class="form-group col-md-6 mb-0"),
                     Column('age', css_class="form-group col-md-2 mb-0"),
+                    Column('sex', css_class="form-group col-md-2 mb-0"),
                     css_class="form-row",
                 ),
             ),
@@ -213,32 +230,42 @@ class TestSampleForm(forms.Form):
                     css_class="form-row",
                 )
             ),
+            Fieldset("Advanced Options",
+                Row(
+                    Column('override_gisaid', css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                ),
+                Row(
+                    Column('override_heron', css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                )
+            ),
             FormActions(
                     Submit('save', 'Submit sample'),
                     css_class="text-right",
             )
         )
 
-    def clean_sample_id(self):
-        sample_id = self.cleaned_data["sample_id"]
-        valid_sites = [x.code for x in models.Institute.objects.exclude(code__startswith="?")]
-        if sum([sample_id.startswith(x) for x in valid_sites]) == 0:
-            raise forms.ValidationError("Sample identifier does not match the WSI manifest.")
-        return sample_id
+    def clean(self):
+        cleaned_data = super().clean()
 
-    def clean_adm2_private(self):
-        adm2 = self.cleaned_data["adm2_private"]
+        # Check barcode starts with a Heron prefix, unless this has been overridden
+        sample_id = cleaned_data["sample_id"]
+        if cleaned_data["override_heron"] is False:
+            valid_sites = [x.code for x in models.Institute.objects.exclude(code__startswith="?")]
+            if sum([sample_id.startswith(x) for x in valid_sites]) == 0:
+                self.add_error("sample_id", "Sample identifier does not match the WSI manifest.")
+
+        # Check for full postcode mistake
+        adm2 = cleaned_data["adm2_private"]
         if " " in adm2:
-            raise forms.ValidationError("Enter the first part of the postcode only")
-        return adm2
+            self.add_error("adm2_private", "Enter the first part of the postcode only")
 
-    def clean_sample_site(self):
-        sample_site = self.cleaned_data["sample_site"]
-        sample_type = self.cleaned_data["sample_type"]
-
+        # Validate swab site
+        sample_site = cleaned_data["sample_site"]
+        sample_type = cleaned_data["sample_type"]
         if sample_type != "swab" and sample_site:
-            raise forms.ValidationError("Swab site specified but the sample type is not 'swab'")
+            self.add_error("sample_type", "Swab site specified but the sample type is not 'swab'")
         if sample_type == "swab" and not sample_site:
-            raise forms.ValidationError("Sample was a swab but you did not specify the swab site")
-        return sample_site
+            self.add_error("sample_type", "Sample was a swab but you did not specify the swab site")
 

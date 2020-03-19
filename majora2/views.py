@@ -392,6 +392,7 @@ def form_sampletest(request):
                     collection_location_adm2 = form.cleaned_data["adm2"],
                     private_collection_location_adm2 = form.cleaned_data["adm2_private"],
                     source_age = form.cleaned_data["age"],
+                    source_sex = form.cleaned_data["sex"],
                 )
                 sample_p.save()
 

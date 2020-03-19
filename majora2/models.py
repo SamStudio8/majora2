@@ -511,6 +511,8 @@ class BiosampleArtifact(MajoraArtifact):
     #NOTE Trying something different, Biosamples almost exclusively come from a sampling event, so let's hard link it here
     collection = models.ForeignKey("BiosourceSamplingProcessRecord", blank=True, null=True, on_delete=models.PROTECT, related_name="biosamples")
 
+    secondary_identifier = models.CharField(max_length=256, blank=True, null=True)
+
     @property
     def artifact_kind(self):
         return 'Biosample'
@@ -718,6 +720,7 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
     submission_user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="submitted_sample_records")
 
     source_age = models.PositiveIntegerField(blank=True, null=True)
+    source_sex = models.CharField(max_length=10, blank=True, null=True)
 
     collected_by = models.CharField(max_length=100, blank=True, null=True)
     collection_org = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL, related_name="collected_sample_records")
