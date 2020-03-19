@@ -940,6 +940,9 @@ class LibraryArtifact(MajoraArtifact):
     library_layout_config = models.CharField(max_length=24, blank=True, null=True)
     library_layout_length = models.PositiveIntegerField(blank=True, null=True)
     design_description = models.CharField(max_length=128, blank=True, null=True)
+    @property
+    def artifact_kind(self):
+        return 'Library'
 
 class LibraryPoolingProcess(MajoraArtifactProcess):
     @property
