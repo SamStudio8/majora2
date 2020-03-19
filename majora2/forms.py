@@ -113,7 +113,14 @@ class TestSampleForm(forms.Form):
                 ("UK-NIR", "Northern Ireland"),
             ],
     )
+    age = forms.IntegerField(min_value=0, required=False, help_text="Age in years")
     adm2 = forms.CharField(
+            label="Town",
+            max_length=10,
+            required=False,
+            help_text="Enter the town from the patient's address. Leave blank if this was not available."
+    )
+    adm2_private = forms.CharField(
             label="Outward postcode",
             max_length=10,
             required=False,
@@ -121,6 +128,7 @@ class TestSampleForm(forms.Form):
     )
     submitting_username = forms.CharField(disabled=True, required=False)
     submitting_organisation = forms.ModelChoiceField(queryset=models.Institute.objects.exclude(code__startswith="?").order_by("name"), disabled=True, required=False)
+    collecting_organisation = forms.CharField(max_length=100, required=False, help_text="The site that this sample was submitted to. Use the first line of the 'sender' from the corresponding E28")
 
     source_type = forms.ChoiceField(
         choices = [
@@ -136,6 +144,7 @@ class TestSampleForm(forms.Form):
             ("sputum", "sputum"),
             ("BAL", "BAL"),
             ("extract", "extract"),
+            ("culture", "culture"),
         ],
         required=False,
     )
@@ -182,22 +191,25 @@ class TestSampleForm(forms.Form):
             ),
             Fieldset("Locality",
                 Row(
-                    Column('country', css_class="form-group col-md-6 mb-0"),
-                    Column('adm1', css_class="form-group col-md-3 mb-0"),
-                    Column('adm2', css_class="form-group col-md-3 mb-0"),
+                    Column('country', css_class="form-group col-md-3 mb-0"),
+                    Column('adm1', css_class="form-group col-md-2 mb-0"),
+                    Column('adm2', css_class="form-group col-md-4 mb-0"),
+                    Column('adm2_private', css_class="form-group col-md-3 mb-0"),
                     css_class="form-row",
                 )
             ),
             Fieldset("Key dates",
                 Row(
                     Column('collection_date', css_class="form-group col-md-6 mb-0"),
+                    Column('age', css_class="form-group col-md-2 mb-0"),
                     css_class="form-row",
-                )
+                ),
             ),
-            Fieldset("Submitting site",
+            Fieldset("Collecting and sequencing",
                 Row(
-                    Column('submitting_username', css_class="form-group col-md-6 mb-0"),
-                    Column('submitting_organisation', css_class="form-group col-md-6 mb-0"),
+                    Column('collecting_organisation', css_class="form-group col-md-5 mb-0"),
+                    Column('submitting_username', css_class="form-group col-md-3 mb-0"),
+                    Column('submitting_organisation', css_class="form-group col-md-4 mb-0"),
                     css_class="form-row",
                 )
             ),
@@ -209,12 +221,24 @@ class TestSampleForm(forms.Form):
 
     def clean_sample_id(self):
         sample_id = self.cleaned_data["sample_id"]
-        if not sample_id.startswith("WTSI"):
-            raise forms.ValidationError("Sample identifier does not match the WTSI manifest.")
+        valid_sites = [x.code for x in models.Institute.objects.exclude(code__startswith="?")]
+        if sum([sample_id.startswith(x) for x in valid_sites]) == 0:
+            raise forms.ValidationError("Sample identifier does not match the WSI manifest.")
         return sample_id
 
-    def clean_adm2(self):
-        adm2 = self.cleaned_data["adm2"]
+    def clean_adm2_private(self):
+        adm2 = self.cleaned_data["adm2_private"]
         if " " in adm2:
             raise forms.ValidationError("Enter the first part of the postcode only")
         return adm2
+
+    def clean_sample_site(self):
+        sample_site = self.cleaned_data["sample_site"]
+        sample_type = self.cleaned_data["sample_type"]
+
+        if sample_type != "swab" and sample_site:
+            raise forms.ValidationError("Swab site specified but the sample type is not 'swab'")
+        if sample_type == "swab" and not sample_site:
+            raise forms.ValidationError("Sample was a swab but you did not specify the swab site")
+        return sample_site
+

@@ -532,6 +532,8 @@ class BiosampleArtifact(MajoraArtifact):
 class BiosampleSource(MajoraArtifactGroup):
     source_type = models.CharField(max_length=24)        #TODO lookup
 
+    source_age = models.PositiveIntegerField(blank=True, null=True)
+
     def __str__(self):
         return '%s' % self.meta_name
     @property
@@ -721,6 +723,7 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
     collection_location_country = models.CharField(max_length=100, blank=True, null=True)
     collection_location_adm1 = models.CharField(max_length=100, blank=True, null=True)
     collection_location_adm2 = models.CharField(max_length=100, blank=True, null=True)
+    private_collection_location_adm2 = models.CharField(max_length=100, blank=True, null=True)
 
 
 class BiosourceSamplingProcessRecord(MajoraArtifactProcessRecord):
