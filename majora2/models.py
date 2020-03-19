@@ -876,6 +876,7 @@ class Institute(models.Model):
         return "%s: %s" % (self.code, self.name)
 
 
+'''
 class LiquidArtifact(MajoraArtifact):
     container_x = models.PositiveSmallIntegerField()
     container_y = models.PositiveSmallIntegerField()
@@ -898,4 +899,4 @@ class LiquidArtifact(MajoraArtifact):
     @property
     def name(self):
         return self.dice_name
-
+'''
