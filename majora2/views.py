@@ -368,7 +368,8 @@ def form_sampletest(request):
                     sample_type = form.cleaned_data["sample_type"],
                     sample_site = form.cleaned_data["sample_site"],
 
-                    primary_group = source
+                    primary_group = source,
+                    secondary_identifier = form.cleaned_data["override_gisaid"],
                 )
                 sample.save()
                 sample.groups.add(site_sample_group)
