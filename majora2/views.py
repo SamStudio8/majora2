@@ -277,6 +277,7 @@ def tabulate_artifact(request):
 
 ##############################################################################
 # Forms
+from . import form_handlers
 ##############################################################################
 @login_required
 def form_sampletest(request):
@@ -285,90 +286,17 @@ def form_sampletest(request):
         'source_taxon': '2697049',
         'country': "United Kingdom",
         'submitting_username': request.user.username,
-        'submitting_organisation': request.user.profile.institute if hasattr(request.user, "profile") else ""
+        'submitting_organisation': request.user.profile.institute if hasattr(request.user, "profile") and not request.user.profile.institute.code.startswith("?")  else None
     }
 
     if request.method == "POST":
-        form = forms.TestSampleForm(request.POST)
+        form = forms.TestSampleForm(request.POST, initial=fixed_data)
         if form.is_valid():
             form.cleaned_data.update(fixed_data)
-
-            host_id = form.cleaned_data["host_id"]
-            if host_id:
-                # Create the BiosampleSource
-                try:
-                    source = models.BiosampleSource.objects.get(unique_name=host_id)
-                except:
-                    source = models.BiosampleSource(
-                        unique_name = host_id,
-                        meta_name = host_id,
-                        dice_name = host_id,
-                        source_type = form.cleaned_data["source_type"],
-                        physical = True,
-                    )
-                    source.save()
-            else:
-                source = None
-
-            collection_date = form.cleaned_data["collection_date"]
-            #try:
-            #    collection_date = dateutil.parser.parse(form.cleaned_data["collection_date"])
-            #except Exception as e:
-            #    collection_date = None
-
-            # Create the Biosample
-            try:
-                sample = models.BiosampleArtifact.objects.get(unique_name=form.cleaned_data["sample_id"], sample_orig_id=form.cleaned_data["orig_sample_id"])
-            except:
-                sample = models.BiosampleArtifact(
-                    unique_name = form.cleaned_data["sample_id"],
-                    meta_name = form.cleaned_data["sample_id"],
-                    dice_name = form.cleaned_data["sample_id"],
-                    sample_orig_id = form.cleaned_data["orig_sample_id"],
-
-                    sample_type = form.cleaned_data["sample_type"],
-                    sample_site = form.cleaned_data["sample_site"],
-
-                    primary_group = source,
-                    secondary_identifier = form.cleaned_data["override_gisaid"],
-                    taxonomy_identifier = form.cleaned_data["source_taxon"],
-                )
-                sample.save()
-
-                # Create the sampling event
-                sample_pgroup = models.MajoraArtifactProcessGroup()
-                sample_pgroup.save()
-                sample_p = models.BiosourceSamplingProcess(
-                    who = request.user,
-                    when = collection_date,
-                    group = sample_pgroup,
-                    collection_date = collection_date,
-                    submitted_by = form.cleaned_data["submitting_organisation"].name,
-                    collected_by = form.cleaned_data["collecting_organisation"],
-                    submission_user = request.user,
-                    submission_org = form.cleaned_data["submitting_organisation"],
-                    collection_location_country = form.cleaned_data["country"],
-                    collection_location_adm1 = form.cleaned_data["adm1"],
-                    collection_location_adm2 = form.cleaned_data["adm2"],
-                    private_collection_location_adm2 = form.cleaned_data["adm2_private"],
-                    source_age = form.cleaned_data["age"],
-                    source_sex = form.cleaned_data["sex"],
-                )
-                sample_p.save()
-
-                sampling_rec = models.BiosourceSamplingProcessRecord(
-                    process=sample_p,
-                    in_group=source,
-                    out_artifact=sample,
-                )
-                sampling_rec.save()
-                sample.collection = sampling_rec # Set the sample collection process
-                sample.save()
-
-                signals.new_sample.send(sender=request, sample_id=sample.unique_name, submitter=sample.collection.process.submitted_by)
-            return HttpResponse(json.dumps({
-                "success": True,
-            }), content_type="application/json")
+            if form_handlers.handle_testsample(form, request.user):
+                return HttpResponse(json.dumps({
+                    "success": True,
+                }), content_type="application/json")
     else:
         form = forms.TestSampleForm(
             initial=fixed_data,
