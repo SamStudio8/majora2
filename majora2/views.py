@@ -316,7 +316,7 @@ def form_sampletest(request):
         if form.is_valid():
             form.cleaned_data.update(fixed_data)
 
-            host_id = form.cleaned_data["host_id"]:
+            host_id = form.cleaned_data["host_id"]
             if not host_id:
                 host_id = form.cleaned_data["sample_id"]
 
