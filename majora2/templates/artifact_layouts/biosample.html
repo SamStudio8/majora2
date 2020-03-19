@@ -14,8 +14,12 @@
             {% if sample.primary_group %}
             <td><b><a href="{% url 'group_artifact' sample.primary_group.id %}">{{ sample.primary_group }}</a></b></td>
             {% else %}
-            <td>Unknown</td>
+            <td>Unlinked</td>
             {% endif %}
+        </tr>
+        <tr>
+            <th>Identifier</th>
+            <td>{{ sample.secondary_identifier }}</td>
         </tr>
         <tr>
             <th>Participant</th>
@@ -40,6 +44,10 @@
         </tr>
         <tr>
             <th>Collected at</th>
+            <td>{{ sample.collection.process.collection_location_adm1 }} / {{ sample.collection.process.collection_location_adm2 }} </td>
+        </tr>
+        <tr>
+            <th>Collected by</th>
             <td>{{ sample.collection.process.collected_by }}</td>
         </tr>
         <tr>
