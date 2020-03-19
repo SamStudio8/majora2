@@ -1,8 +1,8 @@
 <ul class="list-group">
     {% for p, ch in d.items %}
     <li class="list-group-item">
-        <span class="badge badge-info">{{ p.out_artifact.artifact_kind }}</span>
-        {{ p.id }} {{ p.out_artifact.dice_name }}
+        <span class="badge badge-info">{{ p.out_artifact.artifact_kind }}</span> <span class="badge badge-danger">{{ p.process.process_kind }}</span></br>
+        <b><a href="{% url 'detail_artifact' p.out_artifact.id %}">{{ p.out_artifact.name }}</a></b>
 
         {% for c in ch %}
             {% with d=c template_name="tables/recurse_process.html" %}

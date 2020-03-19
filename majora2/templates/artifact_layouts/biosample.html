@@ -57,14 +57,20 @@
 </div>
 <hr/>
 
-<div class="" style="font-size: 1.2em">
+<h2>Downstream Artifacts</h2>
+<div class="" style="font-size: 1.1em">
 <style>
 </style>
 <ul class="list-group list-group-collapse">
-{% with d=artifact.process_tree_down.0 level=0 %} 
-    {%include "tables/recurse_process.html" %}
-{%endwith%}
+<ul class="list-group">
+<li class="list-group-item list-group-item-action list-group-item-primary">
+    <span class="badge badge-info">{{ artifact.artifact_kind }}</span><br/>
+    <b>{{ artifact.name }}</b>
+</li>
 </ul>
-</div>
+    {% with d=artifact.process_tree_down.0 level=0 %}
+        {%include "tables/recurse_process.html" %}
+    {%endwith%}
+</ul>
 </div>
 

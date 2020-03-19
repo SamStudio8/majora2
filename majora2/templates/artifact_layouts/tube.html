@@ -5,6 +5,7 @@
     <table class="table table-hover table-active">
         <tbody>
         {% for sample in artifact.samples %}
+        {% if sample %}
         <tr>
             <th>Sample</th>
             <td><b><a href="{% url 'detail_artifact' sample.id %}">{{ sample.name }}</a></b></td>
@@ -25,6 +26,7 @@
             <th>Specimen</th>
             <td>{{ sample.specimen_type }}</td>
         </tr>
+        {% endif %}
         {% endfor %}
         </tbody>
     </table>
