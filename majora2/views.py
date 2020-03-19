@@ -289,23 +289,23 @@ def form_sampletest(request):
 
     # TODO Very quick and dirty, lets ensure some basic groups exist
     try:
-        all_sources = models.MajoraArtifactGroup.objects.get(unique_name = "COGPHUK All Hosts")
+        all_sources = models.MajoraArtifactGroup.objects.get(unique_name = "COG-UK All Hosts")
     except:
         all_sources = models.MajoraArtifactGroup(
-            unique_name = "COGPHUK All Hosts",
-            meta_name = "COGPHUK All Hosts",
-            dice_name = "COGPHUK All Hosts",
+            unique_name = "COG-UK All Hosts",
+            meta_name = "COG-UK All Hosts",
+            dice_name = "COG-UK All Hosts",
             physical=False,
         )
         all_sources.save()
 
     try:
-        all_samples = models.MajoraArtifactGroup.objects.get(unique_name = "COGPHUK All Samples")
+        all_samples = models.MajoraArtifactGroup.objects.get(unique_name = "COG-UK All Samples")
     except:
         all_samples = models.MajoraArtifactGroup(
-            unique_name = "COGPHUK All Samples",
-            meta_name = "COGPHUK All Samples",
-            dice_name = "COGPHUK All Samples",
+            unique_name = "COG-UK All Samples",
+            meta_name = "COG-UK All Samples",
+            dice_name = "COG-UK All Samples",
             physical=False,
         )
         all_samples.save()
@@ -316,27 +316,28 @@ def form_sampletest(request):
         if form.is_valid():
             form.cleaned_data.update(fixed_data)
 
-            if form.cleaned_data["host_id"]:
-                # Create the BiosampleSource
-                try:
-                    source = models.BiosampleSource.objects.get(unique_name=form.cleaned_data["host_id"])
-                except:
-                    source = models.BiosampleSource(
-                        unique_name = form.cleaned_data["host_id"],
-                        meta_name = form.cleaned_data["host_id"],
-                        dice_name = form.cleaned_data["host_id"],
-                        source_type = form.cleaned_data["source_type"],
-                        parent_group = all_sources,
-                        physical = True,
-                        source_age = form.cleaned_data["age"],
-                    )
-                    source.save()
-                    source.groups.add(all_sources)
-                    source.save()
-            else:
-                source = None
+            host_id = form.cleaned_data["host_id"]:
+            if not host_id:
+                host_id = form.cleaned_data["sample_id"]
 
-            site_sample_group_name = "COGPHUK %s Samples" % form.cleaned_data["submitting_organisation"]
+            # Create the BiosampleSource
+            try:
+                source = models.BiosampleSource.objects.get(unique_name=form.cleaned_data["host_id"])
+            except:
+                source = models.BiosampleSource(
+                    unique_name = form.cleaned_data["host_id"],
+                    meta_name = form.cleaned_data["host_id"],
+                    dice_name = form.cleaned_data["host_id"],
+                    source_type = form.cleaned_data["source_type"],
+                    parent_group = all_sources,
+                    physical = True,
+                    source_age = form.cleaned_data["age"],
+                )
+                source.save()
+                source.groups.add(all_sources)
+                source.save()
+
+            site_sample_group_name = "COG-UK %s Samples" % form.cleaned_data["submitting_organisation"]
             try:
                 site_sample_group = models.MajoraArtifactGroup.objects.get(unique_name = site_sample_group_name)
             except:
@@ -393,8 +394,6 @@ def form_sampletest(request):
                     private_collection_location_adm2 = form.cleaned_data["adm2_private"],
                 )
                 sample_p.save()
-                sample.collection = sample_p # Set the sample collection process
-                sample.save()
 
                 sampling_rec = models.BiosourceSamplingProcessRecord(
                     process=sample_p,
@@ -402,6 +401,8 @@ def form_sampletest(request):
                     out_artifact=sample,
                 )
                 sampling_rec.save()
+                sample.collection = sampling_rec # Set the sample collection process
+                sample.save()
 
                 signals.new_sample.send(sender=request, sample_id=sample.unique_name, submitter=sample.collection.submitted_by)
             return HttpResponse(json.dumps({
