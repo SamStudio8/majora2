@@ -52,8 +52,6 @@ class MajoraArtifact(PolymorphicModel):
                         a.extend(proc.out_artifact.process_leaf)
         return a
 
-
-
     @property
     def process_tree_down(self):
         seen = set([])
@@ -68,10 +66,6 @@ class MajoraArtifact(PolymorphicModel):
                         seen.add(proc.out_artifact)
             a.append({proc: children})
         return a
-
-
-
-
 
     @property
     def is_quarantined(self):

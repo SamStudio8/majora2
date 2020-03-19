@@ -328,7 +328,7 @@ def form_sampletest(request):
                         source_type = form.cleaned_data["source_type"],
                         parent_group = all_sources,
                         physical = True,
-                        age = form.cleaned_data["age"],
+                        source_age = form.cleaned_data["age"],
                     )
                     source.save()
                     source.groups.add(all_sources)
