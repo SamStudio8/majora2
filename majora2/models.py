@@ -64,6 +64,10 @@ class MajoraArtifact(PolymorphicModel):
                         children.append(proc)
                         children.extend( proc.out_artifact.process_tree_down )
                         seen.add(proc.out_artifact)
+            if proc.out_group:
+                if proc.out_group not in seen and proc.out_group is not None:
+                    children.extend( proc.out_group.process_tree_down )
+                    seen.add(proc.out_group)
             a.append({proc: children})
         return a
 
@@ -303,6 +307,25 @@ class MajoraArtifactGroup(PolymorphicModel):
             groups[cls] = cls.sorto(groups[cls])
         return groups
 
+    @property
+    def process_tree_down(self):
+        seen = set([])
+        a = []
+        for proc in self.before_process.all().order_by('-process__when'):
+            children = []
+            if proc.out_artifact:
+                if proc.in_artifact and proc.in_artifact.id != proc.out_artifact.id:# or proc.in_group:
+                    if proc.out_artifact not in seen:
+                        children.append(proc)
+                        children.extend( proc.out_artifact.process_tree_down )
+                        seen.add(proc.out_artifact)
+            if proc.out_group:
+                if proc.out_group not in seen:
+                    children.extend( proc.out_group.process_tree_down )
+                    seen.add(proc.out_group)
+            a.append({proc: children})
+        return a
+
 
 class DigitalResourceNode(MajoraArtifactGroup):
     node_name = models.CharField(max_length=128)
@@ -512,6 +535,7 @@ class BiosampleArtifact(MajoraArtifact):
     collection = models.ForeignKey("BiosourceSamplingProcessRecord", blank=True, null=True, on_delete=models.PROTECT, related_name="biosamples")
 
     secondary_identifier = models.CharField(max_length=256, blank=True, null=True)
+    taxonomy_identifier = models.CharField(max_length=24, blank=True, null=True)
 
     @property
     def artifact_kind(self):
@@ -908,3 +932,56 @@ class LiquidArtifact(MajoraArtifact):
     def name(self):
         return self.dice_name
 '''
+
+class LibraryArtifact(MajoraArtifact):
+    library_strategy = models.CharField(max_length=24, blank=True, null=True)
+    library_source = models.CharField(max_length=24, blank=True, null=True)
+    library_selection = models.CharField(max_length=24, blank=True, null=True)
+    library_layout_config = models.CharField(max_length=24, blank=True, null=True)
+    library_layout_length = models.PositiveIntegerField(blank=True, null=True)
+    design_description = models.CharField(max_length=128, blank=True, null=True)
+
+class LibraryPoolingProcess(MajoraArtifactProcess):
+    @property
+    def process_kind(self):
+        return 'Pooling'
+class LibraryPoolingProcessRecord(MajoraArtifactProcessRecord):
+    barcode = models.CharField(max_length=24, blank=True, null=True)
+    volume = models.FloatField(blank=True, null=True)
+
+
+class DNASequencingProcessGroup(MajoraArtifactProcessGroup):
+    experiment_name = models.CharField(max_length=128)
+
+class DNASequencingProcess(MajoraArtifactProcess):
+    instrument_make = models.CharField(max_length=64)
+    instrument_model = models.CharField(max_length=24)
+    flowcell_type = models.CharField(max_length=48, blank=True, null=True)
+    flowcell_id = models.CharField(max_length=48, blank=True, null=True)
+
+    start_time = models.DateTimeField(blank=True, null=True)
+    duration = models.DurationField(blank=True, null=True)
+
+    @property
+    def process_kind(self):
+        return 'Sequencing'
+class DNASequencingProcessRecord(MajoraArtifactProcessRecord):
+    pass
+
+
+class BasecallingProcess(MajoraArtifactProcess):
+    basecaller = models.CharField(max_length=48) #TODO fold these into a lookup model
+    basecaller_version = models.CharField(max_length=48, blank=True, null=True)
+    basecaller_model = models.CharField(max_length=48, blank=True, null=True)
+
+    read_count = models.BigIntegerField(blank=True, null=True)
+    base_count = models.BigIntegerField(blank=True, null=True)
+    median_quality = models.FloatField(blank=True, null=True)
+    n50 = models.PositiveIntegerField(blank=True, null=True)
+
+    @property
+    def process_kind(self):
+        return 'Basecalling'
+class BasecallingProcessRecord(MajoraArtifactProcessRecord):
+    pass
+

@@ -102,7 +102,7 @@ class TestSampleForm(forms.Form):
             label="Collection date",
             help_text="YYYY-MM-DD"
     )
-    country = forms.CharField(initial="United Kingdom", disabled=True)
+    country = forms.CharField(disabled=True)
     adm1 = forms.ChoiceField(
             label="Region",
             choices=[
@@ -140,8 +140,11 @@ class TestSampleForm(forms.Form):
         choices = [
             ("human", "human"),
         ],
-        initial = "human",
         disabled = True,
+    )
+    source_taxon = forms.CharField(
+            max_length=24,
+            disabled=True,
     )
     sample_type = forms.ChoiceField(
         choices= [
@@ -200,6 +203,7 @@ class TestSampleForm(forms.Form):
             Fieldset("Form",
                 Row(
                     Column('source_type', css_class="form-group col-md-3 mb-0"),
+                    Column('source_taxon', css_class="form-group col-md-3 mb-0"),
                     Column('sample_type', css_class="form-group col-md-3 mb-0"),
                     Column('sample_site', css_class="form-group col-md-3 mb-0"),
                     css_class="form-row",

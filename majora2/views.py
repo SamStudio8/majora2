@@ -282,6 +282,7 @@ def tabulate_artifact(request):
 def form_sampletest(request):
     fixed_data={
         'source_type': "human",
+        'source_taxon': '2697049',
         'country': "United Kingdom",
         'submitting_username': request.user.username,
         'submitting_organisation': request.user.profile.institute if hasattr(request.user, "profile") else ""
@@ -370,6 +371,7 @@ def form_sampletest(request):
 
                     primary_group = source,
                     secondary_identifier = form.cleaned_data["override_gisaid"],
+                    taxonomy_identifier = form.cleaned_data["source_taxon"],
                 )
                 sample.save()
                 sample.groups.add(site_sample_group)
