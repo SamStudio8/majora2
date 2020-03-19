@@ -359,7 +359,6 @@ def form_sampletest(request):
             try:
                 sample = models.BiosampleArtifact.objects.get(unique_name=form.cleaned_data["sample_id"], sample_orig_id=form.cleaned_data["orig_sample_id"])
             except:
-
                 sample = models.BiosampleArtifact(
                     unique_name = form.cleaned_data["sample_id"],
                     meta_name = form.cleaned_data["sample_id"],
@@ -386,11 +385,12 @@ def form_sampletest(request):
                     collection_date = collection_date,
                     submitted_by = form.cleaned_data["submitting_organisation"].name,
                     collected_by = form.cleaned_data["collecting_organisation"],
+                    submission_user = request.user,
                     submission_org = form.cleaned_data["submitting_organisation"],
                     collection_location_country = form.cleaned_data["country"],
                     collection_location_adm1 = form.cleaned_data["adm1"],
                     collection_location_adm2 = form.cleaned_data["adm2"],
-                    collection_location_adm2_private = form.cleaned_data["adm2_private"],
+                    private_collection_location_adm2 = form.cleaned_data["adm2_private"],
                 )
                 sample_p.save()
                 sample.collection = sample_p # Set the sample collection process
@@ -403,7 +403,7 @@ def form_sampletest(request):
                 )
                 sampling_rec.save()
 
-                signals.new_sample.send(sender=request, sample_id=sample.unique_name, submitter=sample.collection.collection_by)
+                signals.new_sample.send(sender=request, sample_id=sample.unique_name, submitter=sample.collection.submitted_by)
             return HttpResponse(json.dumps({
                 "success": True,
             }), content_type="application/json")

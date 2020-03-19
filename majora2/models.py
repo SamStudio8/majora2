@@ -523,7 +523,10 @@ class BiosampleArtifact(MajoraArtifact):
     @property
     def name(self):
         if self.dice_name:
-            return '%s (%s)' % (self.dice_name, self.sample_orig_id)
+            if self.sample_orig_id:
+                return '%s (%s)' % (self.dice_name, self.sample_orig_id)
+            else:
+                return self.dice_name
         else:
             return self.sample_orig_id
     @property
@@ -720,6 +723,7 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
     collection_date = models.DateField(blank=True, null=True)
     submitted_by = models.CharField(max_length=100, blank=True, null=True)
     submission_org = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL, related_name="submitted_sample_records")
+    submission_user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="submitted_sample_records")
 
     collected_by = models.CharField(max_length=100, blank=True, null=True)
     collection_org = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL, related_name="collected_sample_records")

@@ -29,6 +29,31 @@
         </tbody>
     </table>
 </div>
+<div class="col-md-6">
+    <h2>Sampling</h2>
+    <table class="table table-hover table-active">
+        <tbody>
+        {% with sample=artifact %}
+        <tr>
+            <th>Collected on</th>
+            <td>{{ sample.collection.collection_date }}</td>
+        </tr>
+        <tr>
+            <th>Collected at</th>
+            <td>{{ sample.collection.collected_by }}</td>
+        </tr>
+        <tr>
+            <th>Submitting user</th>
+            <td>{{ sample.collection.submission_user }}</td>
+        </tr>
+        <tr>
+            <th>Submitting organisation</th>
+            <td>{{ sample.collection.submission_org.name }}</td>
+        </tr>
+        {% endwith %}
+        </tbody>
+    </table>
+</div>
 </div>
 <hr/>
 
