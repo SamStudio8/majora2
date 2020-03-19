@@ -51,6 +51,28 @@ class MajoraArtifact(PolymorphicModel):
                         seen.add(proc.out_artifact)
                         a.extend(proc.out_artifact.process_leaf)
         return a
+
+
+
+    @property
+    def process_tree_down(self):
+        seen = set([])
+        a = []
+        for proc in self.before_process.all().order_by('-process__when'):
+            children = []
+            if proc.out_artifact:
+                if proc.in_artifact and proc.in_artifact.id != proc.out_artifact.id:# or proc.in_group:
+                    if proc.out_artifact not in seen:
+                        children.append(proc)
+                        children.extend( proc.out_artifact.process_tree_down )
+                        seen.add(proc.out_artifact)
+            a.append({proc: children})
+        return a
+
+
+
+
+
     @property
     def is_quarantined(self):
         if self.quarantined:
@@ -852,4 +874,28 @@ class Institute(models.Model):
 
     def __str__(self):
         return "%s: %s" % (self.code, self.name)
+
+
+class LiquidArtifact(MajoraArtifact):
+    container_x = models.PositiveSmallIntegerField()
+    container_y = models.PositiveSmallIntegerField()
+
+    tube_type = models.CharField(max_length=48, blank=True, null=True)
+    sample_type = models.CharField(max_length=48, blank=True, null=True)
+    storage_medium = models.CharField(max_length=24)
+
+    lid_label = models.CharField(max_length=24, blank=True, null=True)
+    # dicewareversion / labelersion
+
+    #biosample = models.ForeignKey("BiosampleArtifact", blank=True, null=True, on_delete=models.PROTECT, related_name="aliquots")
+    #pool = models.BooleanField(default=False)
+
+    biosamples = models.ManyToManyField('BiosampleArtifact', related_name="biosamples", blank=True, null=True)
+
+    @property
+    def artifact_kind(self):
+        return 'Sample Aliquot'
+    @property
+    def name(self):
+        return self.dice_name
 
