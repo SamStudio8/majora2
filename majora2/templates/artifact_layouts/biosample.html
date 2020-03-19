@@ -32,39 +32,6 @@
         </tbody>
     </table>
 </div>
-<div class="col-md-6">
-    <h2>Sample Tube</h2>
-    <table class="table table-hover table-active">
-        <tbody>
-        <tr>
-            <th>Location</th>
-            <td>{{ artifact.collection.collection_by }}</td>
-        </tr>
-        <tr>
-            <th>Tube Form</th>
-            <td>{{ artifact.tube_form }}</td>
-        </tr>
-        <tr>
-            <th>Sample Form</th>
-            <td>{{ artifact.sample_form }}</td>
-        </tr>
-        <tr>
-            <th>Storage Medium</th>
-            <td>{{ artifact.storage_medium }}</td>
-        </tr>
-        <tr>
-            <th>Status</th>
-            <td>
-            {% if artifact.is_quarantined %}
-                <span class="badge badge-danger">Quarantined</span> <a href="{% url 'detail_artifact' artifact.is_quarantined.id %}">{{ artifact.quarantined_reason }}</a>
-            {% else %}
-                <span class="badge badge-success">Accepted</span>
-            {% endif %}
-            </td>
-        </tr>
-        </tbody>
-    </table>
-</div>
 </div>
 <hr/>
 
