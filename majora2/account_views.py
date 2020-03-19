@@ -72,14 +72,13 @@ def list_user_names(request):
             # If at least one token exists, that seems good enough
             keys = []
             for user in User.objects.all():
-                if user.is_active:
-                    keys.append("\t".join([
-                        '1' if user.is_active else '0',
-                        user.username,
-                        user.first_name,
-                        user.last_name,
-                        user.email,
-                        user.profile.institute.code
-                    ]))
+                keys.append("\t".join([
+                    '1' if user.is_active else '0',
+                    user.username,
+                    user.first_name,
+                    user.last_name,
+                    user.email,
+                    user.profile.institute.code
+                ]))
             return HttpResponse("\n".join(keys), content_type="text/plain")
     return HttpResponseBadRequest() # bye
