@@ -507,6 +507,7 @@ class TubeArtifact(MajoraArtifact):
 class BiosampleArtifact(MajoraArtifact):
     sample_orig_id = models.CharField(max_length=24, blank=True, null=True)
     sample_type = models.CharField(max_length=24, blank=True, null=True)        #THIS should be a lookup
+    sample_site = models.CharField(max_length=24, blank=True, null=True)        #THIS should be a lookup
     specimen_type = models.CharField(max_length=24, blank=True, null=True)
 
     sample_longitude = models.PositiveSmallIntegerField(default=0)
@@ -717,8 +718,11 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
         return 'Sample Collection'
 
     collection_date = models.DateField(blank=True, null=True)
-    collection_by = models.CharField(max_length=100, blank=True, null=True)
-    collection_org = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL)
+    submitted_by = models.CharField(max_length=100, blank=True, null=True)
+    submission_org = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL, related_name="submitted_sample_records")
+
+    collected_by = models.CharField(max_length=100, blank=True, null=True)
+    collection_org = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL, related_name="collected_sample_records")
 
     collection_location_country = models.CharField(max_length=100, blank=True, null=True)
     collection_location_adm1 = models.CharField(max_length=100, blank=True, null=True)

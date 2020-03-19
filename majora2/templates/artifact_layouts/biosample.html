@@ -23,11 +23,7 @@
         </tr>
         <tr>
             <th>Type</th>
-            <td>{{ sample.sample_type }}</td>
-        </tr>
-        <tr>
-            <th>Specimen</th>
-            <td>{{ sample.specimen_type }}</td>
+            <td>{{ sample.sample_type }} {% if sample.sample_type == "swab" %}({{ sample.sample_site }}){% endif %}</td>
         </tr>
         {% endwith %}
         </tbody>

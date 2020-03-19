@@ -328,6 +328,7 @@ def form_sampletest(request):
                         source_type = form.cleaned_data["source_type"],
                         parent_group = all_sources,
                         physical = True,
+                        age = form.cleaned_data["age"],
                     )
                     source.save()
                     source.groups.add(all_sources)
@@ -366,7 +367,7 @@ def form_sampletest(request):
                     sample_orig_id = form.cleaned_data["orig_sample_id"],
 
                     sample_type = form.cleaned_data["sample_type"],
-                    #sample_site =
+                    sample_site = form.cleaned_data["sample_site"],
 
                     primary_group = source
                 )
@@ -383,11 +384,13 @@ def form_sampletest(request):
                     when = collection_date,
                     group = sample_pgroup,
                     collection_date = collection_date,
-                    collection_by = form.cleaned_data["submitting_organisation"].name,
-                    collection_org = form.cleaned_data["submitting_organisation"],
+                    submitted_by = form.cleaned_data["submitting_organisation"].name,
+                    collected_by = form.cleaned_data["collecting_organisation"],
+                    submission_org = form.cleaned_data["submitting_organisation"],
                     collection_location_country = form.cleaned_data["country"],
                     collection_location_adm1 = form.cleaned_data["adm1"],
                     collection_location_adm2 = form.cleaned_data["adm2"],
+                    collection_location_adm2_private = form.cleaned_data["adm2_private"],
                 )
                 sample_p.save()
                 sample.collection = sample_p # Set the sample collection process
