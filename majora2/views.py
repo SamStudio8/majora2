@@ -317,25 +317,24 @@ def form_sampletest(request):
             form.cleaned_data.update(fixed_data)
 
             host_id = form.cleaned_data["host_id"]
-            if not host_id:
-                host_id = form.cleaned_data["sample_id"]
-
-            # Create the BiosampleSource
-            try:
-                source = models.BiosampleSource.objects.get(unique_name=form.cleaned_data["host_id"])
-            except:
-                source = models.BiosampleSource(
-                    unique_name = form.cleaned_data["host_id"],
-                    meta_name = form.cleaned_data["host_id"],
-                    dice_name = form.cleaned_data["host_id"],
-                    source_type = form.cleaned_data["source_type"],
-                    parent_group = all_sources,
-                    physical = True,
-                    source_age = form.cleaned_data["age"],
-                )
-                source.save()
-                source.groups.add(all_sources)
-                source.save()
+            if host_id:
+                # Create the BiosampleSource
+                try:
+                    source = models.BiosampleSource.objects.get(unique_name=host_id)
+                except:
+                    source = models.BiosampleSource(
+                        unique_name = host_id,
+                        meta_name = host_id,
+                        dice_name = host_id,
+                        source_type = form.cleaned_data["source_type"],
+                        parent_group = all_sources,
+                        physical = True,
+                    )
+                    source.save()
+                    source.groups.add(all_sources)
+                    source.save()
+            else:
+                source = None
 
             site_sample_group_name = "COG-UK %s Samples" % form.cleaned_data["submitting_organisation"]
             try:
@@ -392,6 +391,7 @@ def form_sampletest(request):
                     collection_location_adm1 = form.cleaned_data["adm1"],
                     collection_location_adm2 = form.cleaned_data["adm2"],
                     private_collection_location_adm2 = form.cleaned_data["adm2_private"],
+                    source_age = form.cleaned_data["age"],
                 )
                 sample_p.save()
 
@@ -404,7 +404,7 @@ def form_sampletest(request):
                 sample.collection = sampling_rec # Set the sample collection process
                 sample.save()
 
-                signals.new_sample.send(sender=request, sample_id=sample.unique_name, submitter=sample.collection.submitted_by)
+                signals.new_sample.send(sender=request, sample_id=sample.unique_name, submitter=sample.collection.process.submitted_by)
             return HttpResponse(json.dumps({
                 "success": True,
             }), content_type="application/json")

@@ -530,8 +530,6 @@ class BiosampleArtifact(MajoraArtifact):
 class BiosampleSource(MajoraArtifactGroup):
     source_type = models.CharField(max_length=24)        #TODO lookup
 
-    source_age = models.PositiveIntegerField(blank=True, null=True)
-
     def __str__(self):
         return '%s' % self.meta_name
     @property
@@ -718,6 +716,8 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
     submitted_by = models.CharField(max_length=100, blank=True, null=True)
     submission_org = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL, related_name="submitted_sample_records")
     submission_user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="submitted_sample_records")
+
+    source_age = models.PositiveIntegerField(blank=True, null=True)
 
     collected_by = models.CharField(max_length=100, blank=True, null=True)
     collection_org = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL, related_name="collected_sample_records")
