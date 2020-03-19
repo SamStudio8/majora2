@@ -57,6 +57,8 @@ def list_ssh_keys(request, username=None):
                         continue
                 if hasattr(user, "profile"):
                     if user.is_active and user.profile.ssh_key and user.profile.ssh_key.startswith("ssh"):
+                        if username and not user.is_active:
+                            continue # dont show unapproved users in big list
                         keys.append(user.profile.ssh_key)
             return HttpResponse("\n".join(keys), content_type="text/plain")
     return HttpResponseBadRequest() # bye
@@ -72,6 +74,7 @@ def list_user_names(request):
             for user in User.objects.all():
                 if user.is_active:
                     keys.append("\t".join([
+                        '1' if user.is_active else '0',
                         user.username,
                         user.first_name,
                         user.last_name,
