@@ -6,6 +6,7 @@ from . import views
 from . import account_views
 from . import bot_views
 from . import public_views
+from . import api_views
 
 urlpatterns = [
     #search
@@ -59,6 +60,11 @@ urlpatterns = [
     path('accounts/keys/<str:username>', account_views.list_ssh_keys, name='list_ssh_keys'),
     path('accounts/keys/<str:username>/', account_views.list_ssh_keys, name='list_ssh_keys'), # Hack to prevent curl errors w and wo slash
     path('accounts/names/', account_views.list_user_names, name='list_user_names'),
+
+    # NEW API
+    path('api/v2/artifact/biosample/add/', api_views.add_biosample, name="api.artifact.biosample.add"),
+    path('api/v2/artifact/digitalresource/add/', api_views.add_digitalresource, name="api.artifact.digitalresource.add"),
+
 
     # Home
     path('', views.home, name='home'),
