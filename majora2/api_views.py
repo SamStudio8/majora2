@@ -98,7 +98,9 @@ def add_sequencing(request):
                 if library_created:
                     api_o["new"].append(str(library.id))
                 elif library:
-                    api_o["updated"].append(str(library.id))
+                    api_o["errors"] += 1
+                    api_o["messages"].append("LibraryArtifact objects cannot be updated after they have been created.")
+                    api_o["ignored"].append(library_name)
                 else:
                     if library_name:
                         api_o["ignored"].append(library_name)
