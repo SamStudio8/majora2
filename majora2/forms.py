@@ -1,3 +1,5 @@
+import datetime
+
 from django import forms
 
 from django.contrib.auth.models import User
@@ -300,6 +302,10 @@ class TestSampleForm(forms.Form):
             valid_sites = [x.code for x in models.Institute.objects.exclude(code__startswith="?")]
             if sum([sample_id.startswith(x) for x in valid_sites]) == 0:
                 self.add_error("central_sample_id", "Sample identifier does not match the WSI manifest.")
+
+        # Check sample date is not in the future
+        if cleaned_data["collection_date"] > datetime.date.today():
+            self.add_error("collection_date", "Sample cannot be collected in the future")
 
         # Check for full postcode mistake
         adm2 = cleaned_data["adm2_private"]
