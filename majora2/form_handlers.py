@@ -4,6 +4,20 @@ import dateutil.parser
 from . import models
 from . import signals
 
+def handle_testsequencing(form, user=None):
+    p, sequencing_created = models.DNASequencingProcess.objects.get_or_create(id=form.cleaned_data["sequencing_id"])
+    if sequencing_created:
+        p.when = datetime.datetime.now()
+        p.save()
+
+        rec = models.DNASequencingProcessRecord(
+            process=p,
+            in_artifact=form.cleaned_data.get("library_name")
+        )
+        rec.save()
+    return p, sequencing_created
+
+
 def handle_testlibrary(form, user=None):
     library, library_created = models.LibraryArtifact.objects.get_or_create(
                 dice_name=form.cleaned_data.get("library_name"))

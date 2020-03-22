@@ -97,9 +97,16 @@ class TestLibraryForm(forms.Form):
     #design_description = models.CharField(max_length=128, blank=True, null=True)
 
 class TestSequencingForm(forms.Form):
-    library = forms.ModelChoiceField(queryset=models.LibraryArtifact.objects.all(), required=True)
-
-    #instrument_make = models.CharField(max_length=64)
+    library_name = forms.ModelChoiceField(queryset=models.LibraryArtifact.objects.all(), required=True, to_field_name="dice_name")
+    sequencing_id = forms.UUIDField()
+    instrument_make = forms.ChoiceField(
+            label="Instrument Make",
+            choices=[
+                (None, ""),
+                ("ILLUMINA", "Illumina"),
+                ("OXFORD NANOPORE", "Oxford Nanopore"),
+            ],
+    )
     #instrument_model = models.CharField(max_length=24)
     #flowcell_type = models.CharField(max_length=48, blank=True, null=True)
     #flowcell_id = models.CharField(max_length=48, blank=True, null=True)

@@ -90,7 +90,7 @@ def add_sequencing(request):
     def f(request, api_o, json_data, user=None):
         try:
             library_name = json_data.get("library_name")
-            initial = fixed_data.fill_fixed_data("api.process.sequencing.add", user)
+            initial = fixed_data.fill_fixed_data("api.artifact.library.add", user)
             form = forms.TestLibraryForm(json_data, initial=initial)
             if form.is_valid():
                 form.cleaned_data.update(initial)
@@ -112,6 +112,23 @@ def add_sequencing(request):
         except Exception as e:
             api_o["errors"] += 1
             api_o["messages"].append(str(e))
+
+        try:
+            initial = fixed_data.fill_fixed_data("api.process.sequencing.add", user)
+            form = forms.TestSequencingForm(json_data, initial=initial)
+            if form.is_valid():
+                form.cleaned_data.update(initial)
+                sequencing, sequencing_created = form_handlers.handle_testsequencing(form, user)
+                if sequencing_created:
+                    api_o["new"].append(str(sequencing.id))
+            else:
+                api_o["errors"] += 1
+                api_o["messages"].append(form.errors.get_json_data())
+        except Exception as e:
+            api_o["errors"] += 1
+            api_o["messages"].append(str(e))
+
+
     return wrap_api_v2(request, f)
 
 def add_digitalresource(request):
