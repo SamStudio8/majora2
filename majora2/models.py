@@ -521,8 +521,8 @@ class TubeArtifact(MajoraArtifact):
         return " // ".join(a)
 
 class BiosampleArtifact(MajoraArtifact):
-    root_sample_id = models.CharField(max_length=48, blank=True, null=True, unique=True)
-    sender_sample_id = models.CharField(max_length=48, blank=True, null=True, unique=True)
+    root_sample_id = models.CharField(max_length=48, blank=True, null=True)
+    sender_sample_id = models.CharField(max_length=48, blank=True, null=True)
     central_sample_id = models.CharField(max_length=48, blank=True, null=True, unique=True)
 
     sample_orig_id = models.CharField(max_length=24, blank=True, null=True)
@@ -551,7 +551,7 @@ class BiosampleArtifact(MajoraArtifact):
             else:
                 return self.dice_name
         else:
-            return self.sample_orig_id
+            return self.central_sample_id
     @property
     def source(self):
         return self.primary_group

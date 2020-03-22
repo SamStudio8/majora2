@@ -3,21 +3,20 @@
 <table class="table table-hover table-active">
     <thead class="thead-dark">
         <tr>
-            <th>Dice Name</th>
-            <th>Source</th>
+            <th>Sample ID</th>
+            <th>Sample Source</th>
             <th>Type</th>
-            <th>Sampled</th>
-            <th>Checked in</th>
+            <th>Sampled Date</th>
         </tr>
     </thead>
     <tbody>
     {% for artifact in gitems %}
     <tr>
-        <td><a href="{% url 'detail_artifact' artifact.id %}"><b>{{ artifact.unique_name }}</b></a></td>
+        <td><a href="{% url 'detail_artifact' artifact.id %}"><b>{{ artifact.name }}</b></a></td>
         <td>{{ artifact.source.unique_name }}</td>
         <td>{{ artifact.sample_type }}</td>
-        <td>{{ artifact.collection.when }}</td>
-        <td>{{ artifact.created.process.when | naturaltime }}</td>
+        <td>{{ artifact.collection.process.when }}</br>
+        {{ artifact.collection.process.when | naturaltime }}</td>
     </tr>
     {% endfor %}
     </tbody>
