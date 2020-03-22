@@ -63,7 +63,7 @@ def add_biosample(request):
         for biosample in biosamples:
             try:
                 sample_id = biosample.get("sample_id")
-                initial = fixed_data.fill_fixed_data("api.biosample.add", user)
+                initial = fixed_data.fill_fixed_data("api.artifact.biosample.add", user)
                 form = forms.TestSampleForm(biosample, initial=initial)
                 if form.is_valid():
                     form.cleaned_data.update(initial)
@@ -86,5 +86,33 @@ def add_biosample(request):
 
     return wrap_api_v2(request, f)
 
+def add_sequencing(request):
+    def f(request, api_o, json_data, user=None):
+        try:
+            library_name = json_data.get("library_name")
+            initial = fixed_data.fill_fixed_data("api.process.sequencing.add", user)
+            form = forms.TestLibraryForm(json_data, initial=initial)
+            if form.is_valid():
+                form.cleaned_data.update(initial)
+                library, library_created = form_handlers.handle_testlibrary(form, user)
+                if library_created:
+                    api_o["new"].append(str(library.id))
+                elif library:
+                    api_o["updated"].append(str(library.id))
+                else:
+                    if library_name:
+                        api_o["ignored"].append(library_name)
+                    api_o["errors"] += 1
+            else:
+                api_o["errors"] += 1
+                api_o["ignored"].append(library_name)
+                api_o["messages"].append(form.errors.get_json_data())
+        except Exception as e:
+            api_o["errors"] += 1
+            api_o["messages"].append(str(e))
+    return wrap_api_v2(request, f)
+
 def add_digitalresource(request):
-    pass
+    def f(request, api_o, json_data, user=None):
+        pass
+    return wrap_api_v2(request, f)

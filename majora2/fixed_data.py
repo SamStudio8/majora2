@@ -8,7 +8,7 @@ def api_biosample_add(user):
     }
 
 FIXED_DATA = {
-    "api.biosample.add": api_biosample_add,
+    "api.artifact.biosample.add": api_biosample_add,
 }
 
 def fill_fixed_data(k, user=None):

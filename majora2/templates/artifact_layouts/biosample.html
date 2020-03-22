@@ -76,9 +76,9 @@
     <b>{{ artifact.name }}</b>
 </li>
 </ul>
-    {% with d=artifact.process_tree_down.0 level=0 %}
+    {% for d in artifact.process_tree_down %}
         {%include "tables/recurse_process.html" %}
-    {%endwith%}
+    {% endfor %}
 </ul>
 </div>
 

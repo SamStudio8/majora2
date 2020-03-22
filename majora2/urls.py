@@ -52,7 +52,9 @@ urlpatterns = [
 
     # NEW API
     path('api/v2/artifact/biosample/add/', csrf_exempt(api_views.add_biosample), name="api.artifact.biosample.add"),
-    path('api/v2/artifact/digitalresource/add/', csrf_exempt(api_views.add_digitalresource), name="api.artifact.digitalresource.add"),
+    path('api/v2/process/sequencing/add/', csrf_exempt(api_views.add_sequencing), name="api.process.sequencing.add"),
+
+    #path('api/v2/artifact/digitalresource/add/', csrf_exempt(api_views.add_digitalresource), name="api.artifact.digitalresource.add"),
 
     path('api/v1/checkin/', csrf_exempt(views.api_checkin_tube), name='api_checkin'),
     path('api/v1/extract/', csrf_exempt(views.api_extract), name='api_extract'),

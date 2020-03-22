@@ -1,7 +1,32 @@
+import datetime
+import dateutil.parser
+
 from . import models
 from . import signals
 
-import dateutil.parser
+def handle_testlibrary(form, user=None):
+    library, library_created = models.LibraryArtifact.objects.get_or_create(
+                dice_name=form.cleaned_data.get("library_name"))
+
+    sample_l = form.cleaned_data.get("samples")
+
+    if library_created:
+        # Create the pooling event
+        pool_p = models.LibraryPoolingProcess(
+            when = datetime.datetime.now(),
+            who = user,
+        )
+        pool_p.save()
+
+        for sample in sample_l:
+            pool_rec = models.LibraryPoolingProcessRecord(
+                process=pool_p,
+                in_artifact=sample,
+                out_artifact=library
+            )
+            pool_rec.save()
+    return library, library_created
+
 
 def handle_testsample(form, user=None):
     biosample_source_id = form.cleaned_data.get("biosample_source_id")

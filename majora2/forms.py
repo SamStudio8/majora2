@@ -85,6 +85,27 @@ class RegistrationForm(forms.Form):
         return ssh_key
 
 
+class TestLibraryForm(forms.Form):
+    library_name = forms.CharField()
+    samples = forms.ModelMultipleChoiceField(queryset=models.BiosampleArtifact.objects.all(), required=True) # Do this for now, before we need to keep barcodes and volumes
+
+    #library_strategy = models.CharField(max_length=24, blank=True, null=True)
+    #library_source = models.CharField(max_length=24, blank=True, null=True)
+    #library_selection = models.CharField(max_length=24, blank=True, null=True)
+    #library_layout_config = models.CharField(max_length=24, blank=True, null=True)
+    #library_layout_length = models.PositiveIntegerField(blank=True, null=True)
+    #design_description = models.CharField(max_length=128, blank=True, null=True)
+
+class TestSequencingForm(forms.Form):
+    library = forms.ModelChoiceField(queryset=models.LibraryArtifact.objects.all(), required=True)
+
+    #instrument_make = models.CharField(max_length=64)
+    #instrument_model = models.CharField(max_length=24)
+    #flowcell_type = models.CharField(max_length=48, blank=True, null=True)
+    #flowcell_id = models.CharField(max_length=48, blank=True, null=True)
+
+
+
 class TestSampleForm(forms.Form):
 
     biosample_source_id = forms.CharField(
