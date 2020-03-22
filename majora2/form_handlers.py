@@ -1,6 +1,8 @@
 from . import models
 from . import signals
 
+import dateutil.parser
+
 def handle_testsample(form, user=None):
     host_id = form.cleaned_data.get("host_id")
     if host_id:
@@ -19,7 +21,10 @@ def handle_testsample(form, user=None):
     else:
         source = None
 
-    collection_date = form.cleaned_data.get("collection_date")
+    if type(form.cleaned_data.get("collection_date")) == str:
+        collection_date = dateutil.parser.parse(form.cleaned_data.get("collection_date"))
+    else:
+        collection_date = form.cleaned_data.get("collection_date")
 
     # Create the Biosample
     sample_id = form.cleaned_data.get("sample_id")

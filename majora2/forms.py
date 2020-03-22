@@ -272,4 +272,3 @@ class TestSampleForm(forms.Form):
             self.add_error("sample_type", "Swab site specified but the sample type is not 'swab'")
         if sample_type == "swab" and not sample_site:
             self.add_error("sample_type", "Sample was a swab but you did not specify the swab site")
-
