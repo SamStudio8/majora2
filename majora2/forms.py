@@ -125,7 +125,7 @@ class TestSampleForm(forms.Form):
             ("Other", "Other"),
         ], required=False, help_text="Reported sex")
     adm2 = forms.CharField(
-            label="Town",
+            label="County",
             max_length=100,
             required=False,
             help_text="Enter the COUNTY from the patient's address. Leave blank if this was not available."
