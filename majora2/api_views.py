@@ -55,22 +55,32 @@ def wrap_api_v2(request, f):
 
 def add_biosample(request):
     def f(request, api_o, json_data, user=None):
-        try:
-            initial = fixed_data.fill_fixed_data("api.biosample.add", user)
-            form = forms.TestSampleForm(json_data, initial=initial)
-            if form.is_valid():
-                form.cleaned_data.update(initial)
-                sample = form_handlers.handle_testsample(form, user)
-                if sample:
-                    api_o["new"].append(str(sample.id))
+        biosamples = json_data.get("biosamples", {})
+        if not biosamples:
+            api_o["messages"].append("'biosamples' key missing or empty")
+            api_o["errors"] += 1
+
+        for biosample in biosamples:
+            try:
+                sample_id = biosample.get("sample_id")
+                initial = fixed_data.fill_fixed_data("api.biosample.add", user)
+                form = forms.TestSampleForm(biosample, initial=initial)
+                if form.is_valid():
+                    form.cleaned_data.update(initial)
+                    sample = form_handlers.handle_testsample(form, user)
+                    if sample:
+                        api_o["new"].append(str(sample.id))
+                    else:
+                        if sample_id:
+                            api_o["ignored"].append(sample_id)
+                        api_o["errors"] += 1
                 else:
                     api_o["errors"] += 1
-            else:
+                    api_o["ignored"].append(sample_id)
+                    api_o["messages"].append(form.errors.get_json_data())
+            except Exception as e:
                 api_o["errors"] += 1
-                api_o["messages"].append(form.errors.get_json_data())
-        except Exception as e:
-            api_o["errors"] += 1
-            api_o["messages"].append(str(e))
+                api_o["messages"].append(str(e))
 
     return wrap_api_v2(request, f)
 
