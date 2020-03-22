@@ -117,8 +117,8 @@ class TestSampleForm(forms.Form):
                 ("UK-NIR", "Northern Ireland"),
             ],
     )
-    age = forms.IntegerField(min_value=0, required=False, help_text="Age in years")
-    sex = forms.ChoiceField(choices=[
+    source_age = forms.IntegerField(min_value=0, required=False, help_text="Age in years")
+    source_sex = forms.ChoiceField(choices=[
             (None, ""),
             ("F", "F"),
             ("M", "M"),

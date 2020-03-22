@@ -70,8 +70,8 @@ def handle_testsample(form, user=None):
             collection_location_adm1 = form.cleaned_data.get("adm1"),
             collection_location_adm2 = form.cleaned_data.get("adm2").upper(), # capitalise the county for now?
             private_collection_location_adm2 = form.cleaned_data.get("adm2_private"),
-            source_age = form.cleaned_data.get("age"),
-            source_sex = form.cleaned_data.get("sex"),
+            source_age = form.cleaned_data.get("source_age"),
+            source_sex = form.cleaned_data.get("source_sex"),
         )
         sample_p.save()
 
