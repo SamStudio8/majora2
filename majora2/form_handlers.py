@@ -39,10 +39,11 @@ def handle_testsample(form, user=None):
         sample.dice_name = sample_id
 
         sample.sample_type = form.cleaned_data.get("sample_type")
-        sample.sample_site = form.cleaned_data.get("sample_site")
+        sample.sample_site = form.cleaned_data.get("swab_site")
 
         sample.primary_group = source
         sample.secondary_identifier = form.cleaned_data.get("secondary_identifier")
+        sample.secondary_accession = form.cleaned_data.get("secondary_accession")
         sample.taxonomy_identifier = form.cleaned_data.get("source_taxon")
 
         sample.save()
@@ -67,7 +68,7 @@ def handle_testsample(form, user=None):
             submission_org = form.cleaned_data.get("submitting_org"),
             collection_location_country = form.cleaned_data.get("country"),
             collection_location_adm1 = form.cleaned_data.get("adm1"),
-            collection_location_adm2 = form.cleaned_data.get("adm2_county"),
+            collection_location_adm2 = form.cleaned_data.get("adm2").upper(), # capitalise the county for now?
             private_collection_location_adm2 = form.cleaned_data.get("adm2_private"),
             source_age = form.cleaned_data.get("age"),
             source_sex = form.cleaned_data.get("sex"),

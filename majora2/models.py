@@ -538,6 +538,7 @@ class BiosampleArtifact(MajoraArtifact):
     collection = models.ForeignKey("BiosourceSamplingProcessRecord", blank=True, null=True, on_delete=models.PROTECT, related_name="biosamples")
 
     secondary_identifier = models.CharField(max_length=256, blank=True, null=True)
+    secondary_accession = models.CharField(max_length=256, blank=True, null=True)
     taxonomy_identifier = models.CharField(max_length=24, blank=True, null=True)
 
     @property

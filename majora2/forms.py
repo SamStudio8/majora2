@@ -124,9 +124,9 @@ class TestSampleForm(forms.Form):
             ("M", "M"),
             ("Other", "Other"),
         ], required=False, help_text="Reported sex")
-    adm2_county = forms.CharField(
+    adm2 = forms.CharField(
             label="Town",
-            max_length=10,
+            max_length=100,
             required=False,
             help_text="Enter the COUNTY from the patient's address. Leave blank if this was not available."
     )
@@ -179,8 +179,13 @@ class TestSampleForm(forms.Form):
             required=False)
     secondary_identifier = forms.CharField(
             max_length=256,
-            label="Override auto-assigned GISAID string",
+            label="GISAID identifier string",
             help_text="New COG-UK samples will have GISAID strings automatically composed. If this sample has already been submitted to GISAID, provide the identifier here.",
+            required=False)
+    secondary_accession = forms.CharField(
+            max_length=256,
+            label="GISAID accession",
+            help_text="If this sample has already been submitted to GISAID, provide the accession here.",
             required=False)
 
 
@@ -244,6 +249,7 @@ class TestSampleForm(forms.Form):
             Fieldset("Advanced Options",
                 Row(
                     Column('secondary_identifier', css_class="form-group col-md-6 mb-0"),
+                    Column('secondary_accession', css_class="form-group col-md-6 mb-0"),
                     css_class="form-row",
                 ),
                 Row(
@@ -279,3 +285,9 @@ class TestSampleForm(forms.Form):
             self.add_error("sample_type", "Swab site specified but the sample type is not 'swab'")
         if sample_type == "swab" and not swab_site:
             self.add_error("sample_type", "Sample was a swab but you did not specify the swab site")
+
+        # Validate accession
+        secondary_identifier = cleaned_data["secondary_identifier"]
+        if secondary_identifier and not cleaned_data["secondary_accession"]:
+            self.add_error("secondary_accession", "Accession for secondary identifier not provided")
+
