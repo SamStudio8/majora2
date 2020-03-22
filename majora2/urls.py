@@ -51,12 +51,12 @@ urlpatterns = [
     path('accounts/names/', account_views.list_user_names, name='list_user_names'),
 
     # NEW API
-    path('api/v2/artifact/biosample/add/', api_views.add_biosample, name="api.artifact.biosample.add"),
-    path('api/v2/artifact/digitalresource/add/', api_views.add_digitalresource, name="api.artifact.digitalresource.add"),
-    path('api/checkin/', csrf_exempt(views.api_checkin_tube), name='api_checkin'),
-    path('api/extract/', csrf_exempt(views.api_extract), name='api_extract'),
+    path('api/v2/artifact/biosample/add/', csrf_exempt(api_views.add_biosample), name="api.artifact.biosample.add"),
+    path('api/v2/artifact/digitalresource/add/', csrf_exempt(api_views.add_digitalresource), name="api.artifact.digitalresource.add"),
 
-    path('api/tubecontainer/add/', csrf_exempt(views.api_checkin_container), name="api_add_tubecontainer"),
+    path('api/v1/checkin/', csrf_exempt(views.api_checkin_tube), name='api_checkin'),
+    path('api/v1/extract/', csrf_exempt(views.api_extract), name='api_extract'),
+    path('api/v1/tubecontainer/add/', csrf_exempt(views.api_checkin_container), name="api_add_tubecontainer"),
 
 
     # Home
