@@ -67,9 +67,11 @@ def add_biosample(request):
                 form = forms.TestSampleForm(biosample, initial=initial)
                 if form.is_valid():
                     form.cleaned_data.update(initial)
-                    sample = form_handlers.handle_testsample(form, user)
-                    if sample:
+                    sample, sample_created = form_handlers.handle_testsample(form, user)
+                    if sample_created:
                         api_o["new"].append(str(sample.id))
+                    elif sample:
+                        api_o["updated"].append(str(sample.id))
                     else:
                         if sample_id:
                             api_o["ignored"].append(sample_id)

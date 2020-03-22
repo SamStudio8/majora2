@@ -28,26 +28,26 @@ def handle_testsample(form, user=None):
 
     # Create the Biosample
     sample_id = form.cleaned_data.get("central_sample_id")
-    try:
-        sample = models.BiosampleArtifact.objects.get(
-                central_sample_id=sample_id,
-                root_sample_id=form.cleaned_data.get("root_sample_id"))
-    except:
-        sample = models.BiosampleArtifact(
-            root_sample_id = form.cleaned_data.get("root_sample_id"),
-            sender_sample_id = form.cleaned_data.get("sender_sample_id"),
-            central_sample_id = sample_id,
-            dice_name = sample_id,
+    sample, sample_created = models.BiosampleArtifact.objects.get_or_create(
+            central_sample_id=sample_id,
+            root_sample_id=form.cleaned_data.get("root_sample_id"))
 
-            sample_type = form.cleaned_data.get("sample_type"),
-            swab_site = form.cleaned_data.get("swab_site"),
+    if sample:
+        sample.root_sample_id = form.cleaned_data.get("root_sample_id")
+        sample.sender_sample_id = form.cleaned_data.get("sender_sample_id")
+        sample.central_sample_id = sample_id
+        sample.dice_name = sample_id
 
-            primary_group = source,
-            secondary_identifier = form.cleaned_data.get("secondary_identifier"),
-            taxonomy_identifier = form.cleaned_data.get("source_taxon"),
-        )
+        sample.sample_type = form.cleaned_data.get("sample_type")
+        sample.sample_site = form.cleaned_data.get("sample_site")
+
+        sample.primary_group = source
+        sample.secondary_identifier = form.cleaned_data.get("secondary_identifier")
+        sample.taxonomy_identifier = form.cleaned_data.get("source_taxon")
+
         sample.save()
 
+    if sample_created:
         try:
             submitted_by = form.cleaned_data.get("submitting_org").name
         except:
@@ -82,5 +82,6 @@ def handle_testsample(form, user=None):
         sampling_rec.save()
         sample.collection = sampling_rec # Set the sample collection process
         sample.save()
-    signals.new_sample.send(sender=None, sample_id=sample.central_sample_id, submitter=sample.collection.process.submitted_by)
-    return sample
+        signals.new_sample.send(sender=None, sample_id=sample.central_sample_id, submitter=sample.collection.process.submitted_by)
+
+    return sample, sample_created

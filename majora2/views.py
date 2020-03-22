@@ -288,7 +288,8 @@ def form_sampletest(request):
         form = forms.TestSampleForm(request.POST, initial=initial)
         if form.is_valid():
             form.cleaned_data.update(initial)
-            if form_handlers.handle_testsample(form, request.user):
+            sample, sample_created = form_handlers.handle_testsample(form, request.user)
+            if sample:
                 return HttpResponse(json.dumps({
                     "success": True,
                 }), content_type="application/json")
