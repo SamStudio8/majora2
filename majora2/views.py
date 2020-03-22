@@ -278,28 +278,23 @@ def tabulate_artifact(request):
 ##############################################################################
 # Forms
 from . import form_handlers
+from . import fixed_data
 ##############################################################################
 @login_required
 def form_sampletest(request):
-    fixed_data={
-        'source_type': "human",
-        'source_taxon': '2697049',
-        'country': "United Kingdom",
-        'submitting_username': request.user.username,
-        'submitting_organisation': request.user.profile.institute if hasattr(request.user, "profile") and not request.user.profile.institute.code.startswith("?")  else None
-    }
+    initial = fixed_data.fill_fixed_data("api.biosample.add", request.user)
 
     if request.method == "POST":
-        form = forms.TestSampleForm(request.POST, initial=fixed_data)
+        form = forms.TestSampleForm(request.POST, initial=initial)
         if form.is_valid():
-            form.cleaned_data.update(fixed_data)
+            form.cleaned_data.update(initial)
             if form_handlers.handle_testsample(form, request.user):
                 return HttpResponse(json.dumps({
                     "success": True,
                 }), content_type="application/json")
     else:
         form = forms.TestSampleForm(
-            initial=fixed_data,
+            initial=initial,
         )
     return render(request, 'forms/testsample.html', {'form': form})
 

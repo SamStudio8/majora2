@@ -83,4 +83,4 @@ def handle_testsample(form, user=None):
         sample.collection = sampling_rec # Set the sample collection process
         sample.save()
     signals.new_sample.send(sender=None, sample_id=sample.unique_name, submitter=sample.collection.process.submitted_by)
-    return True
+    return sample
