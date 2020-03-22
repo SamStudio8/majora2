@@ -309,12 +309,6 @@ def form_sampletest(request):
 ##############################################################################
 from django.conf import settings
 
-@csrf_exempt
-def api_hello(request):
-    # should be a stream of barcodes
-    #TODO make people scan a session token from user account first (if 2FA on)
-    pass
-
 
 @csrf_exempt
 def api_extract(request):

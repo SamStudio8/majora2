@@ -36,7 +36,6 @@ urlpatterns = [
     #path('api/pipeline/', csrf_exempt(views.api_add_pipeline), name='api_pipeline'),
 
     path('api/tubecontainer/add/', csrf_exempt(views.api_checkin_container), name="api_add_tubecontainer"),
-    path('api/dm/hello/', csrf_exempt(views.api_hello), name="api_hello"),
 
     path('dm/<uuid:uuid>/', views.barcode, name="barcode"),
 
