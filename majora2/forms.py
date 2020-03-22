@@ -87,14 +87,18 @@ class RegistrationForm(forms.Form):
 
 class TestSampleForm(forms.Form):
 
-    host_id = forms.CharField(
+    biosample_source_id = forms.CharField(
             label="Pseudonymous patient identifier", max_length=56,
             help_text="Leave blank if not available. <b>DO NOT enter an NHS number here</b>", required=False)
-    orig_sample_id = forms.CharField(
-            label="Existing sample identifier", max_length=56, required=False,
+    root_sample_id = forms.CharField(
+            label="Health Agency sample identifier", max_length=56, required=False,
             help_text="Leave blank if not applicable or available. It will not be possible to collect private metadata for this sample without this"
     )
-    sample_id = forms.CharField(
+    sender_sample_id = forms.CharField(
+            label="Local sample identifier", max_length=56, required=False,
+            help_text="Leave blank if not applicable or available. It will not be possible to collect private metadata for this sample without this"
+    )
+    central_sample_id = forms.CharField(
             label="New sample identifier", max_length=56,
             help_text="Heron barcode assigned by WSI"
     )
@@ -120,21 +124,22 @@ class TestSampleForm(forms.Form):
             ("M", "M"),
             ("Other", "Other"),
         ], required=False, help_text="Reported sex")
-    adm2 = forms.CharField(
+    adm2_county = forms.CharField(
             label="Town",
             max_length=10,
             required=False,
-            help_text="Enter the town from the patient's address. Leave blank if this was not available."
+            help_text="Enter the COUNTY from the patient's address. Leave blank if this was not available."
     )
     adm2_private = forms.CharField(
             label="Outward postcode",
             max_length=10,
             required=False,
+            disabled=True,
             help_text="Enter the <b>first part</b> of the patients home postcode. Leave blank if this was not available."
     )
-    submitting_username = forms.CharField(disabled=True, required=False)
-    submitting_organisation = forms.ModelChoiceField(queryset=models.Institute.objects.exclude(code__startswith="?").order_by("name"), disabled=True, required=False)
-    collecting_organisation = forms.CharField(max_length=100, required=False, help_text="The site that this sample was submitted to. Use the first line of the 'sender' from the corresponding E28")
+    submitting_user = forms.CharField(disabled=True, required=False)
+    submitting_org = forms.ModelChoiceField(queryset=models.Institute.objects.exclude(code__startswith="?").order_by("name"), disabled=True, required=False)
+    collecting_org = forms.CharField(max_length=100, required=False, help_text="The site that this sample was collected by. Use the first line of the 'sender' from the corresponding E28")
 
     source_type = forms.ChoiceField(
         choices = [
@@ -157,11 +162,12 @@ class TestSampleForm(forms.Form):
         ],
         required=False,
     )
-    sample_site = forms.ChoiceField(
+    swab_site = forms.ChoiceField(
         choices= [
             (None, None),
             ("nose", "nose"),
             ("throat", "throat"),
+            ("nose-throat", "nose and throat"),
         ],
         help_text="Provide only if sample_type is swab",
         required=False,
@@ -171,7 +177,7 @@ class TestSampleForm(forms.Form):
             label="Override Heron validator",
             help_text="Enable this checkbox if your sample has not been assigned a Heron identifier. <i>e.g.</i> The sample has already been submitted to GISAID",
             required=False)
-    override_gisaid = forms.CharField(
+    secondary_identifier = forms.CharField(
             max_length=256,
             label="Override auto-assigned GISAID string",
             help_text="New COG-UK samples will have GISAID strings automatically composed. If this sample has already been submitted to GISAID, provide the identifier here.",
@@ -194,9 +200,10 @@ class TestSampleForm(forms.Form):
         self.helper.layout = Layout(
             Fieldset("Identifiers",
                 Row(
-                    Column('host_id', css_class="form-group col-md-4 mb-0"),
-                    Column('orig_sample_id', css_class="form-group col-md-4 mb-0"),
-                    Column('sample_id', css_class="form-group col-md-4 mb-0"),
+                    Column('biosample_source_id', css_class="form-group col-md-3 mb-0"),
+                    Column('root_sample_id', css_class="form-group col-md-3 mb-0"),
+                    Column('sender_sample_id', css_class="form-group col-md-3 mb-0"),
+                    Column('central_sample_id', css_class="form-group col-md-3 mb-0"),
                     css_class="form-row",
                 )
             ),
@@ -205,7 +212,7 @@ class TestSampleForm(forms.Form):
                     Column('source_type', css_class="form-group col-md-3 mb-0"),
                     Column('source_taxon', css_class="form-group col-md-3 mb-0"),
                     Column('sample_type', css_class="form-group col-md-3 mb-0"),
-                    Column('sample_site', css_class="form-group col-md-3 mb-0"),
+                    Column('swab_site', css_class="form-group col-md-3 mb-0"),
                     css_class="form-row",
                 )
             ),
@@ -228,15 +235,15 @@ class TestSampleForm(forms.Form):
             ),
             Fieldset("Collecting and sequencing",
                 Row(
-                    Column('collecting_organisation', css_class="form-group col-md-5 mb-0"),
-                    Column('submitting_username', css_class="form-group col-md-3 mb-0"),
-                    Column('submitting_organisation', css_class="form-group col-md-4 mb-0"),
+                    Column('collecting_org', css_class="form-group col-md-5 mb-0"),
+                    Column('submitting_user', css_class="form-group col-md-3 mb-0"),
+                    Column('submitting_org', css_class="form-group col-md-4 mb-0"),
                     css_class="form-row",
                 )
             ),
             Fieldset("Advanced Options",
                 Row(
-                    Column('override_gisaid', css_class="form-group col-md-6 mb-0"),
+                    Column('secondary_identifier', css_class="form-group col-md-6 mb-0"),
                     css_class="form-row",
                 ),
                 Row(
@@ -254,11 +261,11 @@ class TestSampleForm(forms.Form):
         cleaned_data = super().clean()
 
         # Check barcode starts with a Heron prefix, unless this has been overridden
-        sample_id = cleaned_data["sample_id"]
+        sample_id = cleaned_data["central_sample_id"]
         if cleaned_data["override_heron"] is False:
             valid_sites = [x.code for x in models.Institute.objects.exclude(code__startswith="?")]
             if sum([sample_id.startswith(x) for x in valid_sites]) == 0:
-                self.add_error("sample_id", "Sample identifier does not match the WSI manifest.")
+                self.add_error("central_sample_id", "Sample identifier does not match the WSI manifest.")
 
         # Check for full postcode mistake
         adm2 = cleaned_data["adm2_private"]
@@ -266,9 +273,9 @@ class TestSampleForm(forms.Form):
             self.add_error("adm2_private", "Enter the first part of the postcode only")
 
         # Validate swab site
-        sample_site = cleaned_data["sample_site"]
+        swab_site = cleaned_data["swab_site"]
         sample_type = cleaned_data["sample_type"]
-        if sample_type != "swab" and sample_site:
+        if sample_type != "swab" and swab_site:
             self.add_error("sample_type", "Swab site specified but the sample type is not 'swab'")
-        if sample_type == "swab" and not sample_site:
+        if sample_type == "swab" and not swab_site:
             self.add_error("sample_type", "Sample was a swab but you did not specify the swab site")

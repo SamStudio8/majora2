@@ -14,7 +14,6 @@ class MajoraArtifact(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # 
     dice_name = models.CharField(max_length=48, blank=True, null=True, unique=True)
     meta_name = models.CharField(max_length=48, blank=True, null=True)
-    unique_name = models.CharField(max_length=48, blank=True, null=True, unique=True) #TODO graduate away from meta_name, needs to be project unique rather than global, but it will work here 
 
     root_artifact = models.ForeignKey('MajoraArtifact', blank=True, null=True, on_delete=models.PROTECT, related_name="descendants")
     quarantined = models.BooleanField(default=False)
@@ -522,9 +521,13 @@ class TubeArtifact(MajoraArtifact):
         return " // ".join(a)
 
 class BiosampleArtifact(MajoraArtifact):
+    root_sample_id = models.CharField(max_length=48, blank=True, null=True, unique=True)
+    sender_sample_id = models.CharField(max_length=48, blank=True, null=True, unique=True)
+    central_sample_id = models.CharField(max_length=48, blank=True, null=True, unique=True)
+
     sample_orig_id = models.CharField(max_length=24, blank=True, null=True)
     sample_type = models.CharField(max_length=24, blank=True, null=True)        #THIS should be a lookup
-    sample_site = models.CharField(max_length=24, blank=True, null=True)        #THIS should be a lookup
+    swab_site = models.CharField(max_length=24, blank=True, null=True)        #THIS should be a lookup
     specimen_type = models.CharField(max_length=24, blank=True, null=True)
 
     sample_longitude = models.PositiveSmallIntegerField(default=0)
