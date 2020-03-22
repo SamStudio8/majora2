@@ -25,29 +25,30 @@
 <div class="row">
 <div class="col-md-8">
 
-<h2>Process Groups</h2>
-<table class="table table-hover table-active">
-    <thead class="thead-dark">
+    <table class="table table-hover table-active">
+        <tbody>
         <tr>
-            <th>Pipe</th>
-            <th>#Groups</th>
-            <th>#Commands</th>
+            <th>Username</th>
+            <td>{{ user.username }}</td>
         </tr>
-    </thead>
-    <tbody>
-        {% if pgroups.count > 0 %}
-        {% for fav in pgroups %}
         <tr>
-            <td><b><a href="{% url 'group_process' fav.pgroup.id %}">{{ fav.pgroup.name }}</a></td>
-            <td>{{ fav.pgroup.n_groups_t }}</td>
-            <td>{{ fav.pgroup.n_processes_t }}</td>
+            <th>Name</th>
+            <td>{{ user.firstname }} {{ user.lastname }}</td>
         </tr>
-        {% endfor %}
-        {% else %}
-        <tr><td>This is not a pipe.</tr></td>
-        {% endif %}
-    </tbody>
-</table>
+        <tr>
+            <th>Organisation</th>
+            <td>{{ user.profile.institute }}</td>
+        </tr>
+        <tr>
+            <th>API Key</th>
+            <td>{{ user.profile.api_key }}</br>
+                <b>You must keep your API key secret</b>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+<hr>
 
 <h2>Artifact Groups</h2>
 <table class="table table-hover table-active">
