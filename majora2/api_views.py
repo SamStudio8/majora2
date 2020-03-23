@@ -69,9 +69,13 @@ def add_biosample(request):
                     form.cleaned_data.update(initial)
                     sample, sample_created = form_handlers.handle_testsample(form, user)
                     if sample_created:
-                        api_o["new"].append(str(sample.id))
+                        api_o["new"].append(
+                            (str(sample.artifact_kind), str(sample.id), str(sample.central_sample_id))
+                        )
                     elif sample:
-                        api_o["updated"].append(str(sample.id))
+                        api_o["updated"].append(
+                            (str(sample.artifact_kind), str(sample.id), str(sample.central_sample_id))
+                        )
                     else:
                         if sample_id:
                             api_o["ignored"].append(sample_id)
@@ -96,7 +100,9 @@ def add_sequencing(request):
                 form.cleaned_data.update(initial)
                 library, library_created = form_handlers.handle_testlibrary(form, user)
                 if library_created:
-                    api_o["new"].append(str(library.id))
+                    api_o["new"].append(
+                            (str(library.artifact_kind), str(library.id), str(library.dice_name))
+                    )
                 elif library:
                     api_o["errors"] += 1
                     api_o["messages"].append("LibraryArtifact objects cannot be updated after they have been created.")
