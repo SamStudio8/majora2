@@ -62,7 +62,7 @@ def add_biosample(request):
 
         for biosample in biosamples:
             try:
-                sample_id = biosample.get("sample_id")
+                sample_id = biosample.get("central_sample_id")
                 initial = fixed_data.fill_fixed_data("api.artifact.biosample.add", user)
                 form = forms.TestSampleForm(biosample, initial=initial)
                 if form.is_valid():
