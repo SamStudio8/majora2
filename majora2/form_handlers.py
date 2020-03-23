@@ -86,13 +86,6 @@ def handle_testsample(form, user=None, api_o=None):
             central_sample_id=sample_id,
             root_sample_id=form.cleaned_data.get("root_sample_id"))
 
-    if sample_created:
-        if api_o:
-            api_o["new"].append(_format_tuple(sample))
-    else:
-        if api_o:
-            api_o["updated"].append(_format_tuple(sample))
-
     if sample:
         sample.root_sample_id = form.cleaned_data.get("root_sample_id")
         sample.sender_sample_id = form.cleaned_data.get("sender_sample_id")
@@ -108,6 +101,13 @@ def handle_testsample(form, user=None, api_o=None):
         sample.taxonomy_identifier = form.cleaned_data.get("source_taxon")
 
         sample.save()
+
+    if sample_created:
+        if api_o:
+            api_o["new"].append(_format_tuple(sample))
+    else:
+        if api_o:
+            api_o["updated"].append(_format_tuple(sample))
 
     try:
         submitted_by = form.cleaned_data.get("submitting_org").name
