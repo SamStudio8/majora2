@@ -67,19 +67,9 @@ def add_biosample(request):
                 form = forms.TestSampleForm(biosample, initial=initial)
                 if form.is_valid():
                     form.cleaned_data.update(initial)
-                    success, new_objects, updated_objects = form_handlers.handle_testsample(form, user=user, api_o=api_o)
-                    if success:
-                        for new_o in new_objects:
-                            api_o["new"].append(
-                                (str(new_o.kind), str(new_o.id), str(new_o.dice_name))
-                            )
-                        for updated_o in updated_objects:
-                            api_o["updated"].append(
-                                (str(updated_o.kind), str(updated_o.id), str(updated_o.dice_name))
-                            )
-                    else:
-                        if sample_id:
-                            api_o["ignored"].append(sample_id)
+                    sample, sample_created = form_handlers.handle_testsample(form, user=user, api_o=api_o)
+                    if not sample:
+                        api_o["ignored"].append(sample_id)
                         api_o["errors"] += 1
                 else:
                     api_o["errors"] += 1
@@ -99,18 +89,13 @@ def add_sequencing(request):
             form = forms.TestLibraryForm(json_data, initial=initial)
             if form.is_valid():
                 form.cleaned_data.update(initial)
-                library, library_created = form_handlers.handle_testlibrary(form, user)
-                if library_created:
-                    api_o["new"].append(
-                            (str(library.artifact_kind), str(library.id), str(library.dice_name))
-                    )
-                elif library:
-                    api_o["errors"] += 1
-                    api_o["messages"].append("LibraryArtifact objects cannot be updated after they have been created.")
+                library, library_created = form_handlers.handle_testlibrary(form, user=user, api_o=api_o)
+                if not library:
                     api_o["ignored"].append(library_name)
-                else:
-                    if library_name:
-                        api_o["ignored"].append(library_name)
+                    api_o["errors"] += 1
+                if library and not library_created:
+                    api_o["messages"].append("Libraries cannot be updated after they have been created.")
+                    api_o["ignored"].append(library_name)
                     api_o["errors"] += 1
             else:
                 api_o["errors"] += 1
@@ -125,9 +110,7 @@ def add_sequencing(request):
             form = forms.TestSequencingForm(json_data, initial=initial)
             if form.is_valid():
                 form.cleaned_data.update(initial)
-                sequencing, sequencing_created = form_handlers.handle_testsequencing(form, user)
-                if sequencing_created:
-                    api_o["new"].append(str(sequencing.id))
+                sequencing, sequencing_created = form_handlers.handle_testsequencing(form, user=user, api_o=api_o)
             else:
                 api_o["errors"] += 1
                 api_o["messages"].append(form.errors.get_json_data())

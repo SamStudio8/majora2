@@ -602,6 +602,9 @@ class MajoraArtifactProcess(PolymorphicModel):
     def process_kind(self):
         return 'Artifact Process'
     @property
+    def kind(self):
+        return self.process_kind
+    @property
     def short_name(self):
         return self.process_kind
     @property

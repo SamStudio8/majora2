@@ -4,9 +4,17 @@ import dateutil.parser
 from . import models
 from . import signals
 
-def handle_testsequencing(form, user=None):
+def _format_tuple(x):
+    if hasattr(x, "process_kind"):
+        return (x.kind, str(x.id), "")
+    else:
+        return (x.kind, str(x.id), x.dice_name)
+
+def handle_testsequencing(form, user=None, api_o=None):
     p, sequencing_created = models.DNASequencingProcess.objects.get_or_create(id=form.cleaned_data["sequencing_id"])
     if sequencing_created:
+        if api_o:
+            api_o["new"].append(_format_tuple(p))
         p.when = datetime.datetime.now()
         p.save()
 
@@ -18,13 +26,15 @@ def handle_testsequencing(form, user=None):
     return p, sequencing_created
 
 
-def handle_testlibrary(form, user=None):
+def handle_testlibrary(form, user=None, api_o=None):
     library, library_created = models.LibraryArtifact.objects.get_or_create(
                 dice_name=form.cleaned_data.get("library_name"))
-
     sample_l = form.cleaned_data.get("samples")
 
     if library_created:
+        if api_o:
+            api_o["new"].append(_format_tuple(library))
+
         # Create the pooling event
         pool_p = models.LibraryPoolingProcess(
             when = datetime.datetime.now(),
@@ -43,9 +53,6 @@ def handle_testlibrary(form, user=None):
 
 
 def handle_testsample(form, user=None, api_o=None):
-    new_artifacts = []
-    updated_artifacts = []
-
     biosample_source_id = form.cleaned_data.get("biosample_source_id")
     if biosample_source_id:
         # Get or create the BiosampleSource
@@ -60,7 +67,8 @@ def handle_testsample(form, user=None, api_o=None):
         source = None
 
     if source_created:
-        new_artifacts.append(source)
+        if api_o:
+            api_o["new"].append(_format_tuple(source))
     else:
         if api_o:
             api_o["ignored"].append(source.dice_name)
@@ -77,10 +85,13 @@ def handle_testsample(form, user=None, api_o=None):
     sample, sample_created = models.BiosampleArtifact.objects.get_or_create(
             central_sample_id=sample_id,
             root_sample_id=form.cleaned_data.get("root_sample_id"))
+
     if sample_created:
-        new_artifacts.append(sample)
+        if api_o:
+            api_o["new"].append(_format_tuple(sample))
     else:
-        updated_artifacts.append(sample)
+        if api_o:
+            api_o["updated"].append(_format_tuple(sample))
 
     if sample:
         sample.root_sample_id = form.cleaned_data.get("root_sample_id")
@@ -138,4 +149,4 @@ def handle_testsample(form, user=None, api_o=None):
     sample_p.source_sex = form.cleaned_data.get("source_sex")
     sample_p.save()
 
-    return True, new_artifacts, updated_artifacts
+    return sample, sample_created
