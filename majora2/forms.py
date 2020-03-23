@@ -154,9 +154,16 @@ class TestSampleForm(forms.Form):
             ("M", "M"),
             ("Other", "Other"),
         ], required=False, help_text="Reported sex")
-    adm2 = forms.CharField(
+    #adm2 = forms.CharField(
+    #        label="County",
+    #        max_length=100,
+    #        required=False,
+    #        help_text="Enter the COUNTY from the patient's address. Leave blank if this was not available."
+    #)
+    adm2 = forms.ModelChoiceField(
+            queryset=models.County.objects.all(),
+            to_field_name="name",
             label="County",
-            max_length=100,
             required=False,
             help_text="Enter the COUNTY from the patient's address. Leave blank if this was not available."
     )
