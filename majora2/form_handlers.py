@@ -42,23 +42,30 @@ def handle_testlibrary(form, user=None):
     return library, library_created
 
 
-def handle_testsample(form, user=None):
+def handle_testsample(form, user=None, api_o=None):
+    new_artifacts = []
+    updated_artifacts = []
+
     biosample_source_id = form.cleaned_data.get("biosample_source_id")
     if biosample_source_id:
-        # Create the BiosampleSource
-        try:
-            source = models.BiosampleSource.objects.get(unique_name=biosample_source_id)
-        except:
-            source = models.BiosampleSource(
-                unique_name = biosample_source_id,
-                meta_name = biosample_source_id,
-                dice_name = biosample_source_id,
+        # Get or create the BiosampleSource
+        source, source_created = models.BiosampleSource.objects.get_or_create(
+                dice_name=biosample_source_id,
+                secondary_id=biosample_source_id,
                 source_type = form.cleaned_data.get("source_type"),
-                physical = True,
-            )
-            source.save()
+                physical=True,
+        )
+        source.save()
     else:
         source = None
+
+    if source_created:
+        new_artifacts.append(source)
+    else:
+        if api_o:
+            api_o["ignored"].append(source.dice_name)
+            api_o["messages"].append("Biosample Sources cannot be updated")
+            api_o["warnings"] += 1
 
     if type(form.cleaned_data.get("collection_date")) == str:
         collection_date = dateutil.parser.parse(form.cleaned_data.get("collection_date"))
@@ -70,6 +77,10 @@ def handle_testsample(form, user=None):
     sample, sample_created = models.BiosampleArtifact.objects.get_or_create(
             central_sample_id=sample_id,
             root_sample_id=form.cleaned_data.get("root_sample_id"))
+    if sample_created:
+        new_artifacts.append(sample)
+    else:
+        updated_artifacts.append(sample)
 
     if sample:
         sample.root_sample_id = form.cleaned_data.get("root_sample_id")
@@ -127,4 +138,4 @@ def handle_testsample(form, user=None):
     sample_p.source_sex = form.cleaned_data.get("source_sex")
     sample_p.save()
 
-    return sample, sample_created
+    return True, new_artifacts, updated_artifacts

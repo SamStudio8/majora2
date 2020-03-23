@@ -25,6 +25,9 @@ class MajoraArtifact(PolymorphicModel):
     def artifact_kind(self):
         return 'Artifact'
     @property
+    def kind(self):
+        return self.artifact_kind
+    @property
     def name(self):
         return self.meta_name
     @property
@@ -259,6 +262,9 @@ class MajoraArtifactGroup(PolymorphicModel):
     @property
     def group_kind(self):
         return 'Artifact Group'
+    @property
+    def kind(self):
+        return self.group_kind
     @property
     def name(self):
         if self.meta_name:
@@ -560,14 +566,16 @@ class BiosampleArtifact(MajoraArtifact):
 class BiosampleSource(MajoraArtifactGroup):
     source_type = models.CharField(max_length=24)        #TODO lookup
 
+    secondary_id = models.CharField(max_length=48, blank=True, null=True)
+
     def __str__(self):
-        return '%s' % self.meta_name
+        return '%s' % self.dice_name
     @property
     def group_kind(self):
         return 'Biosample Source'
     @property
     def name(self):
-        return str(self.meta_name)
+        return str(self.dice_name)
 
 
 class MajoraArtifactProcessRecord(PolymorphicModel):
