@@ -12,6 +12,7 @@ UK-ENG	Brighton and Hove
 UK-ENG	Bromley
 UK-ENG	Buckinghamshire
 UK-ENG	Cambridgeshire
+UK-ENG	Cambridgeshire and Peterborough Combined Authority
 UK-ENG	Camden
 UK-ENG	Central Bedfordshire
 UK-ENG	Cheshire East
@@ -34,6 +35,7 @@ UK-ENG	East Sussex
 UK-ENG	Enfield
 UK-ENG	Essex
 UK-ENG	Gloucestershire
+UK-ENG	Greater Manchester Combined Authority
 UK-ENG	Greenwich
 UK-ENG	Hackney
 UK-ENG	Halton
@@ -60,6 +62,7 @@ UK-ENG	Leicester
 UK-ENG	Leicestershire
 UK-ENG	Lewisham
 UK-ENG	Lincolnshire
+UK-ENG	Liverpool City Region
 UK-ENG	Luton
 UK-ENG	Medway
 UK-ENG	Merton
@@ -85,6 +88,7 @@ UK-ENG	Redbridge
 UK-ENG	Redcar and Cleveland
 UK-ENG	Richmond upon Thames
 UK-ENG	Rutland
+UK-ENG	Sheffield City Region
 UK-ENG	Shropshire
 UK-ENG	Slough
 UK-ENG	Somerset
@@ -99,6 +103,7 @@ UK-ENG	Suffolk
 UK-ENG	Surrey
 UK-ENG	Sutton
 UK-ENG	Swindon
+UK-ENG	Tees Valley Combined Authority
 UK-ENG	Telford and Wrekin
 UK-ENG	Thurrock
 UK-ENG	Torbay
@@ -108,7 +113,9 @@ UK-ENG	Wandsworth
 UK-ENG	Warrington
 UK-ENG	Warwickshire
 UK-ENG	West Berkshire
+UK-ENG	West Midlands Combined Authority
 UK-ENG	West Sussex
+UK-ENG	West of England Combined Authority
 UK-ENG	Westminster
 UK-ENG	Wiltshire
 UK-ENG	Windsor and Maidenhead
