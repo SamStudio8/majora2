@@ -65,7 +65,7 @@ def handle_testsample(form, user=None):
     else:
         collection_date = form.cleaned_data.get("collection_date")
 
-    # Create the Biosample
+    # Get or create the Biosample
     sample_id = form.cleaned_data.get("central_sample_id")
     sample, sample_created = models.BiosampleArtifact.objects.get_or_create(
             central_sample_id=sample_id,
@@ -87,30 +87,23 @@ def handle_testsample(form, user=None):
 
         sample.save()
 
-    if sample_created:
-        try:
-            submitted_by = form.cleaned_data.get("submitting_org").name
-        except:
-            submitted_by = None
+    try:
+        submitted_by = form.cleaned_data.get("submitting_org").name
+    except:
+        submitted_by = None
 
+    if sample.collection:
+        # Already have a collection obj
+        sample_p = sample.collection.process
+        sampling_rec = sample.collection
+    else:
         # Create the sampling event
-        sample_pgroup = models.MajoraArtifactProcessGroup()
-        sample_pgroup.save()
         sample_p = models.BiosourceSamplingProcess(
             who = user,
             when = collection_date,
-            group = sample_pgroup,
-            collection_date = collection_date,
             submitted_by = submitted_by,
-            collected_by = form.cleaned_data.get("collecting_org"),
             submission_user = user,
             submission_org = form.cleaned_data.get("submitting_org"),
-            collection_location_country = form.cleaned_data.get("country"),
-            collection_location_adm1 = form.cleaned_data.get("adm1"),
-            collection_location_adm2 = form.cleaned_data.get("adm2").upper(), # capitalise the county for now?
-            private_collection_location_adm2 = form.cleaned_data.get("adm2_private"),
-            source_age = form.cleaned_data.get("source_age"),
-            source_sex = form.cleaned_data.get("source_sex"),
         )
         sample_p.save()
 
@@ -123,5 +116,15 @@ def handle_testsample(form, user=None):
         sample.collection = sampling_rec # Set the sample collection process
         sample.save()
         signals.new_sample.send(sender=None, sample_id=sample.central_sample_id, submitter=sample.collection.process.submitted_by)
+
+    sample_p.collection_date = collection_date
+    sample_p.collected_by = form.cleaned_data.get("collecting_org")
+    sample_p.collection_location_country = form.cleaned_data.get("country")
+    sample_p.collection_location_adm1 = form.cleaned_data.get("adm1")
+    sample_p.collection_location_adm2 = form.cleaned_data.get("adm2").upper() # capitalise the county for now?
+    sample_p.private_collection_location_adm2 = form.cleaned_data.get("adm2_private")
+    sample_p.source_age = form.cleaned_data.get("source_age")
+    sample_p.source_sex = form.cleaned_data.get("source_sex")
+    sample_p.save()
 
     return sample, sample_created
