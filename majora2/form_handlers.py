@@ -63,17 +63,17 @@ def handle_testsample(form, user=None, api_o=None):
                 physical=True,
         )
         source.save()
+        if source_created:
+            if api_o:
+                api_o["new"].append(_format_tuple(source))
+        else:
+            if api_o:
+                api_o["ignored"].append(source.dice_name)
+                api_o["messages"].append("Biosample Sources cannot be updated")
+                api_o["warnings"] += 1
     else:
         source = None
 
-    if source_created:
-        if api_o:
-            api_o["new"].append(_format_tuple(source))
-    else:
-        if api_o:
-            api_o["ignored"].append(source.dice_name)
-            api_o["messages"].append("Biosample Sources cannot be updated")
-            api_o["warnings"] += 1
 
     if type(form.cleaned_data.get("collection_date")) == str:
         collection_date = dateutil.parser.parse(form.cleaned_data.get("collection_date"))
