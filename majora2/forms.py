@@ -89,7 +89,7 @@ class RegistrationForm(forms.Form):
 
 class TestLibraryForm(forms.Form):
     library_name = forms.CharField()
-    samples = forms.ModelMultipleChoiceField(queryset=models.BiosampleArtifact.objects.filter(central_sample_id__isnull=False), required=True, to_field_name="central_sample_id")
+    biosamples = forms.ModelMultipleChoiceField(queryset=models.BiosampleArtifact.objects.filter(central_sample_id__isnull=False), required=True, to_field_name="central_sample_id")
 
     #library_strategy = models.CharField(max_length=24, blank=True, null=True)
     #library_source = models.CharField(max_length=24, blank=True, null=True)
