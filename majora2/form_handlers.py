@@ -29,7 +29,7 @@ def handle_testsequencing(form, user=None, api_o=None):
 def handle_testlibrary(form, user=None, api_o=None):
     library, library_created = models.LibraryArtifact.objects.get_or_create(
                 dice_name=form.cleaned_data.get("library_name"))
-    sample_l = form.cleaned_data.get("samples")
+    sample_l = form.cleaned_data.get("biosamples")
 
     if library_created:
         if api_o:
