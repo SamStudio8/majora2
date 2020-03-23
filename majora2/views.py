@@ -197,7 +197,11 @@ def tabulate_artifact(request):
             value = value_map[key](value)
         if key in field_map:
             key = field_map[key]
-        fields[key] = value
+
+        try:
+            fields[key] = int(value)
+        except:
+            fields[key] = value
 
     artifacts = model.objects.filter(**fields)
 
