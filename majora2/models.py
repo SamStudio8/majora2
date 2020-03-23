@@ -923,6 +923,15 @@ class Institute(models.Model):
         return "%s: %s" % (self.code, self.name)
 
 
+class County(models.Model):
+    country_code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10, blank=True, null=True)
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
 '''
 class LiquidArtifact(MajoraArtifact):
     container_x = models.PositiveSmallIntegerField()
