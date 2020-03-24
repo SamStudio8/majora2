@@ -15,7 +15,7 @@ from . import signals
 import json
 
 def generate_username(cleaned_data):
-    return "%s%s%s" % (settings.USER_PREFIX, cleaned_data["last_name"].lower(), cleaned_data["first_name"][0].lower())
+    return "%s%s%s" % (settings.USER_PREFIX, cleaned_data["last_name"].replace(' ', '').lower(), cleaned_data["first_name"][0].lower())
 
 @sensitive_post_parameters('password', 'password2')
 def form_register(request):
