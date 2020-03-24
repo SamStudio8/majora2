@@ -83,18 +83,24 @@ def add_biosample(request):
 
 def add_sequencing(request):
     def f(request, api_o, json_data, user=None):
+        library_name = json_data.get("library_name")
+        if not library_name:
+            api_o["messages"].append("'library_name' key missing or empty")
+            api_o["errors"] += 1
+            return
+        biosamples = json_data.get("biosamples", {})
+        if not biosamples:
+            api_o["messages"].append("'biosamples' key missing or empty")
+            api_o["errors"] += 1
+            return
+
         try:
-            library_name = json_data.get("library_name")
             initial = fixed_data.fill_fixed_data("api.artifact.library.add", user)
             form = forms.TestLibraryForm(json_data, initial=initial)
             if form.is_valid():
                 form.cleaned_data.update(initial)
                 library, library_created = form_handlers.handle_testlibrary(form, user=user, api_o=api_o)
                 if not library:
-                    api_o["ignored"].append(library_name)
-                    api_o["errors"] += 1
-                if library and not library_created:
-                    api_o["messages"].append("Libraries cannot be updated after they have been created.")
                     api_o["ignored"].append(library_name)
                     api_o["errors"] += 1
             else:
@@ -104,6 +110,27 @@ def add_sequencing(request):
         except Exception as e:
             api_o["errors"] += 1
             api_o["messages"].append(str(e))
+
+        # Add samples to library
+        for biosample in biosamples:
+            try:
+                sample_id = biosample.get("central_sample_id")
+                initial = fixed_data.fill_fixed_data("api.processrecord.library.add", user)
+                biosample["library_name"] = library_name
+                form = forms.TestLibraryBiosampleForm(biosample, initial=initial)
+                if form.is_valid():
+                    form.cleaned_data.update(initial)
+                    record, record_created = form_handlers.handle_testlibraryrecord(form, user=user, api_o=api_o)
+                    if not record:
+                        api_o["ignored"].append(sample_id)
+                        api_o["errors"] += 1
+                else:
+                    api_o["errors"] += 1
+                    api_o["ignored"].append(initial)
+                    api_o["messages"].append(form.errors.get_json_data())
+            except Exception as e:
+                api_o["errors"] += 1
+                api_o["messages"].append(str(e))
 
         try:
             json_data = forms.TestSequencingForm.modify_preform(json_data)

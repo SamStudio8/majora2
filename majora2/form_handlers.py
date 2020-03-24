@@ -29,7 +29,11 @@ def handle_testsequencing(form, user=None, api_o=None):
 def handle_testlibrary(form, user=None, api_o=None):
     library, library_created = models.LibraryArtifact.objects.get_or_create(
                 dice_name=form.cleaned_data.get("library_name"))
-    sample_l = form.cleaned_data.get("biosamples")
+    library.layout_config = form.cleaned_data.get("library_layout_config")
+    library.layout_read_length = form.cleaned_data.get("library_layout_read_length")
+    library.layout_insert_length = form.cleaned_data.get("library_layout_insert_length")
+    library.seq_kit = form.cleaned_data.get("library_seq_kit")
+    library.seq_protocol = form.cleaned_data.get("library_seq_protocol")
 
     if library_created:
         if api_o:
@@ -41,15 +45,23 @@ def handle_testlibrary(form, user=None, api_o=None):
             who = user,
         )
         pool_p.save()
-
-        for sample in sample_l:
-            pool_rec = models.LibraryPoolingProcessRecord(
-                process=pool_p,
-                in_artifact=sample,
-                out_artifact=library
-            )
-            pool_rec.save()
+        library.pooling = pool_p
+        library.save()
     return library, library_created
+
+def handle_testlibraryrecord(form, user=None, api_o=None):
+
+    biosample = form.cleaned_data.get("central_sample_id") # will return a biosample object
+    library = form.cleaned_data.get("library_name") # will actually return a library object
+
+    pool_rec, created = models.LibraryPoolingProcessRecord.objects.get_or_create(
+        process=library.pooling,
+        in_artifact=biosample,
+        out_artifact=library
+    )
+    pool_rec.save()
+    return pool_rec, created
+
 
 
 def handle_testsample(form, user=None, api_o=None):

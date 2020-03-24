@@ -978,12 +978,15 @@ class LiquidArtifact(MajoraArtifact):
 '''
 
 class LibraryArtifact(MajoraArtifact):
-    library_strategy = models.CharField(max_length=24, blank=True, null=True)
-    library_source = models.CharField(max_length=24, blank=True, null=True)
-    library_selection = models.CharField(max_length=24, blank=True, null=True)
-    library_layout_config = models.CharField(max_length=24, blank=True, null=True)
-    library_layout_length = models.PositiveIntegerField(blank=True, null=True)
-    design_description = models.CharField(max_length=128, blank=True, null=True)
+    layout_config = models.CharField(max_length=24, blank=True, null=True)
+    layout_read_length = models.PositiveIntegerField(blank=True, null=True)
+    layout_insert_length = models.PositiveIntegerField(blank=True, null=True)
+
+    seq_kit = models.CharField(max_length=48, blank=True, null=True)
+    seq_protocol = models.CharField(max_length=48, blank=True, null=True)
+
+    pooling = models.ForeignKey("LibraryPoolingProcess", blank=True, null=True, on_delete=models.PROTECT, related_name="library")
+
     @property
     def artifact_kind(self):
         return 'Library'
@@ -995,6 +998,9 @@ class LibraryPoolingProcess(MajoraArtifactProcess):
 class LibraryPoolingProcessRecord(MajoraArtifactProcessRecord):
     barcode = models.CharField(max_length=24, blank=True, null=True)
     volume = models.FloatField(blank=True, null=True)
+    library_strategy = models.CharField(max_length=24, blank=True, null=True)
+    library_source = models.CharField(max_length=24, blank=True, null=True)
+    library_selection = models.CharField(max_length=24, blank=True, null=True)
 
 
 class DNASequencingProcessGroup(MajoraArtifactProcessGroup):

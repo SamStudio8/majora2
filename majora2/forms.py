@@ -88,15 +88,56 @@ class RegistrationForm(forms.Form):
 
 
 class TestLibraryForm(forms.Form):
-    library_name = forms.CharField()
-    biosamples = forms.ModelMultipleChoiceField(queryset=models.BiosampleArtifact.objects.filter(central_sample_id__isnull=False), required=True, to_field_name="central_sample_id")
 
-    #library_strategy = models.CharField(max_length=24, blank=True, null=True)
-    #library_source = models.CharField(max_length=24, blank=True, null=True)
-    #library_selection = models.CharField(max_length=24, blank=True, null=True)
-    #library_layout_config = models.CharField(max_length=24, blank=True, null=True)
-    #library_layout_length = models.PositiveIntegerField(blank=True, null=True)
-    #design_description = models.CharField(max_length=128, blank=True, null=True)
+    library_name = forms.CharField(max_length=48)
+    library_layout_config = forms.ChoiceField(
+            choices=[
+                (None, ""),
+                ("SINGLE", "SINGLE"),
+                ("PAIRED", "PAIRED"),
+            ],
+    )
+    library_layout_read_length = forms.IntegerField(min_value=0, required=False)
+    library_layout_insert_length = forms.IntegerField(min_value=0, required=False)
+
+    library_seq_kit = forms.CharField(max_length=48)
+    library_seq_protocol = forms.CharField(max_length=48)
+
+
+class TestLibraryBiosampleForm(forms.Form):
+    central_sample_id = forms.ModelChoiceField(queryset=models.BiosampleArtifact.objects.all(), required=True, to_field_name="dice_name")
+    library_name = forms.ModelChoiceField(queryset=models.LibraryArtifact.objects.all(), required=True, to_field_name="dice_name")
+    barcode = forms.CharField(max_length=24, required=False)
+    library_strategy = forms.ChoiceField(
+            choices=[
+                (None, ""),
+                ("WGS", "WGS: Whole Genome Sequencing"),
+                ("WGA", "WGA: Whole Genome Amplification"),
+                ("AMPLICON", "AMPLICON: Sequencing of overlapping or distinct PCR or RT-PCR products"),
+                ("OTHER", "?: Library strategy not listed"),
+            ],
+    )
+    library_source = forms.ChoiceField(
+            choices=[
+                (None, ""),
+                ("GENOMIC", "GENOMIC"),
+                ("TRANSCRIPTOMIC", "TRANSCRIPTOMIC"),
+                ("METAGENOMIC", "METAGENOMIC"),
+                ("METATRANSCRIPTOMIC", "METATRANSCRIPTOMIC"),
+                ("VIRAL_RNA", "VIRAL RNA"),
+                ("OTHER", "?: Other, unspecified, or unknown library source material"),
+            ],
+    )
+    library_selection = forms.ChoiceField(
+            choices=[
+                (None, ""),
+                ("RANDOM", "RANDOM: No Selection or Random selection"),
+                ("PCR", "PCR: Enrichment via PCR"),
+                ("RANDOM_PCR", "RANDOM-PCR: Source material was selected by randomly generated primers"),
+                ("OTHER", "?: Other library enrichment, screening, or selection process"),
+            ],
+    )
+
 
 class TestSequencingForm(forms.Form):
     library_name = forms.ModelChoiceField(queryset=models.LibraryArtifact.objects.all(), required=True, to_field_name="dice_name")
