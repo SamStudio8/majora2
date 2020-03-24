@@ -106,9 +106,20 @@ class TestSequencingForm(forms.Form):
             choices=[
                 (None, ""),
                 ("ILLUMINA", "Illumina"),
-                ("OXFORD NANOPORE", "Oxford Nanopore"),
+                ("OXFORD_NANOPORE", "Oxford Nanopore"),
             ],
     )
+
+    @staticmethod
+    def modify_preform(data):
+        UPPERCASE_FIELDS = [
+            "instrument_make",
+        ]
+        for field in UPPERCASE_FIELDS:
+            if data.get(field):
+                data[field] = data[field].upper()
+        return data
+
     #instrument_model = models.CharField(max_length=24)
     #flowcell_type = models.CharField(max_length=48, blank=True, null=True)
     #flowcell_id = models.CharField(max_length=48, blank=True, null=True)

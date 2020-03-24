@@ -106,6 +106,7 @@ def add_sequencing(request):
             api_o["messages"].append(str(e))
 
         try:
+            json_data = forms.TestSequencingForm.modify_preform(json_data)
             initial = fixed_data.fill_fixed_data("api.process.sequencing.add", user)
             form = forms.TestSequencingForm(json_data, initial=initial)
             if form.is_valid():
