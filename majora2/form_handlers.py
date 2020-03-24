@@ -83,8 +83,8 @@ def handle_testsample(form, user=None, api_o=None):
     # Get or create the Biosample
     sample_id = form.cleaned_data.get("central_sample_id")
     sample, sample_created = models.BiosampleArtifact.objects.get_or_create(
-            central_sample_id=sample_id,
-            root_sample_id=form.cleaned_data.get("root_sample_id"))
+            central_sample_id=sample_id
+    )
 
     if sample:
         sample.root_sample_id = form.cleaned_data.get("root_sample_id")
