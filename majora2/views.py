@@ -109,7 +109,8 @@ def profile(request):
         'user': request.user,
         'groups': models.Favourite.objects.filter(user=request.user.id).exclude(group__isnull=True),
         'pgroups': models.Favourite.objects.filter(user=request.user.id).exclude(pgroup__isnull=True),
-        'processes': models.MajoraArtifactProcess.objects.filter(who=request.user.id).order_by('-when')
+        'processes': models.MajoraArtifactProcess.objects.filter(who=request.user.id).order_by('-when'),
+        'samples': [b.out_artifact for bsr in models.BiosourceSamplingProcess.objects.filter(submission_org=request.user.profile.institute) for b in bsr.records.all()]
     })
 
 @login_required
@@ -197,7 +198,11 @@ def tabulate_artifact(request):
             value = value_map[key](value)
         if key in field_map:
             key = field_map[key]
-        fields[key] = value
+
+        try:
+            fields[key] = int(value)
+        except:
+            fields[key] = value
 
     artifacts = model.objects.filter(**fields)
 
@@ -277,139 +282,25 @@ def tabulate_artifact(request):
 
 ##############################################################################
 # Forms
+from . import form_handlers
+from . import fixed_data
 ##############################################################################
 @login_required
 def form_sampletest(request):
-    fixed_data={
-        'source_type': "human",
-        'country': "United Kingdom",
-        'submitting_username': request.user.username,
-        'submitting_organisation': request.user.profile.institute if hasattr(request.user, "profile") else ""
-    }
-
-    # TODO Very quick and dirty, lets ensure some basic groups exist
-    try:
-        all_sources = models.MajoraArtifactGroup.objects.get(unique_name = "COGPHUK All Hosts")
-    except:
-        all_sources = models.MajoraArtifactGroup(
-            unique_name = "COGPHUK All Hosts",
-            meta_name = "COGPHUK All Hosts",
-            dice_name = "COGPHUK All Hosts",
-            physical=False,
-        )
-        all_sources.save()
-
-    try:
-        all_samples = models.MajoraArtifactGroup.objects.get(unique_name = "COGPHUK All Samples")
-    except:
-        all_samples = models.MajoraArtifactGroup(
-            unique_name = "COGPHUK All Samples",
-            meta_name = "COGPHUK All Samples",
-            dice_name = "COGPHUK All Samples",
-            physical=False,
-        )
-        all_samples.save()
-
+    initial = fixed_data.fill_fixed_data("api.biosample.add", request.user)
 
     if request.method == "POST":
-        form = forms.TestSampleForm(request.POST)
+        form = forms.TestSampleForm(request.POST, initial=initial)
         if form.is_valid():
-            form.cleaned_data.update(fixed_data)
-
-            if form.cleaned_data["host_id"]:
-                # Create the BiosampleSource
-                try:
-                    source = models.BiosampleSource.objects.get(unique_name=form.cleaned_data["host_id"])
-                except:
-                    source = models.BiosampleSource(
-                        unique_name = form.cleaned_data["host_id"],
-                        meta_name = form.cleaned_data["host_id"],
-                        dice_name = form.cleaned_data["host_id"],
-                        source_type = form.cleaned_data["source_type"],
-                        parent_group = all_sources,
-                        physical = True,
-                        age = form.cleaned_data["age"],
-                    )
-                    source.save()
-                    source.groups.add(all_sources)
-                    source.save()
-            else:
-                source = None
-
-            site_sample_group_name = "COGPHUK %s Samples" % form.cleaned_data["submitting_organisation"]
-            try:
-                site_sample_group = models.MajoraArtifactGroup.objects.get(unique_name = site_sample_group_name)
-            except:
-                site_sample_group = models.MajoraArtifactGroup(
-                    unique_name = site_sample_group_name,
-                    parent_group = all_samples,
-                    meta_name = site_sample_group_name,
-                    dice_name = site_sample_group_name,
-                    physical=False,
-                )
-                site_sample_group.save()
-
-            collection_date = form.cleaned_data["collection_date"]
-            #try:
-            #    collection_date = dateutil.parser.parse(form.cleaned_data["collection_date"])
-            #except Exception as e:
-            #    collection_date = None
-
-            # Create the Biosample
-            try:
-                sample = models.BiosampleArtifact.objects.get(unique_name=form.cleaned_data["sample_id"], sample_orig_id=form.cleaned_data["orig_sample_id"])
-            except:
-                sample = models.BiosampleArtifact(
-                    unique_name = form.cleaned_data["sample_id"],
-                    meta_name = form.cleaned_data["sample_id"],
-                    dice_name = form.cleaned_data["sample_id"],
-                    sample_orig_id = form.cleaned_data["orig_sample_id"],
-
-                    sample_type = form.cleaned_data["sample_type"],
-                    sample_site = form.cleaned_data["sample_site"],
-
-                    primary_group = source
-                )
-                sample.save()
-                sample.groups.add(site_sample_group)
-                sample.groups.add(all_samples)
-                sample.save()
-
-                # Create the sampling event
-                sample_pgroup = models.MajoraArtifactProcessGroup()
-                sample_pgroup.save()
-                sample_p = models.BiosourceSamplingProcess(
-                    who = request.user,
-                    when = collection_date,
-                    group = sample_pgroup,
-                    collection_date = collection_date,
-                    submitted_by = form.cleaned_data["submitting_organisation"].name,
-                    collected_by = form.cleaned_data["collecting_organisation"],
-                    submission_user = request.user,
-                    submission_org = form.cleaned_data["submitting_organisation"],
-                    collection_location_country = form.cleaned_data["country"],
-                    collection_location_adm1 = form.cleaned_data["adm1"],
-                    collection_location_adm2 = form.cleaned_data["adm2"],
-                    private_collection_location_adm2 = form.cleaned_data["adm2_private"],
-                )
-                sample_p.save()
-                sample.collection = sample_p # Set the sample collection process
-                sample.save()
-
-                sampling_rec = models.BiosourceSamplingProcessRecord(
-                    process=sample_p,
-                    in_group=source,
-                    out_artifact=sample,
-                )
-                sampling_rec.save()
-
-                signals.new_sample.send(sender=request, sample_id=sample.unique_name, submitter=sample.collection.submitted_by)
-            return HttpResponse(json.dumps({
-                "success": True,
-            }), content_type="application/json")
+            form.cleaned_data.update(initial)
+            sample, sample_created = form_handlers.handle_testsample(form, request.user)
+            if sample:
+                return HttpResponse(json.dumps({
+                    "success": True,
+                }), content_type="application/json")
     else:
         form = forms.TestSampleForm(
-            initial=fixed_data,
+            initial=initial,
         )
     return render(request, 'forms/testsample.html', {'form': form})
 
@@ -418,12 +309,6 @@ def form_sampletest(request):
 # API
 ##############################################################################
 from django.conf import settings
-
-@csrf_exempt
-def api_hello(request):
-    # should be a stream of barcodes
-    #TODO make people scan a session token from user account first (if 2FA on)
-    pass
 
 
 @csrf_exempt

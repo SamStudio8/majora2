@@ -14,7 +14,6 @@ class MajoraArtifact(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # 
     dice_name = models.CharField(max_length=48, blank=True, null=True, unique=True)
     meta_name = models.CharField(max_length=48, blank=True, null=True)
-    unique_name = models.CharField(max_length=48, blank=True, null=True, unique=True) #TODO graduate away from meta_name, needs to be project unique rather than global, but it will work here 
 
     root_artifact = models.ForeignKey('MajoraArtifact', blank=True, null=True, on_delete=models.PROTECT, related_name="descendants")
     quarantined = models.BooleanField(default=False)
@@ -26,8 +25,14 @@ class MajoraArtifact(PolymorphicModel):
     def artifact_kind(self):
         return 'Artifact'
     @property
+    def kind(self):
+        return self.artifact_kind
+    @property
     def name(self):
-        return self.meta_name
+        if self.meta_name:
+            return self.meta_name
+        else:
+            return self.dice_name
     @property
     def process_history(self):
         return (self.before_process.all() | self.after_process.all()).order_by('-process__when').get_real_instances()
@@ -52,26 +57,28 @@ class MajoraArtifact(PolymorphicModel):
                         a.extend(proc.out_artifact.process_leaf)
         return a
 
-
-
-    @property
-    def process_tree_down(self):
-        seen = set([])
+    def build_process_tree_down(self, seen):
         a = []
         for proc in self.before_process.all().order_by('-process__when'):
             children = []
             if proc.out_artifact:
-                if proc.in_artifact and proc.in_artifact.id != proc.out_artifact.id:# or proc.in_group:
+                # If this record produces an artifact to share...
+                if proc.in_artifact and proc.in_artifact.id != proc.out_artifact.id:
+                    # ...and that artifact does not link to itself
                     if proc.out_artifact not in seen:
-                        children.append(proc)
-                        children.extend( proc.out_artifact.process_tree_down )
-                        seen.add(proc.out_artifact)
-            a.append({proc: children})
+                        # ...and we have not already added this artifact to the process tree
+                        if (proc.bridge_artifact is None) or (proc.bridge_artifact in seen):
+                            # ...and this artifact is not the other side of a bridge that should not be crossed
+                            children.append(proc)
+                            children.extend( proc.out_artifact.build_process_tree_down(seen=seen) )
+                            seen.add(proc.out_artifact)
+                            a.append({proc: children})
+            #if proc.out_group:
+            #    if proc.out_group not in seen:
+            #        if proc.bridge_group is None or proc.bridge_group in seen:
+            #            children.extend( proc.out_group.build_process_tree_down(seen=seen) )
+            #            seen.add(proc.out_group)
         return a
-
-
-
-
 
     @property
     def is_quarantined(self):
@@ -263,6 +270,9 @@ class MajoraArtifactGroup(PolymorphicModel):
     def group_kind(self):
         return 'Artifact Group'
     @property
+    def kind(self):
+        return self.group_kind
+    @property
     def name(self):
         if self.meta_name:
             return self.meta_name
@@ -310,6 +320,29 @@ class MajoraArtifactGroup(PolymorphicModel):
         return groups
 
 
+    def build_process_tree_down(self, seen):
+        a = []
+        for proc in self.before_process.all().order_by('-process__when'):
+            children = []
+            if proc.out_artifact:
+                if proc.in_artifact and proc.in_artifact.id != proc.out_artifact.id:
+                    if proc.out_artifact not in seen:
+                        if proc.bridge_artifact is None or proc.bridge_artifact in seen:
+                            children.append(proc)
+                            children.extend( proc.out_artifact.build_process_tree_down(seen=seen) )
+                            seen.add(proc.out_artifact)
+            #if proc.out_group:
+            #    if proc.out_group not in seen:
+            #        if proc.bridge_group is None or proc.bridge_group in seen:
+            #            children.extend( proc.out_group.build_process_tree_down(seen=seen) )
+            #            seen.add(proc.out_group)
+            a.append({proc: children})
+        return a
+
+    @property
+    def process_tree_down(self):
+        return self.build_process_tree_down(set([]))
+
 class DigitalResourceNode(MajoraArtifactGroup):
     node_name = models.CharField(max_length=128)
     # ip address
@@ -354,7 +387,10 @@ class DigitalResourceArtifact(MajoraArtifact):
 
     @property
     def path(self):
-        return self.primary_group.path + '/' + self.current_name
+        if self.primary_group:
+            return self.primary_group.path + '/' + self.current_name
+        else:
+            return '?/.../' + self.current_name
     @property
     def artifact_kind(self):
         return 'Digital Resource'
@@ -505,6 +541,10 @@ class TubeArtifact(MajoraArtifact):
         return " // ".join(a)
 
 class BiosampleArtifact(MajoraArtifact):
+    root_sample_id = models.CharField(max_length=48, blank=True, null=True)
+    sender_sample_id = models.CharField(max_length=48, blank=True, null=True)
+    central_sample_id = models.CharField(max_length=48, blank=True, null=True, unique=True)
+
     sample_orig_id = models.CharField(max_length=24, blank=True, null=True)
     sample_type = models.CharField(max_length=24, blank=True, null=True)        #THIS should be a lookup
     sample_site = models.CharField(max_length=24, blank=True, null=True)        #THIS should be a lookup
@@ -515,7 +555,11 @@ class BiosampleArtifact(MajoraArtifact):
     sample_batch_longitude = models.PositiveSmallIntegerField(default=0)
 
     #NOTE Trying something different, Biosamples almost exclusively come from a sampling event, so let's hard link it here
-    collection = models.ForeignKey("BiosourceSamplingProcess", blank=True, null=True, on_delete=models.PROTECT, related_name="biosamples")
+    collection = models.ForeignKey("BiosourceSamplingProcessRecord", blank=True, null=True, on_delete=models.PROTECT, related_name="biosamples")
+
+    secondary_identifier = models.CharField(max_length=256, blank=True, null=True)
+    secondary_accession = models.CharField(max_length=256, blank=True, null=True)
+    taxonomy_identifier = models.CharField(max_length=24, blank=True, null=True)
 
     @property
     def artifact_kind(self):
@@ -528,7 +572,7 @@ class BiosampleArtifact(MajoraArtifact):
             else:
                 return self.dice_name
         else:
-            return self.sample_orig_id
+            return self.central_sample_id
     @property
     def source(self):
         return self.primary_group
@@ -536,21 +580,24 @@ class BiosampleArtifact(MajoraArtifact):
 class BiosampleSource(MajoraArtifactGroup):
     source_type = models.CharField(max_length=24)        #TODO lookup
 
-    source_age = models.PositiveIntegerField(blank=True, null=True)
+    secondary_id = models.CharField(max_length=48, blank=True, null=True)
 
     def __str__(self):
-        return '%s' % self.meta_name
+        return '%s' % self.dice_name
     @property
     def group_kind(self):
         return 'Biosample Source'
     @property
     def name(self):
-        return str(self.meta_name)
+        return str(self.dice_name)
 
 
 class MajoraArtifactProcessRecord(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
     process = models.ForeignKey('MajoraArtifactProcess', on_delete=models.CASCADE, related_name="records")
+
+    bridge_artifact = models.ForeignKey('MajoraArtifact', blank=True, null=True, related_name='bridge_process', on_delete=models.PROTECT)
+    bridge_group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, related_name='bridge_process', on_delete=models.PROTECT)
 
     in_group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, related_name='before_process', on_delete=models.PROTECT)
     in_artifact = models.ForeignKey('MajoraArtifact', blank=True, null=True, related_name='before_process', on_delete=models.PROTECT)
@@ -571,6 +618,9 @@ class MajoraArtifactProcess(PolymorphicModel):
     @property
     def process_kind(self):
         return 'Artifact Process'
+    @property
+    def kind(self):
+        return self.process_kind
     @property
     def short_name(self):
         return self.process_kind
@@ -724,6 +774,9 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
     submitted_by = models.CharField(max_length=100, blank=True, null=True)
     submission_org = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL, related_name="submitted_sample_records")
     submission_user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="submitted_sample_records")
+
+    source_age = models.PositiveIntegerField(blank=True, null=True)
+    source_sex = models.CharField(max_length=10, blank=True, null=True)
 
     collected_by = models.CharField(max_length=100, blank=True, null=True)
     collection_org = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL, related_name="collected_sample_records")
@@ -887,6 +940,15 @@ class Institute(models.Model):
         return "%s: %s" % (self.code, self.name)
 
 
+class County(models.Model):
+    country_code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10, blank=True, null=True)
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
 '''
 class LiquidArtifact(MajoraArtifact):
     container_x = models.PositiveSmallIntegerField()
@@ -911,3 +973,59 @@ class LiquidArtifact(MajoraArtifact):
     def name(self):
         return self.dice_name
 '''
+
+class LibraryArtifact(MajoraArtifact):
+    library_strategy = models.CharField(max_length=24, blank=True, null=True)
+    library_source = models.CharField(max_length=24, blank=True, null=True)
+    library_selection = models.CharField(max_length=24, blank=True, null=True)
+    library_layout_config = models.CharField(max_length=24, blank=True, null=True)
+    library_layout_length = models.PositiveIntegerField(blank=True, null=True)
+    design_description = models.CharField(max_length=128, blank=True, null=True)
+    @property
+    def artifact_kind(self):
+        return 'Library'
+
+class LibraryPoolingProcess(MajoraArtifactProcess):
+    @property
+    def process_kind(self):
+        return 'Pooling'
+class LibraryPoolingProcessRecord(MajoraArtifactProcessRecord):
+    barcode = models.CharField(max_length=24, blank=True, null=True)
+    volume = models.FloatField(blank=True, null=True)
+
+
+class DNASequencingProcessGroup(MajoraArtifactProcessGroup):
+    experiment_name = models.CharField(max_length=128)
+
+class DNASequencingProcess(MajoraArtifactProcess):
+    instrument_make = models.CharField(max_length=64)
+    instrument_model = models.CharField(max_length=24)
+    flowcell_type = models.CharField(max_length=48, blank=True, null=True)
+    flowcell_id = models.CharField(max_length=48, blank=True, null=True)
+
+    start_time = models.DateTimeField(blank=True, null=True)
+    duration = models.DurationField(blank=True, null=True)
+
+    @property
+    def process_kind(self):
+        return 'Sequencing'
+class DNASequencingProcessRecord(MajoraArtifactProcessRecord):
+    pass
+
+
+class BasecallingProcess(MajoraArtifactProcess):
+    basecaller = models.CharField(max_length=48) #TODO fold these into a lookup model
+    basecaller_version = models.CharField(max_length=48, blank=True, null=True)
+    basecaller_model = models.CharField(max_length=48, blank=True, null=True)
+
+    read_count = models.BigIntegerField(blank=True, null=True)
+    base_count = models.BigIntegerField(blank=True, null=True)
+    median_quality = models.FloatField(blank=True, null=True)
+    n50 = models.PositiveIntegerField(blank=True, null=True)
+
+    @property
+    def process_kind(self):
+        return 'Basecalling'
+class BasecallingProcessRecord(MajoraArtifactProcessRecord):
+    pass
+

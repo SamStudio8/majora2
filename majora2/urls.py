@@ -6,6 +6,7 @@ from . import views
 from . import account_views
 from . import bot_views
 from . import public_views
+from . import api_views
 
 urlpatterns = [
     #search
@@ -25,19 +26,7 @@ urlpatterns = [
 
     path('accounts/profile/', views.profile, name='profile'),
 
-    # API
-    #path(r'api/command/update/$', csrf_exempt(views.update_command), name='update_command'),
-    #path(r'api/command/new/$', csrf_exempt(views.new_command), name='new_command'),
-    #path(r'api/resource/meta/$', csrf_exempt(views.tag_meta), name='tag_meta'),
-    #path(r'api/resource/group/$', csrf_exempt(views.group_resources), name='group_resources'),
-
-    path('api/checkin/', csrf_exempt(views.api_checkin_tube), name='api_checkin'),
-    path('api/extract/', csrf_exempt(views.api_extract), name='api_extract'),
-    #path('api/pipeline/', csrf_exempt(views.api_add_pipeline), name='api_pipeline'),
-
-    path('api/tubecontainer/add/', csrf_exempt(views.api_checkin_container), name="api_add_tubecontainer"),
-    path('api/dm/hello/', csrf_exempt(views.api_hello), name="api_hello"),
-
+    # DATAMATRIX ###############################################################
     path('dm/<uuid:uuid>/', views.barcode, name="barcode"),
 
     # FORMS ####################################################################
@@ -45,9 +34,9 @@ urlpatterns = [
     path('forms/register/', account_views.form_register, name='form_register'),
     
     # OCARINA ##################################################################
-    path('ocarina/api/command/update/', csrf_exempt(views.ocarina_update_command), name='ocarina_update_command'),
-    path('ocarina/api/command/new/', csrf_exempt(views.ocarina_new_command), name='ocarina_new_command'),
-    path('ocarina/api/group/view/', csrf_exempt(views.ocarina_view_group), name='ocarina_view_group'),
+    #path('ocarina/api/command/update/', csrf_exempt(views.ocarina_update_command), name='ocarina_update_command'),
+    #path('ocarina/api/command/new/', csrf_exempt(views.ocarina_new_command), name='ocarina_new_command'),
+    #path('ocarina/api/group/view/', csrf_exempt(views.ocarina_view_group), name='ocarina_view_group'),
 
     # BOT ######################################################################
     path('bot/accounts/approve', csrf_exempt(bot_views.bot_approve_registration)),
@@ -60,6 +49,17 @@ urlpatterns = [
     path('accounts/keys/<str:username>', account_views.list_ssh_keys, name='list_ssh_keys'),
     path('accounts/keys/<str:username>/', account_views.list_ssh_keys, name='list_ssh_keys'), # Hack to prevent curl errors w and wo slash
     path('accounts/names/', account_views.list_user_names, name='list_user_names'),
+
+    # NEW API
+    path('api/v2/artifact/biosample/add/', csrf_exempt(api_views.add_biosample), name="api.artifact.biosample.add"),
+    path('api/v2/process/sequencing/add/', csrf_exempt(api_views.add_sequencing), name="api.process.sequencing.add"),
+
+    #path('api/v2/artifact/digitalresource/add/', csrf_exempt(api_views.add_digitalresource), name="api.artifact.digitalresource.add"),
+
+    path('api/v1/checkin/', csrf_exempt(views.api_checkin_tube), name='api_checkin'),
+    path('api/v1/extract/', csrf_exempt(views.api_extract), name='api_extract'),
+    path('api/v1/tubecontainer/add/', csrf_exempt(views.api_checkin_container), name="api_add_tubecontainer"),
+
 
     # Home
     path('', views.home, name='home'),
