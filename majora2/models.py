@@ -57,6 +57,9 @@ class MajoraArtifact(PolymorphicModel):
                         a.extend(proc.out_artifact.process_leaf)
         return a
 
+    @property
+    def process_tree_down(self):
+        return self.build_process_tree_down(set([self]))
     def build_process_tree_down(self, seen):
         a = []
         for proc in self.before_process.all().order_by('-process__when'):
