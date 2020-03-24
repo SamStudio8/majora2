@@ -117,7 +117,7 @@ class TestSequencingForm(forms.Form):
         ]
         for field in UPPERCASE_FIELDS:
             if data.get(field):
-                data[field] = data[field].upper()
+                data[field] = data[field].upper().replace(' ', '_')
         return data
 
     #instrument_model = models.CharField(max_length=24)
