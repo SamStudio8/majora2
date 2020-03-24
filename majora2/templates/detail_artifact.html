@@ -54,6 +54,9 @@
     {% include 'artifact_layouts/biosample.html' %}
 {% endif %}
 
+{% if artifact.artifact_kind == 'Library' %}
+    {% include 'artifact_layouts/library.html' %}
+{% endif %}
 
 {% if artifact.artifact_kind == 'Sample Tube' %}
     {% include 'artifact_layouts/tube.html' %}
@@ -64,7 +67,7 @@
 {% endif %}
 
 
-{% if artifact.artifact_kind != 'Biosample' %}
+{% if artifact.artifact_kind != 'Biosample' and artifact.artifact_kind != 'Library' %}
 <div class="row">
 <div class="col-md-5">
 <table class="table table-hover table-active">

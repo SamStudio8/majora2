@@ -1,0 +1,55 @@
+{% load humanize %}
+<div class="row">
+<div class="col-md-6">
+    <h2>Biosample Library Pool</h2>
+    <table class="table table-hover table-active">
+        <tbody>
+        <tr>
+            <th>layout_config</th>
+            <td>{{ artifact.layout_config }}</td>
+        </tr>
+        <tr>
+            <th>layout_read_length layout_insert_length</th>
+            <td>{{ artifact.layout_read_length }} {{ artifact.layout_insert_length }}</td>
+        </tr>
+        <tr>
+            <th>seq_protocol</th>
+            <td>{{ artifact.seq_protocol }}</td>
+        </tr>
+        <tr>
+            <th>seq_kit</th>
+            <td>{{ artifact.seq_kit }}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="col-md-6">
+</div>
+<div class="col-md-12">
+<hr>
+    <h2>Samples</h2>
+{% with gitems=artifact.samples dtable=0 %}
+    {% include 'tables/biosample.html' %}
+{% endwith %}
+</div>
+</div>
+<hr/>
+
+<h2>Downstream Artifacts</h2>
+<div class="" style="font-size: 1.1em">
+<style>
+</style>
+<ul class="list-group list-group-collapse">
+<ul class="list-group">
+<li class="list-group-item list-group-item-action list-group-item-primary">
+    <span class="badge badge-info">{{ artifact.artifact_kind }}</span><br/>
+    <b>{{ artifact.name }}</b>
+</li>
+</ul>
+    {% for d in artifact.process_tree_down %}
+        {%include "tables/recurse_process.html" %}
+    {% endfor %}
+</ul>
+</div>
+

@@ -990,6 +990,11 @@ class LibraryArtifact(MajoraArtifact):
     @property
     def artifact_kind(self):
         return 'Library'
+    @property
+    def samples(self):
+        if self.pooling:
+            return [x.in_artifact for x in self.pooling.records.all()]
+        return []
 
 class LibraryPoolingProcess(MajoraArtifactProcess):
     @property

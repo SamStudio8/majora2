@@ -1,20 +1,23 @@
 {% load humanize %}
 <div class="table-responsive">
-<table class="table table-hover table-active data-table">
+    <table class="table table-hover table-active {% if dtable != 0%}data-table{% endif %}">
     <thead class="thead-dark">
         <tr>
             <th>Sample ID</th>
             <th>Sample Source</th>
+            <th>Collected at (by)</th>
             <th>Type</th>
-            <th>Sampled Date</th>
+            <th>Collction date</th>
         </tr>
     </thead>
     <tbody>
     {% for artifact in gitems %}
     <tr>
         <td><a href="{% url 'detail_artifact' artifact.id %}"><b>{{ artifact.name }}</b></a></td>
-        <td>{{ artifact.source.unique_name }}</td>
-        <td>{{ artifact.sample_type }}</td>
+        <td>{% if artifact.source %}{{ artifact.source.unique_name }}{% else %}Unlinked{% endif %} ({{ artifact.collection.process.source_age }}{{ artifact.collection.process.source_sex }})</td>
+        <td>{{ artifact.collection.process.collection_location_adm1 }} / {{ artifact.collection.process.collection_location_adm2 }}</br>
+            {{artifact.collection.collected_by}}</td>
+        <td>{{ artifact.sample_type }} {% if artifact.sample_site %}({{ artifact.sample_site }}){% endif %}</td>
         <td>{{ artifact.collection.process.when }}</br>
         {{ artifact.collection.process.when | naturaltime }}</td>
     </tr>
