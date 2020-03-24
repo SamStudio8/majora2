@@ -50,29 +50,10 @@
 
 <hr>
 
-<h2>Artifact Groups</h2>
-<table class="table table-hover table-active">
-    <thead class="thead-dark">
-        <tr>
-            <th>Group</th>
-            <th>Kind</th>
-            <th>Dice</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% if groups.count > 0 %}
-        {% for fav in groups %}
-        <tr>
-            <td><b><a href="{% url 'group_artifact' fav.group.id %}">{{ fav.group.name }}</a></td>
-            <td>{{ fav.group.group_kind }}</td>
-            <td>{{ fav.group.dice_name }}</td>
-        </tr>
-        {% endfor %}
-        {% else %}
-        <tr><td>No groups.</tr></td>
-        {% endif %}
-    </tbody>
-</table>
+<h2>Biosamples <code>{{ request.user.profile.institute.code }}</code></h2>
+{% with gitems=samples %}
+    {% include 'tables/biosample.html' %}
+{% endwith %}
 
 
 </div>

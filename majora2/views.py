@@ -109,7 +109,8 @@ def profile(request):
         'user': request.user,
         'groups': models.Favourite.objects.filter(user=request.user.id).exclude(group__isnull=True),
         'pgroups': models.Favourite.objects.filter(user=request.user.id).exclude(pgroup__isnull=True),
-        'processes': models.MajoraArtifactProcess.objects.filter(who=request.user.id).order_by('-when')
+        'processes': models.MajoraArtifactProcess.objects.filter(who=request.user.id).order_by('-when'),
+        'samples': [b.out_artifact for bsr in models.BiosourceSamplingProcess.objects.filter(submission_org=request.user.profile.institute) for b in bsr.records.all()]
     })
 
 @login_required
