@@ -56,6 +56,7 @@ def handle_testlibraryrecord(form, user=None, api_o=None):
 
     pool_rec, created = models.LibraryPoolingProcessRecord.objects.get_or_create(
         process=library.pooling,
+        bridge_artifact=biosample,
         in_artifact=biosample,
         out_artifact=library
     )
