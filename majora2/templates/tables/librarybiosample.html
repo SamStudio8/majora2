@@ -4,24 +4,30 @@
     <thead class="thead-dark">
         <tr>
             <th>Sample ID</th>
+            <th>Barcode</th>
             <th>Sample Source</th>
             <th>Collected at (by)</th>
-            <th>Type</th>
             <th>Collection date</th>
+            <th>Pool</th>
         </tr>
     </thead>
     <tbody>
-    {% for artifact in gitems %}
+    {% with library=artifact %}
+    {% for record in gitems %}
+    {% with artifact=record.in_artifact %}
     <tr>
         <td><a href="{% url 'detail_artifact' artifact.id %}"><b>{{ artifact.name }}</b></a></td>
+        <td><b>{{ record.barcode }}</b></td>
         <td>{% if artifact.source %}{{ artifact.source.unique_name }}{% else %}Unlinked{% endif %} ({{ artifact.collection.process.source_age }}{{ artifact.collection.process.source_sex }})</td>
         <td>{{ artifact.collection.process.collection_location_adm1 }} / {{ artifact.collection.process.collection_location_adm2 }}</br>
             {{artifact.collection.collected_by}}</td>
-        <td>{{ artifact.sample_type }} {% if artifact.sample_site %}({{ artifact.sample_site }}){% endif %}</td>
         <td>{{ artifact.collection.process.when }}</br>
         {{ artifact.collection.process.when | naturaltime }}</td>
+        <td>{{ record.library_source }} {{ record.library_selection }} {{ record.library_strategy }}</td>
     </tr>
+    {% endwith %}
     {% endfor %}
+    {% endwith %}
     </tbody>
 </table>
 </div>

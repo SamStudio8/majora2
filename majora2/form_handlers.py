@@ -59,6 +59,9 @@ def handle_testlibraryrecord(form, user=None, api_o=None):
         in_artifact=biosample,
         out_artifact=library
     )
+    pool_rec.library_source = form.cleaned_data.get("library_source")
+    pool_rec.library_selection = form.cleaned_data.get("library_selection")
+    pool_rec.library_strategy = form.cleaned_data.get("library_strategy")
     pool_rec.save()
     return pool_rec, created
 
