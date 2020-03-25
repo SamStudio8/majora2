@@ -56,9 +56,6 @@ urlpatterns = [
 
     #path('api/v2/artifact/digitalresource/add/', csrf_exempt(api_views.add_digitalresource), name="api.artifact.digitalresource.add"),
 
-    path('api/v1/checkin/', csrf_exempt(views.api_checkin_tube), name='api_checkin'),
-    path('api/v1/extract/', csrf_exempt(views.api_extract), name='api_extract'),
-    path('api/v1/tubecontainer/add/', csrf_exempt(views.api_checkin_container), name="api_add_tubecontainer"),
 
 
     # Home
