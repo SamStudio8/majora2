@@ -30,7 +30,9 @@ def handle_testmetadata(form, user=None, api_o=None):
             meta_name=name,
             value=value,
             value_type="str",
-            timestamp=timestamp)
+    )
+    if created:
+        mr.timestamp = timestamp
     mr.save()
     return mr, created
 
