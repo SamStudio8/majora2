@@ -12,17 +12,45 @@ def _format_tuple(x):
 
 def handle_testsequencing(form, user=None, api_o=None):
     p, sequencing_created = models.DNASequencingProcess.objects.get_or_create(id=form.cleaned_data["sequencing_id"])
+
+    p.instrument_make = form.cleaned_data["instrument_make"]
+    p.instrument_model = form.cleaned_data["instrument_model"]
+    p.flowcell_type = form.cleaned_data["flowcell_type"]
+    p.flowcell_id = form.cleaned_data["flowcell_id"]
+
+    p.start_time = form.cleaned_data["start_time"]
+    p.end_time = form.cleaned_data["end_time"]
+
+    if p.start_time and p.end_time:
+        duration = p.end_time - p.start_time
+
     if sequencing_created:
         if api_o:
             api_o["new"].append(_format_tuple(p))
         p.when = datetime.datetime.now()
         p.save()
 
+    # Created placeholder digitalgroup
+    dgroup, dgroup_created = models.DigitalResourceGroup.objects.get_or_create(
+            unique_name="sequencing-filetree-%s" % str(p.id),
+            current_name="sequencing-filetree-%s" % str(p.id),
+            physical=False
+    )
+    if dgroup_created:
+        a = models.MajoraArtifact(dice_name="seq-test-%s" % str(p.id))
+        a.save()
         rec = models.DNASequencingProcessRecord(
             process=p,
-            in_artifact=form.cleaned_data.get("library_name")
+            in_artifact=form.cleaned_data.get("library_name"),
+            out_group=dgroup,
         )
         rec.save()
+        rec2 = models.MajoraArtifactProcessRecord(
+            process=p,
+            in_group=dgroup,
+            out_artifact=a,
+        )
+        rec2.save()
     return p, sequencing_created
 
 

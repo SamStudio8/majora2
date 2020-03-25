@@ -62,11 +62,12 @@ class MajoraArtifact(PolymorphicModel):
         return self.build_process_tree_down(set([self]))
     def build_process_tree_down(self, seen):
         a = []
+        add = 0
         for proc in self.before_process.all().order_by('-process__when'):
             children = []
             if proc.out_artifact:
                 # If this record produces an artifact to share...
-                if proc.in_artifact and proc.in_artifact.id != proc.out_artifact.id:
+                if (proc.in_artifact and proc.in_artifact.id != proc.out_artifact.id) or (proc.in_group and proc.in_group.id != proc.out_group.id):
                     # ...and that artifact does not link to itself
                     if proc.out_artifact not in seen:
                         # ...and we have not already added this artifact to the process tree
@@ -75,12 +76,25 @@ class MajoraArtifact(PolymorphicModel):
                             children.append(proc)
                             children.extend( proc.out_artifact.build_process_tree_down(seen=seen) )
                             seen.add(proc.out_artifact)
-                            a.append({proc: children})
-            #if proc.out_group:
-            #    if proc.out_group not in seen:
-            #        if proc.bridge_group is None or proc.bridge_group in seen:
-            #            children.extend( proc.out_group.build_process_tree_down(seen=seen) )
-            #            seen.add(proc.out_group)
+                            add = 1
+
+            # Delve one group deep
+            child_children = []
+            c_add = 0
+            if proc.out_group:
+                if proc.out_group not in seen:
+                    if proc.bridge_group is None or proc.bridge_group in seen:
+                        for child_proc in proc.out_group.before_process.all().order_by('-process__when'):
+                            if child_proc.out_artifact:
+                                child_children.append(child_proc.out_artifact)
+                                child_children.extend(child_proc.out_artifact.build_process_tree_down(seen=seen))
+
+                                seen.add(proc.out_group)
+                                c_add = 1
+            if c_add:
+                a.append({proc: [children, {child_proc: child_children}]})
+            elif add:
+                a.append({proc: children})
         return a
 
     @property
@@ -255,7 +269,7 @@ class MajoraProcessGroup2(MajoraGroup):
 # TODO This will become the MajoraGroup
 class MajoraArtifactGroup(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
-    unique_name = models.CharField(max_length=48, blank=True, null=True, unique=True) #TODO graduate away from meta_name, needs to be project unique rather than global, but it will work here 
+    unique_name = models.CharField(max_length=128, blank=True, null=True, unique=True) #TODO graduate away from meta_name, needs to be project unique rather than global, but it will work here 
 
     dice_name = models.CharField(max_length=48, blank=True, null=True, unique=True) 
     meta_name = models.CharField(max_length=48, blank=True, null=True) # TODO force unique?
@@ -279,6 +293,8 @@ class MajoraArtifactGroup(PolymorphicModel):
     def name(self):
         if self.meta_name:
             return self.meta_name
+        elif self.unique_name:
+            return self.unique_name
         return str(self.id)
     @property
     def full_name(self):
@@ -321,30 +337,6 @@ class MajoraArtifactGroup(PolymorphicModel):
         for cls in groups:
             groups[cls] = cls.sorto(groups[cls])
         return groups
-
-
-    def build_process_tree_down(self, seen):
-        a = []
-        for proc in self.before_process.all().order_by('-process__when'):
-            children = []
-            if proc.out_artifact:
-                if proc.in_artifact and proc.in_artifact.id != proc.out_artifact.id:
-                    if proc.out_artifact not in seen:
-                        if proc.bridge_artifact is None or proc.bridge_artifact in seen:
-                            children.append(proc)
-                            children.extend( proc.out_artifact.build_process_tree_down(seen=seen) )
-                            seen.add(proc.out_artifact)
-            #if proc.out_group:
-            #    if proc.out_group not in seen:
-            #        if proc.bridge_group is None or proc.bridge_group in seen:
-            #            children.extend( proc.out_group.build_process_tree_down(seen=seen) )
-            #            seen.add(proc.out_group)
-            a.append({proc: children})
-        return a
-
-    @property
-    def process_tree_down(self):
-        return self.build_process_tree_down(set([]))
 
 class DigitalResourceNode(MajoraArtifactGroup):
     node_name = models.CharField(max_length=128)
@@ -1008,11 +1000,12 @@ class DNASequencingProcessGroup(MajoraArtifactProcessGroup):
 
 class DNASequencingProcess(MajoraArtifactProcess):
     instrument_make = models.CharField(max_length=64)
-    instrument_model = models.CharField(max_length=24)
+    instrument_model = models.CharField(max_length=48)
     flowcell_type = models.CharField(max_length=48, blank=True, null=True)
     flowcell_id = models.CharField(max_length=48, blank=True, null=True)
 
     start_time = models.DateTimeField(blank=True, null=True)
+    end_time = models.DateTimeField(blank=True, null=True)
     duration = models.DurationField(blank=True, null=True)
 
     @property

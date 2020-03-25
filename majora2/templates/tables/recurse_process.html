@@ -1,9 +1,11 @@
 <ul class="list-group">
     {% for p, ch in d.items %}
     <li class="list-group-item">
-        <span class="badge badge-info">{{ p.out_artifact.artifact_kind }}</span> <span class="badge badge-danger">{{ p.process.process_kind }}</span></br>
+        <span class="badge badge-info">{{ p.out_group.group_kind }}</span> <span class="badge badge-info">{{ p.out_artifact.artifact_kind }}</span> <span class="badge badge-danger">{{ p.process.process_kind }}</span></br>
         {% if p.out_artifact %}
         <b><a href="{% url 'detail_artifact' p.out_artifact.id %}">{{ p.out_artifact.name }}</a></b>
+        {% elif p.out_group %}
+        <b><a href="{% url 'group_artifact' p.out_group.id %}">{{ p.out_group.name }}</a></b>
         {% endif %}
 
         {% for c in ch %}

@@ -150,6 +150,36 @@ class TestSequencingForm(forms.Form):
                 ("OXFORD_NANOPORE", "Oxford Nanopore"),
             ],
     )
+    instrument_model = forms.ChoiceField(
+            label="Instrument Model",
+            choices=[
+                (None, ""),
+                ("MinION", "MinION"),
+                ("GridION", "GridION"),
+                ("PromethION", "PromethION"),
+                ("HiSeq 1000", "HiSeq 1000"),
+                ("HiSeq 1500", "HiSeq 1500"),
+                ("HiSeq 2000", "HiSeq 2000"),
+                ("HiSeq 2500", "HiSeq 2500"),
+                ("HiSeq 3000", "HiSeq 3000"),
+                ("HiSeq 4000", "HiSeq 4000"),
+                ("NovaSeq 6000", "NovaSeq 6000"),
+                ("HiSeq X Five", "HiSeq X Five"),
+                ("HiSeq X Ten", "HiSeq X Ten"),
+                ("MiSeq", "MiSeq"),
+                ("MiniSeq", "MiniSeq"),
+                ("RS", "RS"),
+                ("RS II", "RS II"),
+                ("Sequel", "Sequel"),
+                ("Sequel II", "Sequel II"),
+            ],
+    )
+    flowcell_type = forms.CharField(max_length=48)
+    #flowcell_version = forms.CharField(max_length=48)
+    flowcell_id = forms.CharField(max_length=48)
+
+    start_time = forms.DateTimeField(input_formats=["%Y-%m-%d %H:%M:%S"])
+    end_time = forms.DateTimeField(input_formats=["%Y-%m-%d %H:%M:%S"])
 
     @staticmethod
     def modify_preform(data):
