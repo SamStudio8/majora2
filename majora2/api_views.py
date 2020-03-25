@@ -18,6 +18,7 @@ from . import form_handlers
 
 import json
 
+MINIMUM_CLIENT_VERSION = "0.0.3"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
@@ -48,8 +49,20 @@ def wrap_api_v2(request, f):
     except:
         return HttpResponseBadRequest()
 
+    bad = False
+
+    # Bounce out of data clients
+    if json_data["client_name"] == "ocarina":
+        server_version = tuple(map(int, (MINIMUM_CLIENT_VERSION.split("."))))
+        client_version = tuple(map(int, (json_data["client_version"].split("."))))
+        if client_version < server_version:
+            api_o["messages"].append("Update your 'ocarina' client to version v%s" % MINIMUM_CLIENT_VERSION)
+            api_o["errors"] += 1
+            bad = True
+
     # Call the wrapped function
-    f(request, api_o, json_data, user=profile.user)
+    if not bad:
+        f(request, api_o, json_data, user=profile.user)
 
     api_o["success"] = api_o["errors"] == 0
     return HttpResponse(json.dumps(api_o), content_type="application/json")
