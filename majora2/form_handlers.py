@@ -35,7 +35,10 @@ def handle_testmetadata(form, user=None, api_o=None):
     return mr, created
 
 def handle_testsequencing(form, user=None, api_o=None):
-    p, sequencing_created = models.DNASequencingProcess.objects.get_or_create(id=form.cleaned_data["sequencing_id"])
+    p, sequencing_created = models.DNASequencingProcess.objects.get_or_create(pk=form.cleaned_data["sequencing_id"])
+
+    if not p:
+        return None, False
 
     p.instrument_make = form.cleaned_data["instrument_make"]
     p.instrument_model = form.cleaned_data["instrument_model"]

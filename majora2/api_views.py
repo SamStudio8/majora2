@@ -173,7 +173,7 @@ def add_sequencing(request):
                 form = forms.TestSequencingForm(run, initial=initial)
                 if form.is_valid():
                     form.cleaned_data.update(initial)
-                    sequencing, sequencing_created = form_handlers.handle_testsequencing(form, user=user, api_o=api_o)
+                    sequencing, sequencing_created = form_handlers.handle_testsequencing(run, user=user, api_o=api_o)
                 else:
                     api_o["errors"] += 1
                     api_o["messages"].append(form.errors.get_json_data())
