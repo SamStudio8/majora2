@@ -17,7 +17,7 @@
         <td>{% if artifact.source %}{{ artifact.source.unique_name }}{% else %}Unlinked{% endif %} ({{ artifact.collection.process.source_age }}{{ artifact.collection.process.source_sex }})</td>
         <td>{{ artifact.collection.process.collection_location_adm1 }} / {{ artifact.collection.process.collection_location_adm2 }}</br>
             {{artifact.collection.collected_by}}</td>
-        <td>{{ artifact.sample_type }} {% if artifact.sample_site %}({{ artifact.sample_site }}){% endif %}</td>
+        <td>{{ artifact.sample_type_collected }} {% if artifact.sample_site %}({{ artifact.sample_site }}){% endif %}</td>
         <td>{{ artifact.collection.process.when }}</br>
         {{ artifact.collection.process.when | naturaltime }}</td>
     </tr>

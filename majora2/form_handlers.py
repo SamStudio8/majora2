@@ -168,7 +168,8 @@ def handle_testsample(form, user=None, api_o=None):
         sample.central_sample_id = sample_id
         sample.dice_name = sample_id
 
-        sample.sample_type = form.cleaned_data.get("sample_type")
+        sample.sample_type_collected = form.cleaned_data.get("sample_type_collected")
+        sample.sample_type_current = form.cleaned_data.get("sample_type_received")
         sample.sample_site = form.cleaned_data.get("swab_site")
 
         sample.primary_group = source

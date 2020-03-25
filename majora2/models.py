@@ -541,9 +541,9 @@ class BiosampleArtifact(MajoraArtifact):
     central_sample_id = models.CharField(max_length=48, blank=True, null=True, unique=True)
 
     sample_orig_id = models.CharField(max_length=24, blank=True, null=True)
-    sample_type = models.CharField(max_length=24, blank=True, null=True)        #THIS should be a lookup
+    sample_type_collected = models.CharField(max_length=24, blank=True, null=True)        #THIS should be a lookup
     sample_site = models.CharField(max_length=24, blank=True, null=True)        #THIS should be a lookup
-    specimen_type = models.CharField(max_length=24, blank=True, null=True)
+    sample_type_curent = models.CharField(max_length=24, blank=True, null=True)
 
     sample_longitude = models.PositiveSmallIntegerField(default=0)
     sample_batch = models.PositiveSmallIntegerField(default=0)

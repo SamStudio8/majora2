@@ -273,12 +273,19 @@ class TestSampleForm(forms.Form):
             max_length=24,
             disabled=True,
     )
-    sample_type = forms.ChoiceField(
+    sample_type_collected = forms.ChoiceField(
         choices= [
             (None, "Unknown"),
             ("swab", "swab"),
             ("sputum", "sputum"),
             ("BAL", "BAL"),
+        ],
+        required=False,
+    )
+    sample_type_received = forms.ChoiceField(
+        choices= [
+            (None, "Unknown"),
+            ("primary", "primary"),
             ("extract", "extract"),
             ("culture", "culture"),
         ],
@@ -291,7 +298,7 @@ class TestSampleForm(forms.Form):
             ("throat", "throat"),
             ("nose-throat", "nose and throat"),
         ],
-        help_text="Provide only if sample_type is swab",
+        help_text="Provide only if sample_type_collected is swab",
         required=False,
     )
 
@@ -338,8 +345,9 @@ class TestSampleForm(forms.Form):
                 Row(
                     Column('source_type', css_class="form-group col-md-3 mb-0"),
                     Column('source_taxon', css_class="form-group col-md-3 mb-0"),
-                    Column('sample_type', css_class="form-group col-md-3 mb-0"),
-                    Column('swab_site', css_class="form-group col-md-3 mb-0"),
+                    Column('sample_type_collected', css_class="form-group col-md-2 mb-0"),
+                    Column('swab_site', css_class="form-group col-md-2 mb-0"),
+                    Column('sample_type_received', css_class="form-group col-md-2 mb-0"),
                     css_class="form-row",
                 )
             ),
@@ -406,11 +414,11 @@ class TestSampleForm(forms.Form):
 
         # Validate swab site
         swab_site = cleaned_data["swab_site"]
-        sample_type = cleaned_data["sample_type"]
+        sample_type = cleaned_data["sample_type_collected"]
         if sample_type != "swab" and swab_site:
-            self.add_error("sample_type", "Swab site specified but the sample type is not 'swab'")
+            self.add_error("sample_type_collected", "Swab site specified but the sample type is not 'swab'")
         if sample_type == "swab" and not swab_site:
-            self.add_error("sample_type", "Sample was a swab but you did not specify the swab site")
+            self.add_error("sample_type_collected", "Sample was a swab but you did not specify the swab site")
 
         # Validate accession
         secondary_identifier = cleaned_data["secondary_identifier"]
