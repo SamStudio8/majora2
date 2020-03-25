@@ -50,13 +50,17 @@ def wrap_api_v2(request, f):
         return HttpResponseBadRequest()
 
     bad = False
-
     # Bounce out of data clients
-    if json_data["client_name"] == "ocarina":
-        server_version = tuple(map(int, (MINIMUM_CLIENT_VERSION.split("."))))
-        client_version = tuple(map(int, (json_data["client_version"].split("."))))
-        if client_version < server_version:
-            api_o["messages"].append("Update your 'ocarina' client to version v%s" % MINIMUM_CLIENT_VERSION)
+    if json_data.get("client_name") == "ocarina":
+        try:
+            server_version = tuple(map(int, (MINIMUM_CLIENT_VERSION.split("."))))
+            client_version = tuple(map(int, (json_data["client_version"].split("."))))
+            if client_version < server_version:
+                api_o["messages"].append("Update your 'ocarina' client to version v%s" % MINIMUM_CLIENT_VERSION)
+                api_o["errors"] += 1
+                bad = True
+        except:
+            api_o["messages"].append("It appears you are using 'ocarina', but your version number doesn't make sense... This shouldn't happen...")
             api_o["errors"] += 1
             bad = True
 
