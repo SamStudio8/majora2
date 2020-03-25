@@ -111,6 +111,9 @@ def handle_testlibraryrecord(form, user=None, api_o=None):
     biosample = form.cleaned_data.get("central_sample_id") # will return a biosample object
     library = form.cleaned_data.get("library_name") # will actually return a library object
 
+    if not library.pooling:
+        return None, False
+
     pool_rec, created = models.LibraryPoolingProcessRecord.objects.get_or_create(
         process=library.pooling,
         bridge_artifact=biosample,
