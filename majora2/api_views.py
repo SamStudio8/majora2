@@ -18,7 +18,7 @@ from . import form_handlers
 
 import json
 
-MINIMUM_CLIENT_VERSION = "0.0.4"
+MINIMUM_CLIENT_VERSION = "0.0.5"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
@@ -100,7 +100,7 @@ def add_biosample(request):
 
     return wrap_api_v2(request, f)
 
-def add_sequencing(request):
+def add_library(request):
     def f(request, api_o, json_data, user=None):
         library_name = json_data.get("library_name")
         if not library_name:
@@ -110,11 +110,6 @@ def add_sequencing(request):
         biosamples = json_data.get("biosamples", {})
         if not biosamples:
             api_o["messages"].append("'biosamples' key missing or empty")
-            api_o["errors"] += 1
-            return
-        runs = json_data.get("runs", {})
-        if not runs:
-            api_o["messages"].append("'runs' key missing or empty")
             api_o["errors"] += 1
             return
 
@@ -181,6 +176,21 @@ def add_sequencing(request):
                 api_o["errors"] += 1
                 api_o["messages"].append(str(e))
 
+    return wrap_api_v2(request, f)
+
+def add_sequencing(request):
+    def f(request, api_o, json_data, user=None):
+        library_name = json_data.get("library_name")
+        if not library_name:
+            api_o["messages"].append("'library_name' key missing or empty")
+            api_o["errors"] += 1
+            return
+        runs = json_data.get("runs", {})
+        if not runs:
+            api_o["messages"].append("'runs' key missing or empty")
+            api_o["errors"] += 1
+            return
+
         # Add sequencing runs to library
         for run in runs:
             try:
@@ -197,7 +207,6 @@ def add_sequencing(request):
             except Exception as e:
                 api_o["errors"] += 1
                 api_o["messages"].append(str(e))
-
 
     return wrap_api_v2(request, f)
 
