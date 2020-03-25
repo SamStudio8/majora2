@@ -93,6 +93,11 @@ def add_sequencing(request):
             api_o["messages"].append("'biosamples' key missing or empty")
             api_o["errors"] += 1
             return
+        runs = json_data.get("runs", {})
+        if not runs:
+            api_o["messages"].append("'runs' key missing or empty")
+            api_o["errors"] += 1
+            return
 
         try:
             initial = fixed_data.fill_fixed_data("api.artifact.library.add", user)
@@ -132,19 +137,22 @@ def add_sequencing(request):
                 api_o["errors"] += 1
                 api_o["messages"].append(str(e))
 
-        try:
-            json_data = forms.TestSequencingForm.modify_preform(json_data)
-            initial = fixed_data.fill_fixed_data("api.process.sequencing.add", user)
-            form = forms.TestSequencingForm(json_data, initial=initial)
-            if form.is_valid():
-                form.cleaned_data.update(initial)
-                sequencing, sequencing_created = form_handlers.handle_testsequencing(form, user=user, api_o=api_o)
-            else:
+        # Add sequencing runs to library
+        for run in runs:
+            try:
+                json_data = forms.TestSequencingForm.modify_preform(json_data)
+                initial = fixed_data.fill_fixed_data("api.process.sequencing.add", user)
+                run["library_name"] = library_name
+                form = forms.TestSequencingForm(run, initial=initial)
+                if form.is_valid():
+                    form.cleaned_data.update(initial)
+                    sequencing, sequencing_created = form_handlers.handle_testsequencing(form, user=user, api_o=api_o)
+                else:
+                    api_o["errors"] += 1
+                    api_o["messages"].append(form.errors.get_json_data())
+            except Exception as e:
                 api_o["errors"] += 1
-                api_o["messages"].append(form.errors.get_json_data())
-        except Exception as e:
-            api_o["errors"] += 1
-            api_o["messages"].append(str(e))
+                api_o["messages"].append(str(e))
 
 
     return wrap_api_v2(request, f)
