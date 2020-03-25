@@ -902,6 +902,7 @@ class Profile(models.Model):
     api_key = models.CharField(max_length=128, default=uuid.uuid4)
 
 #TODO How to properly link models?
+#TODO MajoraCoreObject could be inherited by artifact, group etc.
 class MajoraMetaRecord(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

@@ -3,6 +3,8 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+
 
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -99,6 +101,7 @@ def add_sequencing(request):
             api_o["errors"] += 1
             return
 
+        library = None
         try:
             initial = fixed_data.fill_fixed_data("api.artifact.library.add", user)
             form = forms.TestLibraryForm(json_data, initial=initial)
@@ -112,9 +115,33 @@ def add_sequencing(request):
                 api_o["errors"] += 1
                 api_o["ignored"].append(library_name)
                 api_o["messages"].append(form.errors.get_json_data())
+
+            metadata = json_data.get("metadata", {})
+            for tag_key in metadata:
+                t_data = {
+                    "artifact": library_name,
+                    "tag": tag_key,
+                    "timestamp": timezone.now(),
+                }
+                for key in metadata[tag_key]:
+                    t_data["name"] = key
+                    t_data["value"] = metadata[tag_key][key]
+                    form = forms.TestMetadataForm(t_data)
+                    if form.is_valid():
+                        majora_meta, created = form_handlers.handle_testmetadata(form, user=user, api_o=api_o)
+                        if not created:
+                            pass
+                            #TODO catch
+                    else:
+                        api_o["errors"] += 1
+                        api_o["ignored"].append("metadata__%s__%s" % (t_data.get("tag"), t_data.get("name")))
+                        api_o["messages"].append(form.errors.get_json_data())
         except Exception as e:
             api_o["errors"] += 1
             api_o["messages"].append(str(e))
+
+        if not library:
+            return
 
         # Add samples to library
         for biosample in biosamples:

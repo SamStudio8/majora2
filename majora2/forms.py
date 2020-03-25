@@ -86,6 +86,29 @@ class RegistrationForm(forms.Form):
             raise forms.ValidationError("Unable to decode your key. Please ensure this is your public key and has been entered correctly.")
         return ssh_key
 
+class TestMetadataForm(forms.Form):
+
+
+    artifact = forms.ModelChoiceField(queryset=models.MajoraArtifact.objects.all(), required=False, to_field_name="dice_name")
+    group = forms.ModelChoiceField(queryset=models.MajoraArtifactGroup.objects.all(), required=False, to_field_name="dice_name")
+    process = forms.ModelChoiceField(queryset=models.MajoraArtifactProcess.objects.all(), required=False, to_field_name="dice_name")
+    #pgroup
+
+    tag = forms.CharField(max_length=64)
+    name = forms.CharField(max_length=64)
+    value = forms.CharField(max_length=128)
+
+    timestamp = forms.DateTimeField()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not (cleaned_data["artifact"] or cleaned_data["group"] or cleaned_data["process"]):
+            msg = "You must provide one 'artifact', 'group' or 'process' to attach metadata to"
+            self.add_error("artifact", msg)
+            self.add_error("group", msg)
+            self.add_error("process", msg)
+
+
 
 class TestLibraryForm(forms.Form):
 
@@ -148,31 +171,11 @@ class TestSequencingForm(forms.Form):
                 (None, ""),
                 ("ILLUMINA", "Illumina"),
                 ("OXFORD_NANOPORE", "Oxford Nanopore"),
+                ("PACIFIC_BIOSCIENCES", "Pacific Biosciences"),
             ],
     )
-    instrument_model = forms.ChoiceField(
+    instrument_model = forms.CharField(
             label="Instrument Model",
-            choices=[
-                (None, ""),
-                ("MinION", "MinION"),
-                ("GridION", "GridION"),
-                ("PromethION", "PromethION"),
-                ("HiSeq 1000", "HiSeq 1000"),
-                ("HiSeq 1500", "HiSeq 1500"),
-                ("HiSeq 2000", "HiSeq 2000"),
-                ("HiSeq 2500", "HiSeq 2500"),
-                ("HiSeq 3000", "HiSeq 3000"),
-                ("HiSeq 4000", "HiSeq 4000"),
-                ("NovaSeq 6000", "NovaSeq 6000"),
-                ("HiSeq X Five", "HiSeq X Five"),
-                ("HiSeq X Ten", "HiSeq X Ten"),
-                ("MiSeq", "MiSeq"),
-                ("MiniSeq", "MiniSeq"),
-                ("RS", "RS"),
-                ("RS II", "RS II"),
-                ("Sequel", "Sequel"),
-                ("Sequel II", "Sequel II"),
-            ],
     )
     flowcell_type = forms.CharField(max_length=48, required=False)
     #flowcell_version = forms.CharField(max_length=48)

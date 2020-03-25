@@ -10,6 +10,30 @@ def _format_tuple(x):
     else:
         return (x.kind, str(x.id), x.dice_name)
 
+def handle_testmetadata(form, user=None, api_o=None):
+
+    artifact = form.cleaned_data.get("artifact")
+    group = form.cleaned_data.get("group")
+    process = form.cleaned_data.get("process")
+
+    tag = form.cleaned_data.get("tag")
+    name = form.cleaned_data.get("name")
+    value = form.cleaned_data.get("value")
+
+    timestamp = form.cleaned_data.get("timestamp")
+
+    mr, created = models.MajoraMetaRecord.objects.get_or_create(
+            artifact=artifact,
+            group=group,
+            process=process,
+            meta_tag=tag,
+            meta_name=name,
+            value=value,
+            value_type="str",
+            timestamp=timestamp)
+    mr.save()
+    return mr, created
+
 def handle_testsequencing(form, user=None, api_o=None):
     p, sequencing_created = models.DNASequencingProcess.objects.get_or_create(id=form.cleaned_data["sequencing_id"])
 
