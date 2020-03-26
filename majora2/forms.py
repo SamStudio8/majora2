@@ -75,15 +75,15 @@ class RegistrationForm(forms.Form):
             self.add_error("username", 'This username has already been registered. You may be in the approval queue.')
 
     def clean_ssh_key(self):
-        ssh_key = "".join(self.cleaned_data["ssh_key"].splitlines())
-        #if '\n' in ssh_key or '\r' in ssh_key:
-        #    raise forms.ValidationError("Your public key should not contain any new line characters")
+        ssh_key = self.cleaned_data.get("ssh_key")
+        if ssh_key:
+            ssh_key = "".join(ssh_key.splitlines()).strip()
 
-        key = SSHKey(ssh_key)
-        try:
-            key.parse()
-        except Exception as e:
-            raise forms.ValidationError("Unable to decode your key. Please ensure this is your public key and has been entered correctly.")
+            key = SSHKey(ssh_key)
+            try:
+                key.parse()
+            except Exception as e:
+                raise forms.ValidationError("Unable to decode your key. Please ensure this is your public key and has been entered correctly.")
         return ssh_key
 
 class TestMetadataForm(forms.Form):
@@ -102,7 +102,7 @@ class TestMetadataForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        if not (cleaned_data["artifact"] or cleaned_data["group"] or cleaned_data["process"]):
+        if not (cleaned_data.get("artifact") or cleaned_data.get("group") or cleaned_data.get("process")):
             msg = "You must provide one 'artifact', 'group' or 'process' to attach metadata to"
             self.add_error("artifact", msg)
             self.add_error("group", msg)
@@ -231,7 +231,6 @@ class TestSampleForm(forms.Form):
                 ("UK-WLS", "Wales"),
                 ("UK-NIR", "Northern Ireland"),
             ],
-            required=True,
     )
     source_age = forms.IntegerField(min_value=0, required=False, help_text="Age in years")
     source_sex = forms.ChoiceField(choices=[
@@ -398,31 +397,32 @@ class TestSampleForm(forms.Form):
         cleaned_data = super().clean()
 
         # Check barcode starts with a Heron prefix, unless this has been overridden
-        sample_id = cleaned_data["central_sample_id"]
+        sample_id = cleaned_data.get("central_sample_id")
         if cleaned_data["override_heron"] is False:
             valid_sites = [x.code for x in models.Institute.objects.exclude(code__startswith="?")]
             if sum([sample_id.startswith(x) for x in valid_sites]) == 0:
                 self.add_error("central_sample_id", "Sample identifier does not match the WSI manifest.")
 
         # Check sample date is not in the future
-        if cleaned_data["collection_date"] > datetime.date.today():
-            self.add_error("collection_date", "Sample cannot be collected in the future")
+        if cleaned_data.get("collection_date"):
+            if cleaned_data["collection_date"] > datetime.date.today():
+                self.add_error("collection_date", "Sample cannot be collected in the future")
 
         # Check for full postcode mistake
-        adm2 = cleaned_data["adm2_private"]
+        adm2 = cleaned_data.get("adm2_private")
         if " " in adm2:
             self.add_error("adm2_private", "Enter the first part of the postcode only")
 
         # Validate swab site
-        swab_site = cleaned_data["swab_site"]
-        sample_type = cleaned_data["sample_type_collected"]
+        swab_site = cleaned_data.get("swab_site")
+        sample_type = cleaned_data.get("sample_type_collected")
         if sample_type != "swab" and swab_site:
             self.add_error("sample_type_collected", "Swab site specified but the sample type is not 'swab'")
         if sample_type == "swab" and not swab_site:
             self.add_error("sample_type_collected", "Sample was a swab but you did not specify the swab site")
 
         # Validate accession
-        secondary_identifier = cleaned_data["secondary_identifier"]
-        if secondary_identifier and not cleaned_data["secondary_accession"]:
+        secondary_identifier = cleaned_data.get("secondary_identifier")
+        if secondary_identifier and not cleaned_data.get("secondary_accession"):
             self.add_error("secondary_accession", "Accession for secondary identifier not provided")
 
