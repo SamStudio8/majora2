@@ -18,7 +18,7 @@ from . import form_handlers
 
 import json
 
-MINIMUM_CLIENT_VERSION = "0.0.7"
+MINIMUM_CLIENT_VERSION = "0.0.9"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
@@ -239,5 +239,21 @@ def add_sequencing(request):
 
 def add_digitalresource(request):
     def f(request, api_o, json_data, user=None):
-        pass
+        # Try to add file
+        try:
+            initial = fixed_data.fill_fixed_data("api.artifact.digitalresource.add", user)
+            form = forms.TestFileForm(json_data, initial=initial)
+            if form.is_valid():
+                form.cleaned_data.update(initial)
+                mfile, created = form_handlers.handle_testdigitalresource(form, user=user, api_o=api_o)
+                if not mfile:
+                    api_o["ignored"].append(json_data.get("path"))
+                    api_o["errors"] += 1
+            else:
+                api_o["errors"] += 1
+                api_o["messages"].append(form.errors.get_json_data())
+        except Exception as e:
+            api_o["errors"] += 1
+            api_o["messages"].append(str(e))
+
     return wrap_api_v2(request, f)

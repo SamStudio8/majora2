@@ -229,3 +229,38 @@ def handle_testsample(form, user=None, api_o=None):
     sample_p.save()
 
     return sample, sample_created
+
+def handle_testdigitalresource(form, user=None, api_o=None):
+
+    node = form.cleaned_data["node_name"]
+
+    # Get the directory
+    parent = None
+    path = form.cleaned_data["path"]
+    lpath = path.split( form.cleaned_data["sep"] )[1:-1]
+    for i, dir_name in enumerate(lpath):
+        dir_g, created = models.DigitalResourceGroup.objects.get_or_create(
+                current_name=dir_name,
+                root_group=node,
+                parent_group=parent,
+                physical=True)
+        parent = dir_g
+
+    if not parent:
+        parent = node
+
+    res, created = models.DigitalResourceArtifact.objects.get_or_create(
+            primary_group = parent,
+            current_name = form.cleaned_data["current_name"],
+            current_extension = form.cleaned_data["current_fext"],
+    )
+    res.current_hash = form.cleaned_data["current_hash"]
+    res.current_size = form.cleaned_data["current_size"]
+    res.current_kind = form.cleaned_data["resource_type"]
+    res.save()
+
+    if created and api_o:
+        api_o["new"].append(_format_tuple(res))
+    elif res:
+        api_o["updated"].append(_format_tuple(res))
+    return res, created

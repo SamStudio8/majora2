@@ -430,8 +430,10 @@ class TestSampleForm(forms.Form):
 
 class TestFileForm(forms.Form):
 
-    current_node = forms.ModelChoiceField(queryset=models.DigitalResourceNode.objects.all())
-    current_path = forms.CharField(max_length=1024)
+    #node_uuid = forms.ModelChoiceField(queryset=models.DigitalResourceNode.objects.all())
+    node_name = forms.ModelChoiceField(queryset=models.DigitalResourceNode.objects.all(), to_field_name="unique_name")
+    path = forms.CharField(max_length=1024)
+    sep = forms.CharField(max_length=2)
     current_name = forms.CharField(max_length=512)
     current_fext = forms.CharField(max_length=48)
 
