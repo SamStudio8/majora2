@@ -18,7 +18,7 @@ from . import form_handlers
 
 import json
 
-MINIMUM_CLIENT_VERSION = "0.0.6"
+MINIMUM_CLIENT_VERSION = "0.0.7"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
@@ -156,21 +156,31 @@ def add_library(request):
             return
 
         # Check samples exist, and create them if the right flag has been set
-        bad = False
+        sample_missing = False
+        sample_forced = False
         for biosample in biosamples:
             sample_id = biosample.get("central_sample_id")
-            if models.BiosampleArtifact.objects.filter(central_sample_id=sample_id).count() != 1:
-                api_o["ignored"].append(sample_id)
-                api_o["errors"] += 1
-                bad = True
-            #elif json_data.get("force_biosamples"):
-            #    pass
-                # Make dummy sample?
-        if bad:
+            if json_data.get("force_biosamples"):
+                # Make dummy sample
+                biosample, created = models.BiosampleArtifact.objects.get_or_create(
+                        central_sample_id=sample_id,
+                        dice_name=sample_id
+                )
+                if created:
+                    api_o["new"].append(form_handlers._format_tuple(biosample))
+                    api_o["warnings"] += 1
+                    sample_forced = True
+            else:
+                if models.BiosampleArtifact.objects.filter(central_sample_id=sample_id).count() != 1:
+                    api_o["ignored"].append(sample_id)
+                    api_o["errors"] += 1
+                    sample_missing = True
+
+        if sample_missing:
             api_o["messages"].append("At least one Biosample in your Library was not registered. No samples have been added to this Library. Register the missing samples, or remove them from your request and try again.")
             return
-
-
+        if sample_forced:
+            api_o["messages"].append("You forced the creation of at least one Biosample. This sample will be ignored by CLIMB pipelines and reports until its metadata has been registered.")
 
         # Add samples to library
         for biosample in biosamples:
