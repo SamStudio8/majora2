@@ -36,8 +36,6 @@
         <tbody>
         <tr>
             <th>Created</th>
-            <td class="text-right">{{ artifact.created.process.when | naturaltime }}</br>
-                by {{ artifact.created.process.who }}
             </td>
         </tr>
         </tbody>
@@ -45,8 +43,6 @@
     <table class="table table-hover table-active">
         <tbody>
             <th>Last Modifed</th>
-            <td class="text-right">{{ artifact.modified.process.when | naturaltime }}</br>
-                by {{ artifact.created.process.who }}
             </td>
         </tr>
         </tbody>
@@ -55,8 +51,6 @@
         <tbody>
         <tr>
             <th>Last Seen</th>
-            <td class="text-right">{{ artifact.observed.process.when | naturaltime }}</br>
-                by {{ artifact.created.process.who }}
             </td>
         </tr>
         </tbody>
