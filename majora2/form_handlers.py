@@ -28,11 +28,10 @@ def handle_testmetadata(form, user=None, api_o=None):
             process=process,
             meta_tag=tag,
             meta_name=name,
-            value=value,
             value_type="str",
     )
-    if created:
-        mr.timestamp = timestamp
+    mr.value=value
+    mr.timestamp = timestamp
     mr.save()
     return mr, created
 
@@ -251,6 +250,7 @@ def handle_testdigitalresource(form, user=None, api_o=None):
             current_name = form.cleaned_data["current_name"],
             current_extension = form.cleaned_data["current_fext"],
     )
+    res.dice_name = str(res.id)
     res.current_hash = form.cleaned_data["current_hash"]
     res.current_size = form.cleaned_data["current_size"]
     res.current_kind = form.cleaned_data["resource_type"]

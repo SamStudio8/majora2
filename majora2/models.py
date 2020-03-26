@@ -915,11 +915,11 @@ class MajoraMetaRecord(PolymorphicModel):
     meta_name = models.CharField(max_length=64)
 
     value_type = models.CharField(max_length=48)
-    value = models.CharField(max_length=128)
+    value = models.CharField(max_length=128, blank=True, null=True)
 
     link = models.BooleanField(default=False)
     inheritable = models.BooleanField(default=True)
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(blank=True, null=True)
 
     @property
     def translate(self):

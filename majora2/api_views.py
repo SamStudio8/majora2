@@ -72,6 +72,31 @@ def wrap_api_v2(request, f):
     return HttpResponse(json.dumps(api_o), content_type="application/json")
 
 
+def handle_metadata(metadata, tag_type, tag_to, user, api_o):
+    ts = timezone.now()
+    for tag_key in metadata:
+        for key in metadata[tag_key]:
+            t_data = {
+                tag_type: tag_to,
+                "tag": tag_key,
+                "timestamp": ts,
+            }
+            t_data["name"] = key
+            t_data["value"] = metadata[tag_key][key]
+            form = forms.TestMetadataForm(t_data)
+            if form.is_valid():
+                majora_meta, created = form_handlers.handle_testmetadata(form, user=user, api_o=api_o)
+                if not created:
+                    #TODO catch
+                    pass
+                if not majora_meta:
+                    api_o["warnings"] += 1
+                    api_o["ignored"].append("metadata__%s__%s" % (t_data.get("tag"), t_data.get("name")))
+            else:
+                api_o["errors"] += 1
+                api_o["ignored"].append("metadata__%s__%s" % (t_data.get("tag"), t_data.get("name")))
+                api_o["messages"].append(form.errors.get_json_data())
+
 def add_biosample(request):
     def f(request, api_o, json_data, user=None):
         biosamples = json_data.get("biosamples", {})
@@ -128,26 +153,7 @@ def add_library(request):
                 api_o["ignored"].append(library_name)
                 api_o["messages"].append(form.errors.get_json_data())
 
-            metadata = json_data.get("metadata", {})
-            for tag_key in metadata:
-                t_data = {
-                    "artifact": library_name,
-                    "tag": tag_key,
-                    "timestamp": timezone.now(),
-                }
-                for key in metadata[tag_key]:
-                    t_data["name"] = key
-                    t_data["value"] = metadata[tag_key][key]
-                    form = forms.TestMetadataForm(t_data)
-                    if form.is_valid():
-                        majora_meta, created = form_handlers.handle_testmetadata(form, user=user, api_o=api_o)
-                        if not created:
-                            pass
-                            #TODO catch
-                    else:
-                        api_o["errors"] += 1
-                        api_o["ignored"].append("metadata__%s__%s" % (t_data.get("tag"), t_data.get("name")))
-                        api_o["messages"].append(form.errors.get_json_data())
+            handle_metadata(json_data.get("metadata", {}), 'artifact', library_name, user, api_o)
         except Exception as e:
             api_o["errors"] += 1
             api_o["messages"].append(str(e))
@@ -249,6 +255,8 @@ def add_digitalresource(request):
                 if not mfile:
                     api_o["ignored"].append(json_data.get("path"))
                     api_o["errors"] += 1
+                elif mfile:
+                    handle_metadata(json_data.get("metadata", {}), 'artifact', mfile.id, user, api_o)
             else:
                 api_o["errors"] += 1
                 api_o["messages"].append(form.errors.get_json_data())
