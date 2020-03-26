@@ -430,6 +430,10 @@ class TestSampleForm(forms.Form):
 
 class TestFileForm(forms.Form):
 
+    bridge_artifact = forms.ModelChoiceField(queryset=models.MajoraArtifact.objects.all(), required=False, to_field_name="dice_name")
+    source_artifact = forms.ModelChoiceField(queryset=models.MajoraArtifact.objects.all(), required=False, to_field_name="dice_name")
+    source_group = forms.ModelChoiceField(queryset=models.MajoraArtifactGroup.objects.all(), required=False, to_field_name="dice_name")
+
     #node_uuid = forms.ModelChoiceField(queryset=models.DigitalResourceNode.objects.all())
     node_name = forms.ModelChoiceField(queryset=models.DigitalResourceNode.objects.all(), to_field_name="unique_name")
     path = forms.CharField(max_length=1024)

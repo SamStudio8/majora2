@@ -16,7 +16,6 @@
         </div>
         {% endif %}
 
-
         {% for c in ch %}
             {% with d=c template_name="tables/recurse_process.html" %}
                 {% include template_name %}

@@ -65,16 +65,19 @@ def handle_testsequencing(form, user=None, api_o=None):
             physical=False
     )
     if dgroup_created:
-        a = models.MajoraArtifact(dice_name="seq-test-%s" % str(p.id))
-        a.save()
         rec = models.DNASequencingProcessRecord(
             process=p,
             in_artifact=form.cleaned_data.get("library_name"),
             out_group=dgroup,
         )
         rec.save()
+
+        bio = models.AbstractBioinformaticsProcess()
+        bio.save()
+        a = models.MajoraArtifact(dice_name="sequencing-dummy-reads-%s" % str(p.id))
+        a.save()
         rec2 = models.MajoraArtifactProcessRecord(
-            process=p,
+            process=bio,
             in_group=dgroup,
             out_artifact=a,
         )
@@ -255,6 +258,18 @@ def handle_testdigitalresource(form, user=None, api_o=None):
     res.current_size = form.cleaned_data["current_size"]
     res.current_kind = form.cleaned_data["resource_type"]
     res.save()
+
+    if form.cleaned_data.get("source_group") or form.cleaned_data.get("source_artifact"):
+        bio = models.AbstractBioinformaticsProcess()
+        bio.save()
+        bior, created = models.MajoraArtifactProcessRecord.objects.get_or_create(
+            process = bio,
+            in_group = form.cleaned_data.get("source_group"),
+            in_artifact = form.cleaned_data.get("source_artifact"),
+            out_artifact = res
+        )
+        bior.bridge_artifact = form.cleaned_data.get("bridge_artifact")
+        bior.save()
 
     if created and api_o:
         api_o["new"].append(_format_tuple(res))
