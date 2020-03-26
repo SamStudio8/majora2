@@ -235,7 +235,7 @@ def handle_testdigitalresource(form, user=None, api_o=None):
     node = form.cleaned_data["node_name"]
 
     # Get the directory
-    parent = None
+    parent = node
     path = form.cleaned_data["path"]
     lpath = path.split( form.cleaned_data["sep"] )[1:-1]
     for i, dir_name in enumerate(lpath):
@@ -245,9 +245,6 @@ def handle_testdigitalresource(form, user=None, api_o=None):
                 parent_group=parent,
                 physical=True)
         parent = dir_g
-
-    if not parent:
-        parent = node
 
     res, created = models.DigitalResourceArtifact.objects.get_or_create(
             primary_group = parent,
