@@ -427,3 +427,23 @@ class TestSampleForm(forms.Form):
         if secondary_identifier and not cleaned_data.get("secondary_accession"):
             self.add_error("secondary_accession", "Accession for secondary identifier not provided")
 
+
+class TestFileForm(forms.Form):
+
+    current_node = forms.ModelChoiceField(queryset=models.DigitalResourceNode.objects.all())
+    current_path = forms.CharField(max_length=1024)
+    current_name = forms.CharField(max_length=512)
+    current_fext = forms.CharField(max_length=48)
+
+    current_hash = forms.CharField(max_length=64)
+    current_size = forms.IntegerField(min_value=0)
+
+    resource_type = forms.ChoiceField(
+        choices= [
+            ("file", "file"),
+            ("reads", "reads"),
+            ("alignment", "alignment"),
+            ("consensus", "consensus"),
+        ],
+    )
+
