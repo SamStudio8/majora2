@@ -398,10 +398,11 @@ class TestSampleForm(forms.Form):
 
         # Check barcode starts with a Heron prefix, unless this has been overridden
         sample_id = cleaned_data.get("central_sample_id")
-        if cleaned_data["override_heron"] is False:
-            valid_sites = [x.code for x in models.Institute.objects.exclude(code__startswith="?")]
-            if sum([sample_id.startswith(x) for x in valid_sites]) == 0:
-                self.add_error("central_sample_id", "Sample identifier does not match the WSI manifest.")
+        if sample_id:
+            if cleaned_data["override_heron"] is False:
+                valid_sites = [x.code for x in models.Institute.objects.exclude(code__startswith="?")]
+                if sum([sample_id.startswith(x) for x in valid_sites]) == 0:
+                    self.add_error("central_sample_id", "Sample identifier does not match the WSI manifest.")
 
         # Check sample date is not in the future
         if cleaned_data.get("collection_date"):
