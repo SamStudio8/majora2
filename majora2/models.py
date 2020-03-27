@@ -360,6 +360,9 @@ class DigitalResourceNode(MajoraArtifactGroup):
     def group_kind(self):
         return 'Digital Resource Node'
     @property
+    def path(self):
+        return self.name
+    @property
     def name(self):
         return self.node_name
     @property
