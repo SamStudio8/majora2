@@ -11,7 +11,7 @@
         {% elif p.out_group %}
         <span class="badge badge-info">{{ p.out_group.group_kind }}</span> <span class="badge badge-danger">{{ p.process.process_kind }}</span></br>
         <div class="d-flex w-100 justify-content-between text-right">
-            <b><a href="{% url 'group_artifact' p.out_group.id %}">{{ p.out_group.name }}</a></b>
+            <b>{{ p.out_group.name }}</b>
             <small>{{ p.process.when | naturaltime }}</small>
         </div>
         {% endif %}
