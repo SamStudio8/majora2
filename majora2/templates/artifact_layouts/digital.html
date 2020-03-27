@@ -1,50 +1,59 @@
 {% load humanize %}
 <div class="row">
-<div class="col-md-6">
+<div class="col-md-12">
     <h2>Digital Resource</h2>
     <table class="table table-hover table-active">
+        <thead>
+            <tr class="table-active">
+                <th>Node</th>
+                <th>Dir</th>
+                <th>Name</th>
+                <th>Type</th>
+            </tr>
+        </thead>
         <tbody>
-        <tr>
-            <th>Name</th>
-            <td><b>{{ artifact.name }}</b></td>
-        </tr>
-        <tr>
-            <th>Type</th>
-            <td>{{ artifact.current_kind }}</td>
-        </tr>
-            <th>Node</th>
-            <td><b>
-                    {% if artifact.primary_group.root_group %}<a href="{% url 'group_artifact' artifact.primary_group.root_group.id %}">{{ artifact.primary_group.root_group.name }}</a>{% endif %}
-            </b></td>
-        </tr>
-        <tr>
-            <th>Directory</th>
-            <td><b>
-                    {% if artifact.primary_group %}<a href="{% url 'group_artifact' artifact.primary_group.id %}">{{ artifact.primary_group.name }}</a>{% endif %}
-            </b></td>
-        </tr>
-        <tr>
-            <th>{% if artifact.ghost %}Last{% else %}Current{% endif %} Size</th>
-            <td>{{ artifact.current_size | filesizeformat }}</td>
-        </tr>
-        <tr>
-            <th>{% if artifact.ghost %}Last{% else %}Current{% endif %} Hash</th>
-            <td><code>{{ artifact.current_hash }}</code></td>
-        </tr>
+            <tr>
+                <td>{% if artifact.primary_group.root_group %}<a href="{% url 'group_artifact' artifact.primary_group.root_group.id %}">{{ artifact.primary_group.root_group.name }}</a>{% endif %}</td>
+                <td>{% if artifact.primary_group %}<a href="{% url 'group_artifact' artifact.primary_group.id %}">{{ artifact.primary_group.name }}</a>{% endif %}</td>
+                <td><b>{{ artifact.name }}</b></br>
+                    <code>{{ artifact.current_kind }}</code> ({{ artifact.current_size | filesizeformat }})
+                </td>
+            </tr>
         </tbody>
     </table>
 </div>
 <div class="col-md-6">
 </div>
 </div>
-<hr/>
 
 <div class="row">
 <div class="col-md-12">
 <br/>
     <h2 class="text-right">Processes</h2>
-    {% for proc in artifact.after_process.all %}
-        {{ proc }}
+    <table class="table table-hover table-active">
+    <thead>
+        <tr class="table-active">
+            <th>Process</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for proc in artifact.process_tree_bioinf %}
+        <tr>
+            <td><b><span class="badge badge-danger" style="font-size: 1em">{{ proc.process.process_kind }}</span></b></td>
+            <td>
+                {% if proc.process.process_kind == "Sequencing" %}
+                {{ proc.process.instrument_make }} {{proc.process.instrument_model }}
+                {{ proc.process.flowcell_type }} {{proc.process.flowcell_id}}
+                {{ proc.process.start_time | naturaltime }} {{ proc.process.duration | naturaltime }}
+                {% else %}
+                    {{ proc.process.pipe_name }}
+                    {{ proc.process.pipe_version }}
+                {% endif %}
+            </td>
+        </tr>
     {% endfor %}
+    </tbody>
+</table>
 </div>
 </div>

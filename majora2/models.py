@@ -39,14 +39,20 @@ class MajoraArtifact(PolymorphicModel):
     @property
     def process_tree(self):
         a = []
+        seen = set([])
         a.extend(self.after_process.all().order_by('-process__when'))
         for proc in a:
-            if proc.in_artifact and proc.in_artifact.id != proc.out_artifact.id:# or proc.in_group:
+            if proc in seen:
+                continue
+            if proc.in_artifact:# and proc.in_artifact.id != proc.out_artifact.id:# or proc.in_group:
                 a.extend(proc.in_artifact.process_tree)
+
             if proc.in_group:
                 for c_proc in proc.in_group.after_process.all(): # TODO limit this by objects older than this outer loop
                     if c_proc.in_artifact:# and c_proc.in_artifact.id != c_proc.out_artifact.id:# or proc.in_group:
+                        a.append(c_proc)
                         a.extend(c_proc.in_artifact.process_tree)
+            seen.add(proc)
         return a
     @property
     def process_leaf(self):
@@ -421,6 +427,15 @@ class DigitalResourceArtifact(MajoraArtifact):
         ).exclude(
                 id = self.id
         )
+
+    @property
+    def process_tree_bioinf(self):
+        tree = self.process_tree
+        ret = []
+        for t in tree:
+            if t.process.process_kind.startswith("Bioinformatics") or t.process.process_kind == "Sequencing":
+                ret.append(t)
+        return reversed(ret)
 
     @classmethod
     def sorto(cls, a):
@@ -1039,6 +1054,7 @@ class DNASequencingProcess(MajoraArtifactProcess):
     @property
     def process_kind(self):
         return 'Sequencing'
+
 class DNASequencingProcessRecord(MajoraArtifactProcessRecord):
     pass
 
@@ -1050,6 +1066,6 @@ class AbstractBioinformaticsProcess(MajoraArtifactProcess):
 
     @property
     def process_kind(self):
-        return 'Bioinformatics: %s' % self.ab_kind
+        return 'Bioinformatics: %s' % self.pipe_kind
     pass
 
