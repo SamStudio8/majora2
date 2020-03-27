@@ -13,11 +13,15 @@
             <td>{{ artifact.current_kind }}</td>
         </tr>
             <th>Node</th>
-            <td><b><a href="{% url 'group_artifact' artifact.primary_group.root_group.id %}">{{ artifact.primary_group.root_group.name }}</a></b></td>
+            <td><b>
+                    {% if artifact.primary_group.root_group %}<a href="{% url 'group_artifact' artifact.primary_group.root_group.id %}">{{ artifact.primary_group.root_group.name }}</a>{% endif %}
+            </b></td>
         </tr>
         <tr>
             <th>Directory</th>
-            <td><b><a href="{% url 'group_artifact' artifact.primary_group.id %}">{{ artifact.primary_group.name }}</a></b></td>
+            <td><b>
+                    {% if artifact.primary_group %}<a href="{% url 'group_artifact' artifact.primary_group.id %}">{{ artifact.primary_group.name }}</a>{% endif %}
+            </b></td>
         </tr>
         <tr>
             <th>{% if artifact.ghost %}Last{% else %}Current{% endif %} Size</th>
