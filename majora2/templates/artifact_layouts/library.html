@@ -34,23 +34,4 @@
 {% endwith %}
 </div>
 </div>
-<br/>
 
-<h2 class="text-right">Downstream Artifacts</h2>
-<div class="" style="font-size: 1.1em">
-<style>
-</style>
-<ul class="list-group list-group-collapse">
-<ul class="list-group">
-<li class="list-group-item list-group-item-action list-group-item-primary">
-    <span class="badge badge-info">{{ artifact.artifact_kind }}</span><br/>
-    <b>{{ artifact.name }}</b>
-</li>
-</ul>
-    {% for d in artifact.process_tree_down %}
-        {%include "tables/recurse_process.html" %}
-    {% endfor %}
-</ul>
-</div>
-
-<br/>

@@ -35,31 +35,16 @@
     </table>
 </div>
 <div class="col-md-6">
-    <h2>Brief History</h2>
-    <table class="table table-hover table-active">
-        <tbody>
-        <tr>
-            <th>Created</th>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-    <table class="table table-hover table-active">
-        <tbody>
-            <th>Last Modifed</th>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-    <table class="table table-hover table-active">
-        <tbody>
-        <tr>
-            <th>Last Seen</th>
-            </td>
-        </tr>
-        </tbody>
-    </table>
 </div>
 </div>
 <hr/>
 
+<div class="row">
+<div class="col-md-12">
+<br/>
+    <h2 class="text-right">Processes</h2>
+    {% for proc in artifact.after_process.all %}
+        {{ proc }}
+    {% endfor %}
+</div>
+</div>
