@@ -164,7 +164,10 @@ class TestLibraryBiosampleForm(forms.Form):
 
 class TestSequencingForm(forms.Form):
     library_name = forms.ModelChoiceField(queryset=models.LibraryArtifact.objects.all(), required=True, to_field_name="dice_name")
-    sequencing_id = forms.UUIDField()
+
+    sequencing_id = forms.UUIDField(required=False)
+    run_name = forms.CharField(max_length=128, required=False)
+
     instrument_make = forms.ChoiceField(
             label="Instrument Make",
             choices=[
@@ -194,9 +197,12 @@ class TestSequencingForm(forms.Form):
                 data[field] = data[field].upper().replace(' ', '_')
         return data
 
-    #instrument_model = models.CharField(max_length=24)
-    #flowcell_type = models.CharField(max_length=48, blank=True, null=True)
-    #flowcell_id = models.CharField(max_length=48, blank=True, null=True)
+    def clean(self):
+        if not self.cleaned_data.get("sequencing_id"):
+            if not self.cleaned_data.get("run_name"):
+                self.add_error("run_name", "If you don't provide a sequencing_id, you must provide a run_name")
+
+
 
 
 

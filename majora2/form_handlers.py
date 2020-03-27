@@ -36,7 +36,17 @@ def handle_testmetadata(form, user=None, api_o=None):
     return mr, created
 
 def handle_testsequencing(form, user=None, api_o=None):
-    p, sequencing_created = models.DNASequencingProcess.objects.get_or_create(pk=form.cleaned_data["sequencing_id"])
+
+    sequencing_id = form.cleaned_data.get("sequencing_id")
+    if sequencing_id:
+        if form.cleaned_data.get("run_name"):
+            run_name = form.cleaned_data.get("run_name")
+        else:
+            run_name = str(sequencing_id)
+        p, sequencing_created = models.DNASequencingProcess.objects.get_or_create(pk=form.cleaned_data["sequencing_id"], run_name=run_name)
+    else:
+        run_name = form.cleaned_data["run_name"]
+        p, sequencing_created = models.DNASequencingProcess.objects.get_or_create(run_name=form.cleaned_data["run_name"])
 
     if not p:
         return None, False
@@ -60,8 +70,8 @@ def handle_testsequencing(form, user=None, api_o=None):
 
     # Created placeholder digitalgroup
     dgroup, dgroup_created = models.DigitalResourceGroup.objects.get_or_create(
-            unique_name="sequencing-filetree-%s" % str(p.id),
-            current_name="sequencing-filetree-%s" % str(p.id),
+            unique_name="sequencing-filetree-%s" % run_name,
+            current_name="sequencing-filetree-%s" % run_name,
             physical=False
     )
     if dgroup_created:
@@ -74,7 +84,7 @@ def handle_testsequencing(form, user=None, api_o=None):
 
         bio = models.AbstractBioinformaticsProcess()
         bio.save()
-        a = models.MajoraArtifact(dice_name="sequencing-dummy-reads-%s" % str(p.id))
+        a = models.MajoraArtifact(dice_name="sequencing-dummy-reads-%s" % run_name)
         a.save()
         rec2 = models.MajoraArtifactProcessRecord(
             process=bio,
