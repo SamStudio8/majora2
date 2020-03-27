@@ -1011,6 +1011,8 @@ class DNASequencingProcessGroup(MajoraArtifactProcessGroup):
     experiment_name = models.CharField(max_length=128)
 
 class DNASequencingProcess(MajoraArtifactProcess):
+    run_name = models.CharField(max_length=128, unique=True)
+
     instrument_make = models.CharField(max_length=64)
     instrument_model = models.CharField(max_length=48)
     flowcell_type = models.CharField(max_length=48, blank=True, null=True)
