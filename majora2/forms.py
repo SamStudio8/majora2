@@ -441,7 +441,7 @@ class TestFileForm(forms.Form):
     source_group = forms.ModelChoiceField(queryset=models.MajoraArtifactGroup.objects.all(), required=False, to_field_name="dice_name")
 
     #node_uuid = forms.ModelChoiceField(queryset=models.DigitalResourceNode.objects.all())
-    node_name = forms.ModelChoiceField(queryset=models.DigitalResourceNode.objects.all(), to_field_name="unique_name")
+    node_name = forms.ModelChoiceField(queryset=models.DigitalResourceNode.objects.all(), to_field_name="unique_name", required=False)
     path = forms.CharField(max_length=1024)
     sep = forms.CharField(max_length=2)
     current_name = forms.CharField(max_length=512)

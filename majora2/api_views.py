@@ -18,7 +18,7 @@ from . import form_handlers
 
 import json
 
-MINIMUM_CLIENT_VERSION = "0.0.9"
+MINIMUM_CLIENT_VERSION = "0.0.10"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
@@ -245,6 +245,19 @@ def add_sequencing(request):
 
 def add_digitalresource(request):
     def f(request, api_o, json_data, user=None):
+
+        node_name = json_data.get("node_name")
+        if not node_name and user and hasattr(user, "profile"):
+            node_name = user.profile.institute.code
+            # Just add the node if it does not exist?
+            node, created = models.DigitalResourceNode.objects.get_or_create(
+                unique_name = node_name,
+                dice_name = node_name,
+                meta_name = node_name,
+                node_name = node_name,
+            )
+            json_data["node_name"] = node.dice_name
+
         # Try to add file
         try:
             initial = fixed_data.fill_fixed_data("api.artifact.digitalresource.add", user)
@@ -265,3 +278,5 @@ def add_digitalresource(request):
             api_o["messages"].append(str(e))
 
     return wrap_api_v2(request, f)
+
+
