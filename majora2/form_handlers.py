@@ -84,7 +84,11 @@ def handle_testsequencing(form, user=None, api_o=None):
 
         bio = models.AbstractBioinformaticsProcess()
         bio.save()
-        a = models.MajoraArtifact(dice_name="sequencing-dummy-reads-%s" % run_name)
+        a = models.DigitalResourceArtifact(
+                dice_name="sequencing-dummy-reads-%s" % run_name,
+                current_name="sequencing-dummy-reads-%s" % run_name,
+                current_kind="dummy",
+        )
         a.save()
         rec2 = models.MajoraArtifactProcessRecord(
             process=bio,
