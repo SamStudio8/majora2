@@ -43,6 +43,10 @@ class MajoraArtifact(PolymorphicModel):
         for proc in a:
             if proc.in_artifact and proc.in_artifact.id != proc.out_artifact.id:# or proc.in_group:
                 a.extend(proc.in_artifact.process_tree)
+            if proc.in_group:
+                for c_proc in proc.in_group.after_process.all(): # TODO limit this by objects older than this outer loop
+                    if c_proc.in_artifact:# and c_proc.in_artifact.id != c_proc.out_artifact.id:# or proc.in_group:
+                        a.extend(c_proc.in_artifact.process_tree)
         return a
     @property
     def process_leaf(self):
@@ -383,6 +387,8 @@ class DigitalResourceGroup(MajoraArtifactGroup):
     def path(self):
         return "/".join([g.current_name for g in self.hierarchy])
 
+
+
 class DigitalResourceArtifact(MajoraArtifact):
     #current_node = models.ForeignKey('Node')
 
@@ -419,6 +425,11 @@ class DigitalResourceArtifact(MajoraArtifact):
     @classmethod
     def sorto(cls, a):
         return sorted(a, key=lambda x: x.current_name)
+
+#TODO this seems like a nice idea on paper but sounds like it will lead to a lifetime of making models for different file formats
+#class BasecalledSequenceFile(DigitalResourceArtifact):
+#    sequencing = models.ForeignKey("DNASequencingProcess", blank=True, null=True, on_delete=models.PROTECT, related_name="called_reads")
+#    basecalling = models.ForeignKey("AbstractBioinformaticsProcess", blank=True, null=True, on_delete=models.PROTECT, related_name="called_reads")
 
 class TubeContainerGroup(MajoraArtifactGroup):
 
@@ -1033,24 +1044,12 @@ class DNASequencingProcessRecord(MajoraArtifactProcessRecord):
 
 
 class AbstractBioinformaticsProcess(MajoraArtifactProcess):
-    @property
-    def process_kind(self):
-        return 'Bioinformatics'
-    pass
-
-class BasecallingProcess(MajoraArtifactProcess):
-    basecaller = models.CharField(max_length=48) #TODO fold these into a lookup model
-    basecaller_version = models.CharField(max_length=48, blank=True, null=True)
-    basecaller_model = models.CharField(max_length=48, blank=True, null=True)
-
-    read_count = models.BigIntegerField(blank=True, null=True)
-    base_count = models.BigIntegerField(blank=True, null=True)
-    median_quality = models.FloatField(blank=True, null=True)
-    n50 = models.PositiveIntegerField(blank=True, null=True)
+    pipe_kind = models.CharField(max_length=64, blank=True, null=True) # will eventually need a controlled vocab here
+    pipe_name = models.CharField(max_length=48, blank=True, null=True)
+    pipe_version = models.CharField(max_length=48, blank=True, null=True)
 
     @property
     def process_kind(self):
-        return 'Basecalling'
-class BasecallingProcessRecord(MajoraArtifactProcessRecord):
+        return 'Bioinformatics: %s' % self.ab_kind
     pass
 
