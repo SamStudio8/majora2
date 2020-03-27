@@ -91,7 +91,7 @@ class TestMetadataForm(forms.Form):
 
     artifact = forms.ModelChoiceField(queryset=models.MajoraArtifact.objects.all(), required=False, to_field_name="dice_name")
     group = forms.ModelChoiceField(queryset=models.MajoraArtifactGroup.objects.all(), required=False, to_field_name="dice_name")
-    process = forms.ModelChoiceField(queryset=models.MajoraArtifactProcess.objects.all(), required=False, to_field_name="dice_name")
+    process = forms.ModelChoiceField(queryset=models.MajoraArtifactProcess.objects.all(), required=False)
     #pgroup
 
     tag = forms.CharField(max_length=64)

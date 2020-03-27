@@ -280,3 +280,14 @@ def add_digitalresource(request):
     return wrap_api_v2(request, f)
 
 
+def add_tag(request):
+    def f(request, api_o, json_data, user=None):
+
+        if json_data.get("artifact"):
+            handle_metadata(json_data.get("metadata", {}), 'artifact', json_data.get("artifact"), user, api_o)
+        elif json_data.get("group"):
+            handle_metadata(json_data.get("metadata", {}), 'group', json_data.get("group"), user, api_o)
+        elif json_data.get("process"):
+            handle_metadata(json_data.get("metadata", {}), 'process', json_data.get("process"), user, api_o)
+
+    return wrap_api_v2(request, f)
