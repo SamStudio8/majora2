@@ -66,6 +66,7 @@ def handle_testsequencing(form, user=None, api_o=None):
         if api_o:
             api_o["new"].append(_format_tuple(p))
         p.when = datetime.datetime.now()
+        p.who = user
         p.save()
 
     # Created placeholder digitalgroup
@@ -82,7 +83,10 @@ def handle_testsequencing(form, user=None, api_o=None):
         )
         rec.save()
 
-        bio = models.AbstractBioinformaticsProcess()
+        bio = models.AbstractBioinformaticsProcess(
+            when = datetime.datetime.now(),
+            who = user
+        )
         bio.save()
         a = models.DigitalResourceArtifact(
                 dice_name="sequencing-dummy-reads-%s" % run_name,
