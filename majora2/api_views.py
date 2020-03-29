@@ -18,7 +18,7 @@ from . import form_handlers
 
 import json
 
-MINIMUM_CLIENT_VERSION = "0.0.14"
+MINIMUM_CLIENT_VERSION = "0.1.2"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
@@ -96,6 +96,27 @@ def handle_metadata(metadata, tag_type, tag_to, user, api_o):
                 api_o["errors"] += 1
                 api_o["ignored"].append("metadata__%s__%s" % (t_data.get("tag"), t_data.get("name")))
                 api_o["messages"].append(form.errors.get_json_data())
+
+def get_biosample(request):
+    def f(request, api_o, json_data, user=None):
+        sample_id = json_data.get("central_sample_id")
+        if not sample_id:
+            api_o["messages"].append("'central_sample_id' key missing or empty")
+            api_o["errors"] += 1
+            return
+
+        try:
+            artifact = models.MajoraArtifact.objects.filter(dice_name=sample_id).first()
+
+            api_o["get"] = {
+                sample_id: artifact.as_struct()
+            }
+        except Exception as e:
+            api_o["errors"] += 1
+            api_o["messages"].append(str(e))
+
+    return wrap_api_v2(request, f)
+
 
 def add_biosample(request):
     def f(request, api_o, json_data, user=None):

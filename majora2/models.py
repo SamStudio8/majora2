@@ -583,7 +583,7 @@ class BiosampleArtifact(MajoraArtifact):
     sample_orig_id = models.CharField(max_length=24, blank=True, null=True)
     sample_type_collected = models.CharField(max_length=24, blank=True, null=True)        #THIS should be a lookup
     sample_site = models.CharField(max_length=24, blank=True, null=True)        #THIS should be a lookup
-    sample_type_curent = models.CharField(max_length=24, blank=True, null=True)
+    sample_type_current = models.CharField(max_length=24, blank=True, null=True)
 
     sample_longitude = models.PositiveSmallIntegerField(default=0)
     sample_batch = models.PositiveSmallIntegerField(default=0)
@@ -608,6 +608,25 @@ class BiosampleArtifact(MajoraArtifact):
                 return self.dice_name
         else:
             return self.central_sample_id
+
+    def as_struct(self):
+
+        ret = {
+            "central_sample_id": self.central_sample_id,
+            "secondary_identifier": self.secondary_identifier,
+            "sample_type_collected": self.sample_type_collected,
+            "sample_type_received": self.sample_type_current,
+            "swab_site": self.sample_site,
+        }
+        collection = {}
+        if self.collection:
+            collection = self.collection.process.as_struct()
+
+        ret.update(collection)
+        return ret
+
+
+
     @property
     def source(self):
         return self.primary_group
@@ -821,6 +840,23 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
     collection_location_adm1 = models.CharField(max_length=100, blank=True, null=True)
     collection_location_adm2 = models.CharField(max_length=100, blank=True, null=True)
     private_collection_location_adm2 = models.CharField(max_length=100, blank=True, null=True)
+
+    def as_struct(self):
+        return {
+            "collection_date": self.collection_date.strftime("%Y-%m-%d") if self.collection_date else None,
+            "received_date": self.received_date.strftime("%Y-%m-%d") if self.received_date else None,
+            "submission_user": self.submission_user.username,
+            "submission_org": self.submission_org.name if self.submission_org else None,
+
+            "source_sex": self.source_sex,
+            "source_age": self.source_age,
+
+            "collected_by": self.collected_by,
+
+            "adm0": self.collection_location_country,
+            "adm1": self.collection_location_adm1,
+            "adm2": self.collection_location_adm2,
+        }
 
 
 class BiosourceSamplingProcessRecord(MajoraArtifactProcessRecord):
