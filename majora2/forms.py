@@ -225,11 +225,13 @@ class TestSampleForm(forms.Form):
     )
     collection_date = forms.DateField(
             label="Collection date",
-            help_text="YYYY-MM-DD"
+            help_text="YYYY-MM-DD",
+            required=False,
     )
     received_date = forms.DateField(
             label="Received date",
-            help_text="YYYY-MM-DD"
+            help_text="YYYY-MM-DD",
+            required=False,
     )
     country = forms.CharField(disabled=True)
     adm1 = forms.ChoiceField(
