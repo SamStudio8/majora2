@@ -40,7 +40,7 @@
         {% with sample=artifact %}
         <tr>
             <th>Collected on</th>
-            <td>{{ sample.collection.process.collection_date }}</td>
+            <td>{% if sample.collection.process.received_date %}<b>Received</b> {{ sample.collection.process.received_date }}{% else %}{{ sample.collection.process.collection_date }}{% endif %}</td>
         </tr>
         <tr>
             <th>Collected at</th>
