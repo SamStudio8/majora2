@@ -177,6 +177,10 @@ def handle_testsample(form, user=None, api_o=None):
         collection_date = dateutil.parser.parse(form.cleaned_data.get("collection_date"))
     else:
         collection_date = form.cleaned_data.get("collection_date")
+    if type(form.cleaned_data.get("received_date")) == str:
+        received_date = dateutil.parser.parse(form.cleaned_data.get("received_date"))
+    else:
+        received_date = form.cleaned_data.get("received_date")
 
     # Get or create the Biosample
     sample_id = form.cleaned_data.get("central_sample_id")
@@ -239,6 +243,7 @@ def handle_testsample(form, user=None, api_o=None):
         signals.new_sample.send(sender=None, sample_id=sample.central_sample_id, submitter=sample.collection.process.submitted_by)
 
     sample_p.collection_date = collection_date
+    sample_p.received_date = received_date
     sample_p.collected_by = form.cleaned_data.get("collecting_org")
     sample_p.collection_location_country = form.cleaned_data.get("country")
     sample_p.collection_location_adm1 = form.cleaned_data.get("adm1")

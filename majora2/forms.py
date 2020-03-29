@@ -227,6 +227,10 @@ class TestSampleForm(forms.Form):
             label="Collection date",
             help_text="YYYY-MM-DD"
     )
+    received_date = forms.DateField(
+            label="Received date",
+            help_text="YYYY-MM-DD"
+    )
     country = forms.CharField(disabled=True)
     adm1 = forms.ChoiceField(
             label="Region",
@@ -368,7 +372,8 @@ class TestSampleForm(forms.Form):
             ),
             Fieldset("Key information",
                 Row(
-                    Column('collection_date', css_class="form-group col-md-6 mb-0"),
+                    Column('collection_date', css_class="form-group col-md-3 mb-0"),
+                    Column('received_date', css_class="form-group col-md-3 mb-0"),
                     Column('age', css_class="form-group col-md-2 mb-0"),
                     Column('sex', css_class="form-group col-md-2 mb-0"),
                     css_class="form-row",
@@ -409,6 +414,10 @@ class TestSampleForm(forms.Form):
                 valid_sites = [x.code for x in models.Institute.objects.exclude(code__startswith="?")]
                 if sum([sample_id.startswith(x) for x in valid_sites]) == 0:
                     self.add_error("central_sample_id", "Sample identifier does not match the WSI manifest.")
+
+        # Check a received_date was provided for samples without a collection date
+        if not cleaned_data.get("collection_date") and not cleaned_data.get("received_date"):
+            self.add_error("received_date", "You must provide a received date for samples without a collection date")
 
         # Check sample date is not in the future
         if cleaned_data.get("collection_date"):

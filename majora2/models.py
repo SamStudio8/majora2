@@ -806,6 +806,7 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
         return 'Sample Collection'
 
     collection_date = models.DateField(blank=True, null=True)
+    received_date = models.DateField(blank=True, null=True)
     submitted_by = models.CharField(max_length=100, blank=True, null=True)
     submission_org = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL, related_name="submitted_sample_records")
     submission_user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="submitted_sample_records")
