@@ -18,7 +18,7 @@ from . import form_handlers
 
 import json
 
-MINIMUM_CLIENT_VERSION = "0.0.13"
+MINIMUM_CLIENT_VERSION = "0.0.14"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
@@ -115,6 +115,8 @@ def add_biosample(request):
                     if not sample:
                         api_o["ignored"].append(sample_id)
                         api_o["errors"] += 1
+                    else:
+                        handle_metadata(biosample.get("metadata", {}), 'artifact', sample.dice_name, user, api_o)
                 else:
                     api_o["errors"] += 1
                     api_o["ignored"].append(sample_id)
