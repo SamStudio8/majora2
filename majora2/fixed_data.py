@@ -4,7 +4,7 @@ def api_biosample_add(user):
             'source_taxon': '2697049',
             'country': "United Kingdom",
             'submitting_user': user.username,
-            'submitting_org': user.profile.institute if hasattr(user, "profile") and not user.profile.institute.code.startswith("?") else None
+            'submitting_org': user.profile.institute.id if hasattr(user, "profile") and not user.profile.institute.code.startswith("?") else None
     }
 
 FIXED_DATA = {
