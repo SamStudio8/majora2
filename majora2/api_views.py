@@ -131,6 +131,7 @@ def add_biosample(request):
                 initial = fixed_data.fill_fixed_data("api.artifact.biosample.add", user)
                 form = forms.TestSampleForm(biosample, initial=initial)
                 if form.is_valid():
+                    del initial["submitting_org"]
                     form.cleaned_data.update(initial)
                     sample, sample_created = form_handlers.handle_testsample(form, user=user, api_o=api_o)
                     if not sample:
