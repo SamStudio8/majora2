@@ -316,6 +316,10 @@ def handle_testdigitalresource(form, user=None, api_o=None):
         bior.bridge_artifact = form.cleaned_data.get("bridge_artifact")
         bior.save()
 
+        if created:
+            res.created = bio
+            res.save()
+
     if created and api_o:
         api_o["new"].append(_format_tuple(res))
     elif res:

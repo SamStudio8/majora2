@@ -21,6 +21,9 @@ class MajoraArtifact(PolymorphicModel):
     primary_group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, on_delete=models.PROTECT, related_name="child_artifacts")
     groups = models.ManyToManyField('MajoraArtifactGroup', related_name="tagged_artifacts", blank=True) # represents 'tagged' ResourceGroups
 
+    # Trying something different... again...
+    created = models.ForeignKey("MajoraArtifactProcess", blank=True, null=True, on_delete=models.PROTECT, related_name="artifacts_created")
+
     @property
     def artifact_kind(self):
         return 'Artifact'
@@ -177,9 +180,6 @@ class MajoraArtifact(PolymorphicModel):
     @property
     def children(self):
         return [x.out_artifact for x in MajoraArtifactProcessRecord.objects.filter(in_artifact=self) if x.out_artifact and x.out_artifact.id != self.id]
-    @property
-    def created(self):
-        return self.process_history[0]
     @property
     def observed(self):
         try:
