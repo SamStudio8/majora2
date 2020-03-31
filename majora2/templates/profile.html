@@ -23,7 +23,7 @@
 <div class="container">
 
 <div class="row">
-<div class="col-md-8">
+<div class="col-md-12">
 
     <table class="table table-hover table-active">
         <tbody>
@@ -56,62 +56,6 @@
 {% endwith %}
 
 
-</div>
-<div class="col-md-4">
-    <h3>Recent Activity</h3>
-    <table class="table table-hover table-active">
-        <thead class="thead-dark">
-            <tr>
-                <th>Kind</th>
-                <th>Records</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% if processes %}
-        {% for process in processes %}
-        {% if process.n_records > 0 %}
-        <tr>
-            <td><a href="{% url 'detail_process' process.id %}">{{ process.process_kind }}</a></td>
-            <td>{{ process.n_records }}</td>
-        </tr>
-        {% endif %}
-        {% endfor %}
-        {% else %}
-            <tr>
-                <td colspan="3">You've done nothing.</td>
-            </tr>
-        {% endif %}
-        </tbody>
-    </table>
-
-
-    <hr>
-    <h3>Metadata</h3>
-    <p>Extra information tagged to this User</p>
-    <table class="table table-hover table-active">
-        <thead class="thead-dark">
-            <tr>
-                <th>Tag</th>
-                <th>Name</th>
-                <th>Value</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% if group.metadata %}
-        {% for metadatum in group.metadata.all %}
-        <tr>
-            <td>{{ metadatum.meta_tag }}</td>
-            <td>{{ metadatum.meta_name }}</td>
-            <td>{{ metadatum.translate }}</td>
-        </tr>
-        {% endfor %}
-        {% else %}
-            <tr>
-                <td colspan="3">Not much to say.</td>
-            </tr>
-        {% endif %}
-        </tbody>
-    </table>
 </div>
 </div>
 </div>
