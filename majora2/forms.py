@@ -315,10 +315,10 @@ class TestSampleForm(forms.Form):
         required=False,
     )
 
-    override_heron = forms.BooleanField(
-            label="Override Heron validator",
-            help_text="Enable this checkbox if your sample has not been assigned a Heron identifier. <i>e.g.</i> The sample has already been submitted to GISAID",
-            required=False)
+    #override_heron = forms.BooleanField(
+    #        label="Override Heron validator",
+    #        help_text="Enable this checkbox if your sample has not been assigned a Heron identifier. <i>e.g.</i> The sample has already been submitted to GISAID",
+    #        required=False)
     secondary_identifier = forms.CharField(
             max_length=256,
             label="GISAID identifier string",
@@ -396,10 +396,10 @@ class TestSampleForm(forms.Form):
                     Column('secondary_accession', css_class="form-group col-md-6 mb-0"),
                     css_class="form-row",
                 ),
-                Row(
-                    Column('override_heron', css_class="form-group col-md-6 mb-0"),
-                    css_class="form-row",
-                )
+                #Row(
+                #    Column('override_heron', css_class="form-group col-md-6 mb-0"),
+                #    css_class="form-row",
+                #)
             ),
             FormActions(
                     Submit('save', 'Submit sample'),
@@ -411,12 +411,12 @@ class TestSampleForm(forms.Form):
         cleaned_data = super().clean()
 
         # Check barcode starts with a Heron prefix, unless this has been overridden
-        sample_id = cleaned_data.get("central_sample_id")
-        if sample_id:
-            if cleaned_data["override_heron"] is False:
-                valid_sites = [x.code for x in models.Institute.objects.exclude(code__startswith="?")]
-                if sum([sample_id.startswith(x) for x in valid_sites]) == 0:
-                    self.add_error("central_sample_id", "Sample identifier does not match the WSI manifest.")
+        #sample_id = cleaned_data.get("central_sample_id")
+        #if sample_id:
+        #    if cleaned_data["override_heron"] is False:
+        #        valid_sites = [x.code for x in models.Institute.objects.exclude(code__startswith="?")]
+        #        if sum([sample_id.startswith(x) for x in valid_sites]) == 0:
+        #            self.add_error("central_sample_id", "Sample identifier does not match the WSI manifest.")
 
         # Check a received_date was provided for samples without a collection date
         if not cleaned_data.get("collection_date") and not cleaned_data.get("received_date"):
