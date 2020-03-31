@@ -1,6 +1,8 @@
 import datetime
 import dateutil.parser
 
+from django.utils import timezone
+
 from . import models
 from . import signals
 
@@ -303,12 +305,14 @@ def handle_testdigitalresource(form, user=None, api_o=None):
 
     if form.cleaned_data.get("source_group") or form.cleaned_data.get("source_artifact"):
         bio = models.AbstractBioinformaticsProcess()
+        bio.who = user
+        bio.when = timezone.now()
         bio.save()
         bior, created = models.MajoraArtifactProcessRecord.objects.get_or_create(
             process = bio,
             in_group = form.cleaned_data.get("source_group"),
             in_artifact = form.cleaned_data.get("source_artifact"),
-            out_artifact = res
+            out_artifact = res,
         )
         bior.bridge_artifact = form.cleaned_data.get("bridge_artifact")
         bior.save()
