@@ -36,24 +36,26 @@ class MajoraArtifact(PolymorphicModel):
     @property
     def process_history(self):
         return (self.before_process.all() | self.after_process.all()).order_by('-process__when').get_real_instances()
+
     @property
     def process_tree(self):
+        return self.process_tree_up([])
+    def process_tree_up(self, seen=set([])):
         a = []
-        seen = set([])
-        a.extend(self.after_process.all().order_by('-process__when'))
-        for proc in a:
+        seen = set(seen)
+
+        for proc in self.after_process.all().order_by('-process__when'):
             if proc in seen:
                 continue
-            if proc.in_artifact:# and proc.in_artifact.id != proc.out_artifact.id:# or proc.in_group:
-                a.extend(proc.in_artifact.process_tree)
 
+            a.append(proc)
             if proc.in_group:
-                for c_proc in proc.in_group.after_process.all(): # TODO limit this by objects older than this outer loop
-                    if c_proc.in_artifact:# and c_proc.in_artifact.id != c_proc.out_artifact.id:# or proc.in_group:
-                        a.append(c_proc)
-                        a.extend(c_proc.in_artifact.process_tree)
+                a.extend(proc.in_group.process_tree_up(seen))
+            else:
+                if proc.in_artifact:
+                    a.extend(proc.in_artifact.process_tree_up(seen))
             seen.add(proc)
-        return a
+        return reversed(a)
     @property
     def process_leaf(self):
         a = []
@@ -413,6 +415,25 @@ class MajoraArtifactGroup(PolymorphicModel):
             elif add:
                 a.append({proc: children})
         return a
+    @property
+    def process_tree(self):
+        return self.process_tree_up([])
+    def process_tree_up(self, seen=set([])):
+        a = []
+        seen = set(seen)
+
+        for proc in self.after_process.all().order_by('-process__when'):
+            if proc in seen:
+                continue
+
+            if proc.in_group:
+                a.extend(proc.in_group.process_tree_up(seen))
+                a.append(proc)
+            else:
+                if proc.in_artifact:
+                    a.extend(proc.in_artifact.process_tree_up(seen))
+            seen.add(proc)
+        return reversed(a)
 
 class DigitalResourceNode(MajoraArtifactGroup):
     node_name = models.CharField(max_length=128)
