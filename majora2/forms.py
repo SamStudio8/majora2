@@ -167,7 +167,7 @@ class TestSequencingForm(forms.Form):
 
     sequencing_id = forms.UUIDField(required=False)
     run_name = forms.CharField(max_length=128, required=False)
-    run_group = forms.CharField(max_length=128)
+    run_group = forms.CharField(max_length=128, required=False)
 
     instrument_make = forms.ChoiceField(
             label="Instrument Make",

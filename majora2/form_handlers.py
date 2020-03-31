@@ -71,7 +71,9 @@ def handle_testsequencing(form, user=None, api_o=None):
 
 
     # Run group
-    run_group_name = form.cleaned_data["run_group"]
+    run_group_name = form.cleaned_data.get("run_group")
+    if not run_group_name:
+        run_group_name = form.cleaned_data["run_name"]
     run_group, run_group_created = models.MajoraArtifactGroup.objects.get_or_create(
             unique_name=run_group_name,
             physical=False
