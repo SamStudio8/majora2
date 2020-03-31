@@ -8,57 +8,76 @@
 </div>
 <div class="container">
 
-<div class="row text-center">
-    <div class="col-md-6">
-        <h3>Collected Samples</h3>
+
+<div class="row">
+    <div class="col-md-4">
+        <h1 style="font-size: 5em; margin-bottom:-15px">
+            {{ total_collections }}
+        </h1>
+        <h1>Collections</h1>
+        <br/>
+        <table class="table">
+            <thead class="table-dark">
+                <tr>
+                    <th>Site</th>
+                    <th>Samples</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in collections %}
+                <tr>
+                    <td>{{ entry.collected_by }}</td>
+                    <td>{{ entry.collected_by__count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-    <div class="col-md-6">
-        <h3>Consensus Sequences</h3>
+    <div class="col-md-4">
+        <h1 style="font-size: 5em; margin-bottom:-15px">
+            {{ total_sequences }}</h1>
+        <h1>Sequences</h1>
+        <br/>
+        <table class="table">
+            <thead class="table-dark">
+                <tr>
+                    <th>Site</th>
+                    <th>Sequences</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in sequences %}
+                <tr>
+                    <td>{{ entry.org }}</td>
+                    <td>{{ entry.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-4">
+        <h1 style="font-size: 5em; margin-bottom:-15px">
+        {{ n_regions }}</h1>
+        <h1>Regions</h1>
+        <br/>
+        <table class="table">
+            <thead class="table-dark">
+                <tr>
+                    <th>Location</th>
+                    <th>Samples</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in adm2 %}
+                <tr>
+                    <td>{{ entry.adm2 }}</td>
+                    <td>{{ entry.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
-<div class="row text-center" style="margin-bottom:20px">
-    <div class="col-md-6">
-        <h1 style="font-size: 4em">{{ total_collections }}</h1>
-    </div>
-    <div class="col-md-6">
-        <h1 style="font-size: 4em">{{ total_sequences }}</h1>
-    </div>
 </div>
-
-</hr>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Site</th>
-            <th>Samples</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for entry in collections %}
-        <tr>
-            <td>{{ entry.collected_by }}</td>
-            <td>{{ entry.collected_by__count }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Site</th>
-            <th>Sequences</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for entry in sequences %}
-        <tr>
-            <td>{{ entry.org }}</td>
-            <td>{{ entry.count }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
 </div>
 {% include 'public/footer.html' %}
