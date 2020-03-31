@@ -188,8 +188,8 @@ def handle_testsample(form, user=None, api_o=None):
         else:
             if api_o:
                 api_o["ignored"].append(source.dice_name)
-                api_o["messages"].append("Biosample Sources cannot be updated")
-                api_o["warnings"] += 1
+                #api_o["messages"].append({"biosample_source_id": [{"message": "Biosample Sources cannot be updated", "code": "immutable"}]})
+                #api_o["warnings"] += 1
     else:
         source = None
 
