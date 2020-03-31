@@ -90,27 +90,29 @@ class MajoraArtifact(PolymorphicModel):
             children = []
             if proc.out_artifact:
                 # If this record produces an artifact to share...
-                if (proc.in_artifact and proc.in_artifact.id != proc.out_artifact.id) or (proc.in_group and proc.in_group.id != proc.out_group.id):
-                    # ...and that artifact does not link to itself
-                    if proc.out_artifact not in seen:
-                        # ...and we have not already added this artifact to the process tree
-                        if (proc.bridge_artifact is None) or (proc.bridge_artifact in crossed_bridges) or not can_cross:
-                            # ...and this artifact is not the other side of a bridge that should not be crossed
-                            #children.append(proc)
-                            children.extend( proc.out_artifact.build_process_tree_down(seen=seen, crossed_bridges=crossed_bridges) )
-                            seen.add(proc.out_artifact)
-                            add = 1
+                if proc.out_artifact not in seen:
+                    # ...and we have not already added this artifact to the process tree
+                    if (proc.bridge_artifact is None) or (proc.bridge_artifact in crossed_bridges) or not can_cross:
+                        # ...and this artifact is not the other side of a bridge that should not be crossed
+                        #children.append(proc)
+                        children.extend( proc.out_artifact.build_process_tree_down(seen=seen, crossed_bridges=crossed_bridges) )
+                        seen.add(proc.out_artifact)
+                        add = 1
 
             # Delve one group deep
             child_ = {}
             c_add = 0
-            if proc.out_group:
-                if proc.out_group not in seen:
-                    if proc.bridge_group is None or proc.bridge_group in seen:
-                        for child_proc in proc.out_group.before_process.all().order_by('-process__when'):
-                            child_[child_proc] = child_proc.out_artifact.build_process_tree_down(seen=seen, crossed_bridges=crossed_bridges)
-                            c_add = 1
-                        seen.add(proc.out_group)
+            if proc.out_group and proc.out_group not in seen:
+                #child_[d_proc] = child_proc.out_group.build_process_tree_down(seen=seen, crossed_bridges=crossed_bridges)
+                children.extend( proc.out_group.build_process_tree_down(seen=seen, crossed_bridges=crossed_bridges) )
+                add = 1
+                seen.add(proc.out_group)
+                #if proc.out_group not in seen:
+                #    if proc.bridge_group is None or proc.bridge_group in seen:
+                #        for child_proc in proc.out_group.before_process.all().order_by('-process__when'):
+                #            child_[child_proc] = child_proc.out_artifact.build_process_tree_down(seen=seen, crossed_bridges=crossed_bridges)
+                #            c_add = 1
+                #        seen.add(proc.out_group)
 
             if c_add:
                 a.append({proc: [children, child_]})
@@ -358,6 +360,59 @@ class MajoraArtifactGroup(PolymorphicModel):
         for cls in groups:
             groups[cls] = cls.sorto(groups[cls])
         return groups
+
+    @property
+    def process_tree_down(self):
+        return self.build_process_tree_down(set([self]), set([self]))
+    def build_process_tree_down(self, seen, crossed_bridges):
+        a = []
+        add = 0
+
+        # Detect whether we can cross any bridges
+        current_bridges = set([])
+        for proc in self.before_process.all().order_by('-process__when'):
+            if proc.out_artifact and proc.bridge_artifact:
+                current_bridges.add(proc.bridge_artifact)
+        can_cross = False
+        for b in current_bridges:
+            if b in crossed_bridges:
+                can_cross = True
+
+        # Go through each process record attached to this artifact
+        for proc in self.before_process.all().order_by('-process__when'):
+            add = 0
+            children = []
+            if proc.out_artifact:
+                # If this record produces an artifact to share...
+                if proc.out_artifact not in seen:
+                    # ...and we have not already added this artifact to the process tree
+                    if (proc.bridge_artifact is None) or (proc.bridge_artifact in crossed_bridges) or not can_cross:
+                        # ...and this artifact is not the other side of a bridge that should not be crossed
+                        #children.append(proc)
+                        children.extend( proc.out_artifact.build_process_tree_down(seen=seen, crossed_bridges=crossed_bridges) )
+                        seen.add(proc.out_artifact)
+                        add = 1
+
+            # Delve one group deep
+            child_ = {}
+            c_add = 0
+            if proc.out_group:
+                #child_[d_proc] = child_proc.out_group.build_process_tree_down(seen=seen, crossed_bridges=crossed_bridges)
+                children.extend( proc.out_group.build_process_tree_down(seen=seen, crossed_bridges=crossed_bridges) )
+                add = 1
+                seen.add(proc.out_group)
+                #if proc.out_group not in seen:
+                #    if proc.bridge_group is None or proc.bridge_group in seen:
+                #        for child_proc in proc.out_group.before_process.all().order_by('-process__when'):
+                #            child_[child_proc] = child_proc.out_artifact.build_process_tree_down(seen=seen, crossed_bridges=crossed_bridges)
+                #            c_add = 1
+                #        seen.add(proc.out_group)
+
+            if c_add:
+                a.append({proc: [children, child_]})
+            elif add:
+                a.append({proc: children})
+        return a
 
 class DigitalResourceNode(MajoraArtifactGroup):
     node_name = models.CharField(max_length=128)

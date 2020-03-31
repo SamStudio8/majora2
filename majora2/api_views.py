@@ -247,6 +247,11 @@ def add_sequencing(request):
             api_o["messages"].append("'runs' key missing or empty")
             api_o["errors"] += 1
             return
+        run_group = json_data.get("run_group")
+        if not run_group:
+            api_o["messages"].append("'run_group' key missing or empty")
+            api_o["errors"] += 1
+            return
 
         # Add sequencing runs to library
         for run in runs:
@@ -254,6 +259,7 @@ def add_sequencing(request):
                 json_data = forms.TestSequencingForm.modify_preform(json_data)
                 initial = fixed_data.fill_fixed_data("api.process.sequencing.add", user)
                 run["library_name"] = library_name
+                run["run_group"] = run_group
                 form = forms.TestSequencingForm(run, initial=initial)
                 if form.is_valid():
                     form.cleaned_data.update(initial)

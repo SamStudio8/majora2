@@ -69,7 +69,22 @@ def handle_testsequencing(form, user=None, api_o=None):
         p.who = user
         p.save()
 
-    # Created placeholder digitalgroup
+
+    # Run group
+    run_group_name = form.cleaned_data["run_group"]
+    run_group, run_group_created = models.MajoraArtifactGroup.objects.get_or_create(
+            unique_name=run_group_name,
+            physical=False
+    )
+    if run_group_created:
+        rec = models.DNASequencingProcessRecord(
+            process=p,
+            in_artifact=form.cleaned_data.get("library_name"),
+            out_group=run_group,
+        )
+        rec.save()
+
+    # Create placeholder digitalgroup
     dgroup, dgroup_created = models.DigitalResourceGroup.objects.get_or_create(
             unique_name="sequencing-filetree-%s" % run_name,
             current_name="sequencing-filetree-%s" % run_name,
@@ -78,7 +93,8 @@ def handle_testsequencing(form, user=None, api_o=None):
     if dgroup_created:
         rec = models.DNASequencingProcessRecord(
             process=p,
-            in_artifact=form.cleaned_data.get("library_name"),
+            #in_artifact=form.cleaned_data.get("library_name"),
+            in_group=run_group,
             out_group=dgroup,
         )
         rec.save()
