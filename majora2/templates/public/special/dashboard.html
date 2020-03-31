@@ -44,5 +44,21 @@
     </tbody>
 </table>
 
+<table class="table">
+    <thead>
+        <tr>
+            <th>Site</th>
+            <th>Sequences</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in sequences %}
+        <tr>
+            <td>{{ entry.org }}</td>
+            <td>{{ entry.count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 </div>
 {% include 'public/footer.html' %}
