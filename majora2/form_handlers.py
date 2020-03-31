@@ -212,7 +212,6 @@ def handle_testsample(form, user=None, api_o=None):
     if sample:
         sample.root_sample_id = form.cleaned_data.get("root_sample_id")
         sample.sender_sample_id = form.cleaned_data.get("sender_sample_id")
-        sample.central_sample_id = sample_id
         sample.dice_name = sample_id
 
         sample.sample_type_collected = form.cleaned_data.get("sample_type_collected")
