@@ -143,7 +143,7 @@ def handle_testlibrary(form, user=None, api_o=None):
             who = user,
         )
         pool_p.save()
-        library.pooling = pool_p
+        library.created = pool_p
         library.save()
     return library, library_created
 
@@ -152,11 +152,11 @@ def handle_testlibraryrecord(form, user=None, api_o=None):
     biosample = form.cleaned_data.get("central_sample_id") # will return a biosample object
     library = form.cleaned_data.get("library_name") # will actually return a library object
 
-    if not library.pooling:
+    if not library.created:
         return None, False
 
     pool_rec, created = models.LibraryPoolingProcessRecord.objects.get_or_create(
-        process=library.pooling,
+        process=library.created,
         bridge_artifact=biosample,
         in_artifact=biosample,
         out_artifact=library

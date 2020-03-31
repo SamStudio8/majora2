@@ -1132,8 +1132,6 @@ class LibraryArtifact(MajoraArtifact):
     seq_kit = models.CharField(max_length=48, blank=True, null=True)
     seq_protocol = models.CharField(max_length=48, blank=True, null=True)
 
-    pooling = models.ForeignKey("LibraryPoolingProcess", blank=True, null=True, on_delete=models.PROTECT, related_name="library")
-
     @property
     def artifact_kind(self):
         return 'Library'

@@ -29,7 +29,7 @@
 <div class="col-md-12">
 <br/>
     <h2 class="text-right">Samples</h2>
-{% with gitems=artifact.pooling.records.all dtable=0 %}
+{% with gitems=artifact.created.records.all dtable=0 %}
     {% include 'tables/librarybiosample.html' %}
 {% endwith %}
 </div>
