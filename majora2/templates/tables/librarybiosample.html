@@ -18,11 +18,11 @@
     <tr>
         <td><a href="{% url 'detail_artifact' artifact.id %}"><b>{{ artifact.name }}</b></a></td>
         <td><b>{{ record.barcode }}</b></td>
-        <td>{% if artifact.source %}{{ artifact.source.unique_name }}{% else %}Unlinked{% endif %} ({{ artifact.collection.process.source_age }}{{ artifact.collection.process.source_sex }})</td>
-        <td>{{ artifact.collection.process.collection_location_adm1 }} / {{ artifact.collection.process.collection_location_adm2 }}</br>
-            {{artifact.collection.collected_by}}</td>
-        <td>{{ artifact.collection.process.when }}</br>
-        {{ artifact.collection.process.when | naturaltime }}</td>
+        <td>{% if artifact.source %}{{ artifact.source.unique_name }}{% else %}Unlinked{% endif %} ({{ artifact.created.source_age }}{{ artifact.created.source_sex }})</td>
+        <td>{{ artifact.created.collection_location_adm1 }} / {{ artifact.created.collection_location_adm2 }}</br>
+            {{artifact.created.collected_by}}</td>
+        <td>{{ artifact.created.collection_date }}</br>
+        {{ artifact.created.when | naturaltime }}</td>
         <td>{{ record.library_source }} {{ record.library_selection }} {{ record.library_strategy }}</td>
     </tr>
     {% endwith %}

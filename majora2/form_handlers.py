@@ -237,10 +237,9 @@ def handle_testsample(form, user=None, api_o=None):
     except:
         submitted_by = None
 
-    if sample.collection:
+    if sample.created:
         # Already have a collection obj
-        sample_p = sample.collection.process
-        sampling_rec = sample.collection
+        sample_p = sample.created
     else:
         # Create the sampling event
         sample_p = models.BiosourceSamplingProcess(
@@ -258,9 +257,9 @@ def handle_testsample(form, user=None, api_o=None):
             out_artifact=sample,
         )
         sampling_rec.save()
-        sample.collection = sampling_rec # Set the sample collection process
+        sample.created = sample_p # Set the sample collection process
         sample.save()
-        signals.new_sample.send(sender=None, sample_id=sample.central_sample_id, submitter=sample.collection.process.submitted_by)
+        signals.new_sample.send(sender=None, sample_id=sample.central_sample_id, submitter=sample.created.submitted_by)
 
     sample_p.collection_date = collection_date
     sample_p.received_date = received_date

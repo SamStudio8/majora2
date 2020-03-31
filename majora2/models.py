@@ -666,9 +666,6 @@ class BiosampleArtifact(MajoraArtifact):
     sample_batch = models.PositiveSmallIntegerField(default=0)
     sample_batch_longitude = models.PositiveSmallIntegerField(default=0)
 
-    #NOTE Trying something different, Biosamples almost exclusively come from a sampling event, so let's hard link it here
-    collection = models.ForeignKey("BiosourceSamplingProcessRecord", blank=True, null=True, on_delete=models.PROTECT, related_name="biosamples")
-
     secondary_identifier = models.CharField(max_length=256, blank=True, null=True)
     secondary_accession = models.CharField(max_length=256, blank=True, null=True)
     taxonomy_identifier = models.CharField(max_length=24, blank=True, null=True)
@@ -696,8 +693,8 @@ class BiosampleArtifact(MajoraArtifact):
             "swab_site": self.sample_site,
         }
         collection = {}
-        if self.collection:
-            collection = self.collection.process.as_struct()
+        if self.created:
+            collection = self.created.as_struct()
 
         ret.update(collection)
         return ret

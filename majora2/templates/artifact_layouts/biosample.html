@@ -23,7 +23,7 @@
         </tr>
         <tr>
             <th>Participant</th>
-            <td>{{ sample.collection.process.source_age }}{{ sample.collection.process.source_sex }}</td>
+            <td>{{ sample.created.source_age }}{{ sample.created.source_sex }}</td>
         </tr>
         <tr>
             <th>Type</th>
@@ -40,23 +40,23 @@
         {% with sample=artifact %}
         <tr>
             <th>Collected on</th>
-            <td>{% if sample.collection.process.received_date %}<b>Received</b> {{ sample.collection.process.received_date }}{% else %}{{ sample.collection.process.collection_date }}{% endif %}</td>
+            <td>{% if sample.created.received_date %}<b>Received</b> {{ sample.created.received_date }}{% else %}{{ sample.created.collection_date }}{% endif %}</td>
         </tr>
         <tr>
             <th>Collected at</th>
-            <td>{{ sample.collection.process.collection_location_adm1 }} / {{ sample.collection.process.collection_location_adm2 }} </td>
+            <td>{{ sample.created.collection_location_adm1 }} / {{ sample.created.collection_location_adm2 }} </td>
         </tr>
         <tr>
             <th>Collected by</th>
-            <td>{{ sample.collection.process.collected_by }}</td>
+            <td>{{ sample.created.collected_by }}</td>
         </tr>
         <tr>
             <th>Submitting user</th>
-            <td>{{ sample.collection.process.submission_user }}</td>
+            <td>{{ sample.created.submission_user }}</td>
         </tr>
         <tr>
             <th>Submitting organisation</th>
-            <td>{{ sample.collection.process.submission_org.name }}</td>
+            <td>{{ sample.created.submission_org.name }}</td>
         </tr>
         {% endwith %}
         </tbody>
