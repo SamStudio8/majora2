@@ -52,6 +52,7 @@ class MajoraArtifact(PolymorphicModel):
             if proc.in_group:
                 a.extend(proc.in_group.process_tree_up(seen))
             else:
+                # TODO this is quite sneaky and gross and we should actually use the bridge system here but i dont want to do that right now
                 if proc.in_artifact:
                     a.extend(proc.in_artifact.process_tree_up(seen))
             seen.add(proc)
