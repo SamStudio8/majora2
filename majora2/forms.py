@@ -443,7 +443,7 @@ class TestSampleForm(forms.Form):
         # Validate accession
         secondary_identifier = cleaned_data.get("secondary_identifier")
         if secondary_identifier and not cleaned_data.get("secondary_accession"):
-            self.add_error("secondary_accession", "Accession for secondary identifier not provided")
+            self.add_error("secondary_accession", "Accession for secondary identifier not provided. If you just want to get this over with, set the accession to 'PENDING'.")
 
 
 class TestFileForm(forms.Form):
