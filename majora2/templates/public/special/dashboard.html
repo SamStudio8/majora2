@@ -8,8 +8,38 @@
 </div>
 <div class="container">
 
-
 <div class="row">
+    <div class="col-md-2">
+    </div>
+    <div class="col-md-8">
+        <h1 style="font-size: 7em; margin-bottom:-15px; margin-left: -5px">
+            {{ total_sequences }}</h1>
+        <h1>Genomes sequenced</h1>
+        <br/>
+        <div style="width:100%" id="sparkline_test"></div>
+        <table class="table">
+            <thead class="table-dark">
+                <tr>
+                    <th>Site</th>
+                    <th class="text-right">Sequences</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in sequences %}
+                <tr>
+                    <td>{{ entry.org }}</td>
+                    <td class="text-right">{{ entry.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-2">
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="col-md-2"></div>
     <div class="col-md-4">
         <h1 style="font-size: 6em; margin-bottom:-15px; margin-left: -5px">
             {{ total_collections }}
@@ -28,29 +58,6 @@
                 <tr>
                     <td>{{ entry.collected_by }}</td>
                     <td class="text-right">{{ entry.collected_by__count }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <div class="col-md-4">
-        <h1 style="font-size: 6em; margin-bottom:-15px; margin-left: -5px">
-            {{ total_sequences }}</h1>
-        <h1>Sequences</h1>
-        <br/>
-        <div style="width:100%" id="sparkline_test"></div>
-        <table class="table">
-            <thead class="table-dark">
-                <tr>
-                    <th>Site</th>
-                    <th>Sequences</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for entry in sequences %}
-                <tr>
-                    <td>{{ entry.org }}</td>
-                    <td class="text-right">{{ entry.count }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -78,6 +85,7 @@
             </tbody>
         </table>
     </div>
+    <div class="col-md-2"></div>
 </div>
 </div>
 </div>
@@ -92,9 +100,9 @@ var parentelement = d3.select(elemId).node();
 var width = parentelement.getBoundingClientRect().width;
 
 
-var height = 50;
-var x = d3.scale.linear().range([0, width - 2]);
-var y = d3.scale.linear().range([height - 4, 0]);
+var height = 60;
+var x = d3.scale.linear().range([0, width - 5]);
+var y = d3.scale.linear().range([height - 4, 5]);
 var parseDate = d3.time.format("%Y-%m-%d").parse;
 var line = d3.svg.line()
                  .interpolate("basis")
@@ -123,7 +131,7 @@ var line = d3.svg.line()
        .attr('class', 'sparkcircle')
        .attr('cx', x(data[data.length - 1].date))
        .attr('cy', y(data[data.length - 1].count))
-       .attr('r', 1.5);
+       .attr('r', 5);
 }
 
 $( document ).ready(function() {

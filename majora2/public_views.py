@@ -10,7 +10,7 @@ import datetime
 import json
 
 def test():
-    a_count = models.MajoraArtifact.objects.filter(created__when__isnull=False, created__when__gte=timezone.now().date()-datetime.timedelta(days=30)).annotate(date=TruncDay('created__when')).values("date").annotate(created_count=Count('id')).order_by("date")
+    a_count = models.DigitalResourceArtifact.objects.filter(created__when__isnull=False, created__when__gte=timezone.now().date()-datetime.timedelta(days=30)).annotate(date=TruncDay('created__when')).values("date").annotate(created_count=Count('id')).order_by("date")
     counts = []
     i = 0
     n = 0
@@ -19,14 +19,19 @@ def test():
         dt = dt.date()
         cdt = cursor["date"].date()
         if dt < cdt:
-            if i > 0:
-                counts.append({"date": dt.strftime("%Y-%m-%d"), "count": n})
+            counts.append({"date": dt.strftime("%Y-%m-%d"), "count": n})
             continue
         elif dt == cdt:
             n += cursor["created_count"]
             i += 1
             counts.append({"date": dt.strftime("%Y-%m-%d"), "count": n})
-            cursor = a_count[i]
+            try:
+                cursor = a_count[i]
+            except IndexError:
+                pass
+        elif dt > cdt:
+            counts.append({"date": dt.strftime("%Y-%m-%d"), "count": n})
+
     return counts
 
 from . import models
