@@ -16,7 +16,7 @@
             {{ total_sequences }}</h1>
         <h1>Genomes sequenced</h1>
         <br/>
-        <div style="width:100%" id="sparkline_test"></div>
+        <div style="width:100%" id="consensus-spark"></div>
         <table class="table">
             <thead class="table-dark">
                 <tr>
@@ -91,7 +91,7 @@
 </div>
 {% include 'public/footer.html' %}
 
-{{ counts|json_script:"hello-data" }}
+{{ consensus_spark|json_script:"consensus-spark-data" }}
 
 <script>
 <!-- http://www.tnoda.com/blog/2013-12-19/ -->
@@ -135,7 +135,7 @@ var line = d3.svg.line()
 }
 
 $( document ).ready(function() {
-    sparkline('#sparkline_test', "hello-data");
+    sparkline('#consensus-spark', "consensus-spark-data");
 });
 
 </script>
