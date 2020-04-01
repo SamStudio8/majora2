@@ -88,6 +88,7 @@ def handle_testsequencing(form, user=None, api_o=None):
 
         bio = models.AbstractBioinformaticsProcess(
             who = user,
+            when = p.when,
             pipe_kind = "Basecalling",
         )
         bio.save()
