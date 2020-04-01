@@ -67,8 +67,8 @@ def handle_testsequencing(form, user=None, api_o=None):
     if sequencing_created:
         if api_o:
             api_o["new"].append(_format_tuple(p))
-        p.when = datetime.datetime.now()
         p.who = user
+        p.when = p.start_time if p.start_time else timezone.now()
         p.save()
 
 
@@ -87,7 +87,6 @@ def handle_testsequencing(form, user=None, api_o=None):
         rec.save()
 
         bio = models.AbstractBioinformaticsProcess(
-            when = datetime.datetime.now(),
             who = user,
             pipe_kind = "Basecalling",
         )
@@ -122,8 +121,8 @@ def handle_testlibrary(form, user=None, api_o=None):
 
         # Create the pooling event
         pool_p = models.LibraryPoolingProcess(
-            when = datetime.datetime.now(),
             who = user,
+            when = timezone.now() # useful for sorting
         )
         pool_p.save()
         library.created = pool_p
@@ -227,7 +226,7 @@ def handle_testsample(form, user=None, api_o=None):
         # Create the sampling event
         sample_p = models.BiosourceSamplingProcess(
             who = user,
-            when = collection_date,
+            when = collection_date if collection_date else received_date,
             submitted_by = submitted_by,
             submission_user = user,
             submission_org = form.cleaned_data.get("submitting_org"),
