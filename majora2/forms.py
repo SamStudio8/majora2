@@ -112,7 +112,7 @@ class TestMetadataForm(forms.Form):
 
 class TestLibraryForm(forms.Form):
 
-    library_name = forms.CharField(max_length=48)
+    library_name = forms.CharField(max_length=48, min_length=5)
     library_layout_config = forms.ChoiceField(
             choices=[
                 (None, ""),
@@ -166,7 +166,7 @@ class TestSequencingForm(forms.Form):
     library_name = forms.ModelChoiceField(queryset=models.LibraryArtifact.objects.all(), required=True, to_field_name="dice_name")
 
     sequencing_id = forms.UUIDField(required=False)
-    run_name = forms.CharField(max_length=128, required=False)
+    run_name = forms.CharField(max_length=128, required=False, min_length=5)
     #run_group = forms.CharField(max_length=128, required=False)
 
     instrument_make = forms.ChoiceField(
@@ -221,7 +221,7 @@ class TestSampleForm(forms.Form):
             help_text="Leave blank if not applicable or available. It will not be possible to collect private metadata for this sample without this"
     )
     central_sample_id = forms.CharField(
-            label="New sample identifier", max_length=56,
+            label="New sample identifier", max_length=56, min_length=5,
             help_text="Heron barcode assigned by WSI"
     )
     collection_date = forms.DateField(

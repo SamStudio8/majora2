@@ -177,13 +177,17 @@ def add_library(request):
                 api_o["ignored"].append(library_name)
                 api_o["messages"].append(form.errors.get_json_data())
 
-            handle_metadata(json_data.get("metadata", {}), 'artifact', library_name, user, api_o)
         except Exception as e:
             api_o["errors"] += 1
             api_o["messages"].append(str(e))
 
         if not library:
             return
+        try:
+            handle_metadata(json_data.get("metadata", {}), 'artifact', library_name, user, api_o)
+        except Exception as e:
+            api_o["errors"] += 1
+            api_o["messages"].append(str(e))
 
         # Check samples exist, and create them if the right flag has been set
         sample_missing = False
