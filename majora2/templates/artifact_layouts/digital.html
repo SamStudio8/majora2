@@ -76,6 +76,14 @@
                 {% endwith %}
             </td>
         </tr>
+        <tr>
+            <td></td>
+            <td colspan=2>
+            {% with thing=proc %}
+            {% include 'tables/artifact-badges.html' %}
+            {% endwith %}
+            </td>
+        </tr>
     {% endfor %}
     </tbody>
 </table>

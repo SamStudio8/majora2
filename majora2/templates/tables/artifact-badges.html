@@ -1,0 +1,6 @@
+{% load humanize %}
+{% for t_type, t_items in thing.ordered_artifacts.items %}
+{% for t_item in t_items %}
+<span style="font-size: 1.2em"><span class="badge badge-left badge-dark">{{ t_type }}</span><span class="badge badge-center badge-light" style=""><a href="{% url 'search' %}?q={{ t_item.id }}">{{ t_item.name }}</a></span><span class="badge badge-right badge-info">{{ t_item.created.when | naturaltime }}</span></span>
+{% endfor %}
+{% endfor %}
