@@ -33,11 +33,6 @@ urlpatterns = [
     path('forms/testsample/', views.form_sampletest, name='form_sampletest'),
     path('forms/register/', account_views.form_register, name='form_register'),
     
-    # OCARINA ##################################################################
-    #path('ocarina/api/command/update/', csrf_exempt(views.ocarina_update_command), name='ocarina_update_command'),
-    #path('ocarina/api/command/new/', csrf_exempt(views.ocarina_new_command), name='ocarina_new_command'),
-    #path('ocarina/api/group/view/', csrf_exempt(views.ocarina_view_group), name='ocarina_view_group'),
-
     # BOT ######################################################################
     path('bot/accounts/approve', csrf_exempt(bot_views.bot_approve_registration)),
 
