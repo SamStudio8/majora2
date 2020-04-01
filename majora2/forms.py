@@ -426,6 +426,9 @@ class TestSampleForm(forms.Form):
         if cleaned_data.get("collection_date"):
             if cleaned_data["collection_date"] > datetime.date.today():
                 self.add_error("collection_date", "Sample cannot be collected in the future")
+        if cleaned_data.get("received_date"):
+            if cleaned_data["received_date"] > datetime.date.today():
+                self.add_error("received_date", "Sample cannot be received in the future")
 
         # Check for full postcode mistake
         adm2 = cleaned_data.get("adm2_private")
