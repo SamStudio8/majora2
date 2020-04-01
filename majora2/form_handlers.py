@@ -72,41 +72,24 @@ def handle_testsequencing(form, user=None, api_o=None):
         p.save()
 
 
-    # Run group
-    run_group_name = form.cleaned_data.get("run_group")
-    if not run_group_name:
-        run_group_name = form.cleaned_data["run_name"]
-    run_group, run_group_created = models.MajoraArtifactGroup.objects.get_or_create(
-            unique_name=run_group_name,
-            dice_name=run_group_name,
-            physical=False
-    )
-    if run_group_created:
-        rec = models.DNASequencingProcessRecord(
-            process=p,
-            in_artifact=form.cleaned_data.get("library_name"),
-            out_group=run_group,
-        )
-        rec.save()
-
     # Create placeholder digitalgroup
     dgroup, dgroup_created = models.DigitalResourceGroup.objects.get_or_create(
-            unique_name="sequencing-filetree-%s" % run_name,
-            current_name="sequencing-filetree-%s" % run_name,
+            unique_name="sequencing-dummy-tree-%s" % run_name,
+            current_name="sequencing-dummy-tree-%s" % run_name,
             physical=False
     )
     if dgroup_created:
         rec = models.DNASequencingProcessRecord(
             process=p,
-            #in_artifact=form.cleaned_data.get("library_name"),
-            in_group=run_group,
+            in_artifact=form.cleaned_data.get("library_name"),
             out_group=dgroup,
         )
         rec.save()
 
         bio = models.AbstractBioinformaticsProcess(
             when = datetime.datetime.now(),
-            who = user
+            who = user,
+            pipe_kind = "Basecalling",
         )
         bio.save()
         a = models.DigitalResourceArtifact(
@@ -301,19 +284,28 @@ def handle_testdigitalresource(form, user=None, api_o=None):
     res.current_kind = form.cleaned_data["resource_type"]
     res.save()
 
-    if form.cleaned_data.get("source_group") or form.cleaned_data.get("source_artifact"):
+    if len(form.cleaned_data.get("source_group")) > 0 or len(form.cleaned_data.get("source_artifact")) > 0:
         bio = models.AbstractBioinformaticsProcess()
         bio.who = user
         bio.when = timezone.now()
         bio.save()
-        bior, created = models.MajoraArtifactProcessRecord.objects.get_or_create(
-            process = bio,
-            in_group = form.cleaned_data.get("source_group"),
-            in_artifact = form.cleaned_data.get("source_artifact"),
-            out_artifact = res,
-        )
-        bior.bridge_artifact = form.cleaned_data.get("bridge_artifact")
-        bior.save()
+
+        for sg in form.cleaned_data.get("source_group"):
+            bior, created = models.MajoraArtifactProcessRecord.objects.get_or_create(
+                process = bio,
+                in_group = sg,
+                out_artifact = res,
+            )
+            bior.bridge_artifact = form.cleaned_data.get("bridge_artifact")
+            bior.save()
+        for sa in form.cleaned_data.get("source_artifact"):
+            bior, created = models.MajoraArtifactProcessRecord.objects.get_or_create(
+                process = bio,
+                in_artifact = sa,
+                out_artifact = res,
+            )
+            bior.bridge_artifact = form.cleaned_data.get("bridge_artifact")
+            bior.save()
 
         if created:
             res.created = bio

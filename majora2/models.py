@@ -51,13 +51,14 @@ class MajoraArtifact(PolymorphicModel):
             if proc in seen:
                 continue
 
-            a.append(proc)
             if proc.in_group:
+                if proc.process not in a:
+                    a.append(proc.process)
                 a.extend(proc.in_group.process_tree_up(seen))
-            else:
-                # TODO this is quite sneaky and gross and we should actually use the bridge system here but i dont want to do that right now
-                if proc.in_artifact:
-                    a.extend(proc.in_artifact.process_tree_up(seen))
+            if proc.in_artifact:
+                if proc.process not in a:
+                    a.append(proc.process)
+                a.extend(proc.in_artifact.process_tree_up(seen))
             seen.add(proc)
         return reversed(a)
     @property
@@ -102,7 +103,7 @@ class MajoraArtifact(PolymorphicModel):
                         # ...and this artifact is not the other side of a bridge that should not be crossed
                         #children.append(proc)
                         children.extend( proc.out_artifact.build_process_tree_down(seen=seen, crossed_bridges=crossed_bridges) )
-                        seen.add(proc.out_artifact)
+                        #seen.add(proc.out_artifact)
                         add = 1
 
             # Delve one group deep
@@ -428,11 +429,13 @@ class MajoraArtifactGroup(PolymorphicModel):
                 continue
 
             if proc.in_group:
+                if proc.process not in a:
+                    a.append(proc.process)
                 a.extend(proc.in_group.process_tree_up(seen))
-                a.append(proc)
-            else:
-                if proc.in_artifact:
-                    a.extend(proc.in_artifact.process_tree_up(seen))
+            if proc.in_artifact:
+                if proc.process not in a:
+                    a.append(proc.process)
+                a.extend(proc.in_artifact.process_tree_up(seen))
             seen.add(proc)
         return reversed(a)
 
@@ -510,7 +513,7 @@ class DigitalResourceArtifact(MajoraArtifact):
         tree = self.process_tree
         ret = []
         for t in tree:
-            if t.process.process_kind.startswith("Bioinformatics") or t.process.process_kind == "Sequencing":
+            if t.process_kind.startswith("Bioinformatics") or t.process_kind == "Sequencing":
                 ret.append(t)
         return reversed(ret)
 

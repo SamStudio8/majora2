@@ -41,37 +41,37 @@
     <tbody>
     {% for proc in artifact.process_tree_bioinf %}
         <tr>
-            <td width=30%><b><span class="badge badge-danger" style="font-size: 1em; margin-bottom:3px">{{ proc.process.process_kind }}</span></b>
-                {% if proc.process.process_kind == "Sequencing" %}</br><b>{{ proc.process.run_name }}</b>{% endif %}
-                <br/><span class="small">{{ proc.process.id }}</span>
+            <td width=30%><b><span class="badge badge-danger" style="font-size: 1em; margin-bottom:3px">{{ proc.process_kind }}</span></b>
+                {% if proc.process_kind == "Sequencing" %}</br><b>{{ proc.run_name }}</b>{% endif %}
+                <br/><span class="small">{{ proc.id }}</span>
 
             </td>
             <td width=40%>
-                {% if proc.process.process_kind == "Sequencing" %}
+                {% if proc.process_kind == "Sequencing" %}
                     <table class="table-sm" style="margin: -8px 0 -8px -4px">
                         <tr>
-                            <td><b>Instrument</b></td><td>{{ proc.process.instrument_make }} {{proc.process.instrument_model }}</td>
+                            <td><b>Instrument</b></td><td>{{ proc.instrument_make }} {{proc.instrument_model }}</td>
                         </tr>
                         <tr>
-                            <td><b>Flowcell</b></td><td>{{ proc.process.flowcell_type }} {{proc.process.flowcell_id}}</td>
+                            <td><b>Flowcell</b></td><td>{{ proc.flowcell_type }} {{proc.flowcell_id}}</td>
                         </tr>
                         <tr>
-                            <td><b>Timing</b></td><td>{{ proc.process.start_time | naturaltime }} {{ proc.process.duration | naturaltime }}</td>
+                            <td><b>Timing</b></td><td>{{ proc.start_time | naturaltime }} {{ proc.duration | naturaltime }}</td>
                         </tr>
                     </table>
                 {% else %}
                     <table class="table-sm" style="margin: -8px 0 -8px -4px">
                         <tr>
-                            <td><b>Pipe</b></td><td>{{ proc.process.pipe_name }}</td>
+                            <td><b>Pipe</b></td><td>{{ proc.pipe_name }}</td>
                         </tr>
                         <tr>
-                            <td><b>Version</b></td><td>{{ proc.process.pipe_version }}</td>
+                            <td><b>Version</b></td><td>{{ proc.pipe_version }}</td>
                         </tr>
                     </table>
                 {% endif %}
             </td>
             <td>
-                {% with thing=proc.process %}
+                {% with thing=proc %}
                 {% include 'tables/metadata-badges.html' %}
                 {% endwith %}
             </td>

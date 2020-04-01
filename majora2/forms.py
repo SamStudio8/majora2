@@ -167,7 +167,7 @@ class TestSequencingForm(forms.Form):
 
     sequencing_id = forms.UUIDField(required=False)
     run_name = forms.CharField(max_length=128, required=False)
-    run_group = forms.CharField(max_length=128, required=False)
+    #run_group = forms.CharField(max_length=128, required=False)
 
     instrument_make = forms.ChoiceField(
             label="Instrument Make",
@@ -449,8 +449,8 @@ class TestSampleForm(forms.Form):
 class TestFileForm(forms.Form):
 
     bridge_artifact = forms.ModelChoiceField(queryset=models.MajoraArtifact.objects.all(), required=False, to_field_name="dice_name")
-    source_artifact = forms.ModelChoiceField(queryset=models.MajoraArtifact.objects.all(), required=False, to_field_name="dice_name")
-    source_group = forms.ModelChoiceField(queryset=models.MajoraArtifactGroup.objects.all(), required=False, to_field_name="dice_name")
+    source_artifact = forms.ModelMultipleChoiceField(queryset=models.MajoraArtifact.objects.all(), required=False, to_field_name="dice_name")
+    source_group = forms.ModelMultipleChoiceField(queryset=models.MajoraArtifactGroup.objects.all(), required=False, to_field_name="dice_name")
 
     #node_uuid = forms.ModelChoiceField(queryset=models.DigitalResourceNode.objects.all())
     node_name = forms.ModelChoiceField(queryset=models.DigitalResourceNode.objects.all(), to_field_name="unique_name", required=False)
