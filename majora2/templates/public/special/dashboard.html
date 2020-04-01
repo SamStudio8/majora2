@@ -11,7 +11,7 @@
 
 <div class="row">
     <div class="col-md-4">
-        <h1 style="font-size: 5em; margin-bottom:-15px">
+        <h1 style="font-size: 6em; margin-bottom:-15px; margin-left: -5px">
             {{ total_collections }}
         </h1>
         <h1>Collections</h1>
@@ -27,14 +27,14 @@
                 {% for entry in collections %}
                 <tr>
                     <td>{{ entry.collected_by }}</td>
-                    <td>{{ entry.collected_by__count }}</td>
+                    <td class="text-right">{{ entry.collected_by__count }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
     <div class="col-md-4">
-        <h1 style="font-size: 5em; margin-bottom:-15px">
+        <h1 style="font-size: 6em; margin-bottom:-15px; margin-left: -5px">
             {{ total_sequences }}</h1>
         <h1>Sequences</h1>
         <br/>
@@ -49,14 +49,14 @@
                 {% for entry in sequences %}
                 <tr>
                     <td>{{ entry.org }}</td>
-                    <td>{{ entry.count }}</td>
+                    <td class="text-right">{{ entry.count }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
     <div class="col-md-4">
-        <h1 style="font-size: 5em; margin-bottom:-15px">
+        <h1 style="font-size: 6em; margin-bottom:-15px; margin-left: -5px">
         {{ n_regions }}</h1>
         <h1>Regions</h1>
         <br/>
@@ -64,14 +64,14 @@
             <thead class="table-dark">
                 <tr>
                     <th>Location</th>
-                    <th>Samples</th>
+                    <th class="text-right">Samples</th>
                 </tr>
             </thead>
             <tbody>
                 {% for entry in adm2 %}
                 <tr>
                     <td>{{ entry.adm2 }}</td>
-                    <td>{{ entry.count }}</td>
+                    <td class="text-right">{{ entry.count }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
