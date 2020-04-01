@@ -774,6 +774,21 @@ class MajoraArtifactProcess(PolymorphicModel):
             groups[cls].append(a)
         return groups
 
+    @property
+    def ordered_artifacts(self):
+        ret = {}
+        for record in self.records.all():
+            if record.in_group:
+                if record.in_group.kind not in ret:
+                    ret[record.in_group.kind] = set([])
+                ret[record.in_group.kind].add(record.in_group)
+            if record.in_artifact:
+                if record.in_artifact.kind not in ret:
+                    ret[record.in_artifact.kind] = set([])
+                ret[record.in_artifact.kind].add(record.in_artifact)
+        return ret
+
+
 class MajoraArtifactProcessGroup(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
     dice_name = models.CharField(max_length=48, blank=True, null=True, unique=True) 
@@ -1173,7 +1188,7 @@ class DNASequencingProcessRecord(MajoraArtifactProcessRecord):
 
 class AbstractBioinformaticsProcess(MajoraArtifactProcess):
     pipe_kind = models.CharField(max_length=64, blank=True, null=True) # will eventually need a controlled vocab here
-    pipe_name = models.CharField(max_length=48, blank=True, null=True)
+    pipe_name = models.CharField(max_length=96, blank=True, null=True)
     pipe_version = models.CharField(max_length=48, blank=True, null=True)
 
     @property

@@ -285,7 +285,12 @@ def handle_testdigitalresource(form, user=None, api_o=None):
     res.save()
 
     if len(form.cleaned_data.get("source_group")) > 0 or len(form.cleaned_data.get("source_artifact")) > 0:
-        bio = models.AbstractBioinformaticsProcess()
+        bio, b_created = models.AbstractBioinformaticsProcess.objects.get_or_create(
+                id = form.cleaned_data["pipe_id"],
+                pipe_kind = form.cleaned_data["pipe_kind"],
+                pipe_name = form.cleaned_data["pipe_name"],
+                pipe_version = form.cleaned_data["pipe_version"],
+        )
         bio.who = user
         bio.when = timezone.now()
         bio.save()
