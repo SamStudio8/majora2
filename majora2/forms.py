@@ -456,6 +456,7 @@ class TestFileForm(forms.Form):
     source_group = forms.ModelMultipleChoiceField(queryset=models.MajoraArtifactGroup.objects.all(), required=False, to_field_name="dice_name")
 
     pipe_id = forms.UUIDField()
+    artifact_uuid = forms.UUIDField(required=False)
     pipe_kind = forms.CharField(max_length=64)
     pipe_name = forms.CharField(max_length=96)
     pipe_version = forms.CharField(max_length=48)

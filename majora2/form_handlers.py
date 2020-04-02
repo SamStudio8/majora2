@@ -279,11 +279,19 @@ def handle_testdigitalresource(form, user=None, api_o=None):
                 physical=True)
         parent = dir_g
 
-    res, created = models.DigitalResourceArtifact.objects.get_or_create(
-            primary_group = parent,
-            current_name = form.cleaned_data["current_name"],
-            current_extension = form.cleaned_data["current_fext"],
-    )
+    if form.cleaned_data.get("artifact_uuid"):
+        res, created = models.DigitalResourceArtifact.objects.get_or_create(
+                id = form.cleaned_data["artifact_uuid"],
+        )
+        res.primary_group = parent
+        res.current_name = form.cleaned_data["current_name"]
+        res.current_extension = form.cleaned_data["current_fext"]
+    else:
+        res, created = models.DigitalResourceArtifact.objects.get_or_create(
+                primary_group = parent,
+                current_name = form.cleaned_data["current_name"],
+                current_extension = form.cleaned_data["current_fext"],
+        )
     res.dice_name = str(res.id)
     res.current_hash = form.cleaned_data["current_hash"]
     res.current_size = form.cleaned_data["current_size"]
