@@ -252,6 +252,17 @@ def add_sequencing(request):
             api_o["errors"] += 1
             return
 
+
+        # Try and get the library_name before the form does to provide a better
+        # error for users submitting data from the online workflow
+        try:
+            models.LibraryArtifact.objects.get(dice_name=library_name)
+        except:
+            api_o["messages"].append({"library_name": [{"message": "Could not add sequencing to Library %s as it does not exist. Check and fix errors in your library fields and resubmit." % library_name, "code": ""}]})
+            api_o["errors"] += 1
+            return
+
+
         # Add sequencing runs to library
         for run in runs:
             try:
