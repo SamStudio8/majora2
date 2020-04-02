@@ -13,10 +13,11 @@
         </thead>
         <tbody>
             <tr>
-                <td>{% if artifact.primary_group.root_group %}<a href="{% url 'group_artifact' artifact.primary_group.root_group.id %}">{{ artifact.primary_group.root_group.name }}</a>{% endif %}</td>
-                <td>{% if artifact.primary_group %}<a href="{% url 'group_artifact' artifact.primary_group.id %}">{{ artifact.primary_group.name }}</a>{% endif %}</td>
+                <td><b>{% if artifact.primary_group.root_group %}<a href="{% url 'group_artifact' artifact.primary_group.root_group.id %}">{{ artifact.primary_group.root_group.name }}</a>{% endif %}</b></td>
+                <td><b>{% if artifact.primary_group %}<a href="{% url 'group_artifact' artifact.primary_group.id %}">{{ artifact.primary_group.name }}</a>{% endif %}</b></td>
                 <td><b>{{ artifact.name }}</b></br>
-                    <code>{{ artifact.current_kind }}</code> ({{ artifact.current_size | filesizeformat }})
+                    <code>{{ artifact.current_hash }}</code> ({{ artifact.current_size | filesizeformat }})
+                <td>{{ artifact.current_kind }}</td>
                 </td>
             </tr>
         </tbody>
