@@ -1,13 +1,12 @@
 {% load instance %}
-<div class="container text-center" style="background-color: #212529">
+<div class="container text-center" style="background-color: #212529; padding: 20px;">
     <span style="color:#ccc">
         <p>
         {% if user.is_authenticated %}
             You are authenticated as <b><a href="{% url 'profile' %}">{{ request.user.username }}<a/></b> | <a href="{% url 'logout' %}">Log Out</a>
         {% else %}
         {% endif %}
-        <br/>The <b><a href="https://github.com/SamStudio8/majora">Majora</a></b> artifact metadata system was built by <b><a href="https://twitter.com/samstudio8">Sam Nicholls</a> at the <b>University of Birmingham</b> as part of the <b><a href="https://www.cogconsortium.uk/">COVID-19 Genomics UK Consortium</a></b>.</p>
-        </br>
+        <br/>The <b><a href="https://github.com/SamStudio8/majora">Majora</a></b> artifact metadata system was built by <b><a href="https://twitter.com/samstudio8">Sam Nicholls</a></b> at the <b>University of Birmingham</b> for the <b><a href="https://www.cogconsortium.uk/">COVID-19 Genomics UK Consortium</a></b>.</p>
     </span>
 </div>
     </div>
