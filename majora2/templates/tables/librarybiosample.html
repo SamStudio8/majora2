@@ -21,7 +21,7 @@
         <td>{% if artifact.primary_group %}<b><a href="{% url 'group_artifact' artifact.primary_group.id %}">{{ artifact.primary_group }}</a></b>{% else %}Unlinked{% endif %} ({{ artifact.created.source_age }}{{ artifact.created.source_sex }})</td>
         <td>{{ artifact.created.collection_location_adm1 }} / {{ artifact.created.collection_location_adm2 }}</br>
             {{artifact.created.collected_by}}</td>
-        <td>{{ artifact.created.collection_date }}</br>
+        <td>{{ artifact.created.when }}</br>
         {{ artifact.created.when | naturaltime }}</td>
         <td>{{ record.library_source }} {{ record.library_selection }} {{ record.library_strategy }}</td>
     </tr>
