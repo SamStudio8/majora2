@@ -124,26 +124,34 @@ def get_biosample(request):
 
 def get_sequencing(request):
     def f(request, api_o, json_data, user=None):
-        run_name = json_data.get("run_name")
-        if not run_name:
+        run_names = json_data.get("run_name")
+        if not run_names:
             api_o["messages"].append("'run_name' key missing or empty")
             api_o["errors"] += 1
             return
 
-        try:
-            process = models.DNASequencingProcess.objects.get(run_name=run_name)
-        except Exception as e:
-            api_o["errors"] += 1
-            api_o["messages"].append("No such process.")
-            return
+        if len(run_names) == 1 and run_names[0] == "*":
+            if user.is_staff:
+                run_names = [run["run_name"] for run in models.DNASequencingProcess.objects.all().values("run_name")]
+            else:
+                return HttpResponseBadRequest()
 
-        try:
-            api_o["get"] = {
-                process.run_name: process.as_struct()
-            }
-        except Exception as e:
-            api_o["errors"] += 1
-            api_o["messages"].append(str(e))
+        runs = {}
+        for run_name in run_names:
+            try:
+                process = models.DNASequencingProcess.objects.get(run_name=run_name)
+            except Exception as e:
+                api_o["warnings"] += 1
+                api_o["ignored"].append(run_name)
+                continue
+
+            try:
+                runs[process.run_name] = process.as_struct()
+            except Exception as e:
+                api_o["errors"] += 1
+                api_o["messages"].append(str(e))
+                continue
+        api_o["get"] = runs
 
     return wrap_api_v2(request, f)
 
