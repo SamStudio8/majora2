@@ -1183,7 +1183,14 @@ class LibraryArtifact(MajoraArtifact):
         if self.created:
             for record in self.created.records.all():
                 if record.in_artifact.kind == "Biosample":
-                    biosamples.append(record.in_artifact.as_struct())
+                    rec = record.in_artifact.as_struct()
+                    rec.update({
+                        "library_strategy": record.library_strategy,
+                        "library_source": record.library_source,
+                        "library_selection": record.library_selection,
+                        "barcode": record.barcode,
+                    })
+                    biosamples.append(rec)
         ret = {
             "library_name": self.dice_name,
             "layout_config": self.layout_config,
