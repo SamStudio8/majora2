@@ -255,6 +255,12 @@ def handle_testsample(form, user=None, api_o=None):
     sample_p.source_sex = form.cleaned_data.get("source_sex")
     sample_p.save()
 
+    if source and sample.created:
+        for record in sample.created.records.all():
+            if record.in_group != source:
+                record.in_group = source
+                record.save()
+
     return sample, sample_created
 
 def handle_testdigitalresource(form, user=None, api_o=None):
