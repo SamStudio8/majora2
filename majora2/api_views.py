@@ -18,7 +18,7 @@ from . import form_handlers
 
 import json
 
-MINIMUM_CLIENT_VERSION = "0.2.2"
+MINIMUM_CLIENT_VERSION = "0.3.1"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
@@ -48,6 +48,17 @@ def wrap_api_v2(request, f):
         profile = models.Profile.objects.get(api_key=json_data["token"], user__username=json_data["username"])
     except:
         return HttpResponseBadRequest()
+    user = profile.user
+
+    # Bounce non-admin escalations to other users
+    if json_data.get("sudo_as"):
+        if user.is_staff:
+            try:
+                user = models.Profile.objects.get(user__username=json_data["sudo_as"]).user
+            except:
+                return HttpResponseBadRequest()
+        else:
+            return HttpResponseBadRequest()
 
     bad = False
     # Bounce out of data clients
@@ -66,7 +77,7 @@ def wrap_api_v2(request, f):
 
     # Call the wrapped function
     if not bad:
-        f(request, api_o, json_data, user=profile.user)
+        f(request, api_o, json_data, user=user)
 
     api_o["success"] = api_o["errors"] == 0
     return HttpResponse(json.dumps(api_o), content_type="application/json")
