@@ -18,7 +18,7 @@ from . import form_handlers
 
 import json
 
-MINIMUM_CLIENT_VERSION = "0.1.5"
+MINIMUM_CLIENT_VERSION = "0.2.2"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
@@ -107,7 +107,12 @@ def get_biosample(request):
 
         try:
             artifact = models.MajoraArtifact.objects.filter(dice_name=sample_id).first()
+        except Exception as e:
+            api_o["errors"] += 1
+            api_o["messages"].append("No such artifact.")
+            return
 
+        try:
             api_o["get"] = {
                 sample_id: artifact.as_struct()
             }
@@ -116,6 +121,32 @@ def get_biosample(request):
             api_o["messages"].append(str(e))
 
     return wrap_api_v2(request, f)
+
+def get_sequencing(request):
+    def f(request, api_o, json_data, user=None):
+        run_name = json_data.get("run_name")
+        if not run_name:
+            api_o["messages"].append("'run_name' key missing or empty")
+            api_o["errors"] += 1
+            return
+
+        try:
+            process = models.DNASequencingProcess.objects.get(run_name=run_name)
+        except Exception as e:
+            api_o["errors"] += 1
+            api_o["messages"].append("No such process.")
+            return
+
+        try:
+            api_o["get"] = {
+                process.run_name: process.as_struct()
+            }
+        except Exception as e:
+            api_o["errors"] += 1
+            api_o["messages"].append(str(e))
+
+    return wrap_api_v2(request, f)
+
 
 
 def add_biosample(request):

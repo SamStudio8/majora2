@@ -232,6 +232,17 @@ class MajoraArtifact(PolymorphicModel):
 
         return None
 
+    def get_metadata_as_struct(self, flat=False):
+        metadata = {}
+        for m in self.metadata.all():
+            if not flat:
+                if m.meta_tag not in metadata:
+                    metadata[m.meta_tag] = {}
+                metadata[m.meta_tag][m.meta_name] = m.value
+            else:
+                metadata["%s.%s" % (m.meta_tag, m.meta_name)] = m.value
+        return metadata
+
 """
 class MajoraGroup(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
@@ -690,10 +701,13 @@ class BiosampleArtifact(MajoraArtifact):
 
         ret = {
             "central_sample_id": self.central_sample_id,
+            "sender_sample_id": self.sender_sample_id,
+            "root_sample_id": self.root_sample_id,
             "secondary_identifier": self.secondary_identifier,
             "sample_type_collected": self.sample_type_collected,
             "sample_type_received": self.sample_type_current,
             "swab_site": self.sample_site,
+            "secondary_accession": self.secondary_accession,
         }
         collection = {}
         if self.created:
@@ -722,6 +736,11 @@ class BiosampleSource(MajoraArtifactGroup):
     def name(self):
         return str(self.dice_name)
 
+    def as_struct(self):
+        return {
+            "source_type": self.source_type,
+            "biosample_source_id": self.dice_name,
+        }
 
 class MajoraArtifactProcessRecord(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
@@ -934,6 +953,11 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
     private_collection_location_adm2 = models.CharField(max_length=100, blank=True, null=True)
 
     def as_struct(self):
+        biosample_sources = []
+        for record in self.records.all():
+            if record.in_group and record.in_group.kind == "Biosample Source":
+                biosample_sources.append(record.in_group.as_struct())
+
         return {
             "collection_date": self.collection_date.strftime("%Y-%m-%d") if self.collection_date else None,
             "received_date": self.received_date.strftime("%Y-%m-%d") if self.received_date else None,
@@ -948,6 +972,8 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
             "adm0": self.collection_location_country,
             "adm1": self.collection_location_adm1,
             "adm2": self.collection_location_adm2,
+
+            "biosample_sources": biosample_sources,
         }
 
 
@@ -1151,6 +1177,27 @@ class LibraryArtifact(MajoraArtifact):
     def artifact_kind(self):
         return 'Library'
 
+    def as_struct(self):
+        biosamples = []
+
+        if self.created:
+            for record in self.created.records.all():
+                if record.in_artifact.kind == "Biosample":
+                    biosamples.append(record.in_artifact.as_struct())
+        ret = {
+            "library_name": self.dice_name,
+            "layout_config": self.layout_config,
+            "layout_read_length": self.layout_read_length,
+            "layout_insert_length": self.layout_insert_length,
+            "sequencing_kit": self.seq_kit,
+            "sequencing_protocol": self.seq_protocol,
+
+            "metadata": self.get_metadata_as_struct(),
+
+            "biosamples": biosamples,
+        }
+        return ret
+
 class LibraryPoolingProcess(MajoraArtifactProcess):
     @property
     def process_kind(self):
@@ -1181,6 +1228,26 @@ class DNASequencingProcess(MajoraArtifactProcess):
     @property
     def process_kind(self):
         return 'Sequencing'
+
+    def as_struct(self):
+
+        libraries = []
+        for record in self.records.all():
+            if record.in_artifact.kind == "Library":
+                libraries.append(record.in_artifact.as_struct())
+
+        return {
+            "run_name": self.run_name,
+            "instrument_make": self.instrument_make,
+            "instrument_model": self.instrument_model,
+            "flowcell_type": self.flowcell_type,
+            "flowcell_id": self.flowcell_id,
+
+            "start_time": self.start_time.strftime("%Y-%m-%d %H:%m") if self.start_time else None,
+            "end_time": self.end_time.strftime("%Y-%m-%d %H:%m") if self.start_time else None,
+            #"duration": None,
+            "libraries": libraries,
+        }
 
 class DNASequencingProcessRecord(MajoraArtifactProcessRecord):
     pass
