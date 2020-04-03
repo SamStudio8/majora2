@@ -1,7 +1,9 @@
 from . import models
 from dateutil.rrule import rrule, DAILY
 import datetime
+import re
 from django.utils import timezone
+from dateutil.parser import parse
 
 def quarantine_artifact(process, artifact):
     artifact.quarantined = True
@@ -14,9 +16,16 @@ def quarantine_artifact(process, artifact):
     qr.save()
     artifact.save()
 
-def create_biosample(self):
-    pass
-
+def try_date(str_):
+    dt = None
+    for s_ in re.split('[^a-zA-Z0-9]', str_):
+        if len(s_) < 4:
+            continue
+        try:
+            dt = parse(s_, yearfirst=True)
+        except ValueError:
+            pass
+    return dt
 
 def make_spark(queryset, days=30):
     counts = []

@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from . import models
 from . import signals
+from . import util
 
 def _format_tuple(x):
     if hasattr(x, "process_kind"):
@@ -45,10 +46,10 @@ def handle_testsequencing(form, user=None, api_o=None):
             run_name = form.cleaned_data.get("run_name")
         else:
             run_name = str(sequencing_id)
-        p, sequencing_created = models.DNASequencingProcess.objects.get_or_create(pk=form.cleaned_data["sequencing_id"], run_name=run_name)
+        p, sequencing_created = models.DNASequencingProcess.objects.get_or_create(pk=sequencing_id, run_name=run_name)
     else:
         run_name = form.cleaned_data["run_name"]
-        p, sequencing_created = models.DNASequencingProcess.objects.get_or_create(run_name=form.cleaned_data["run_name"])
+        p, sequencing_created = models.DNASequencingProcess.objects.get_or_create(run_name=run_name)
 
     if not p:
         return None, False
@@ -67,8 +68,19 @@ def handle_testsequencing(form, user=None, api_o=None):
     if sequencing_created:
         if api_o:
             api_o["new"].append(_format_tuple(p))
+
+        # Try and infer a date from the library name...
+        _dt = util.try_date(run_name)
+        created_dt = None
+        if p.start_time:
+            created_dt = p.start_time
+        elif _dt:
+            created_dt = _dt
+        else:
+            created_dt = timezone.now()
+
         p.who = user
-        p.when = p.start_time if p.start_time else timezone.now()
+        p.when = created_dt
         p.save()
 
 
@@ -103,13 +115,16 @@ def handle_testsequencing(form, user=None, api_o=None):
             in_group=dgroup,
             out_artifact=a,
         )
+        a.created = bio
+        a.save()
         rec2.save()
     return p, sequencing_created
 
 
 def handle_testlibrary(form, user=None, api_o=None):
+    library_name = form.cleaned_data["library_name"]
     library, library_created = models.LibraryArtifact.objects.get_or_create(
-                dice_name=form.cleaned_data.get("library_name"))
+                dice_name=library_name)
     library.layout_config = form.cleaned_data.get("library_layout_config")
     library.layout_read_length = form.cleaned_data.get("library_layout_read_length")
     library.layout_insert_length = form.cleaned_data.get("library_layout_insert_length")
@@ -120,10 +135,13 @@ def handle_testlibrary(form, user=None, api_o=None):
         if api_o:
             api_o["new"].append(_format_tuple(library))
 
+        # Try and infer a date from the library name...
+        _dt = util.try_date(library_name)
+
         # Create the pooling event
         pool_p = models.LibraryPoolingProcess(
             who = user,
-            when = timezone.now() # useful for sorting
+            when = _dt if _dt else timezone.now() # useful for sorting
         )
         pool_p.save()
         library.created = pool_p
@@ -325,6 +343,11 @@ def handle_testdigitalresource(form, user=None, api_o=None):
             )
             bior.bridge_artifact = form.cleaned_data.get("bridge_artifact")
             bior.save()
+            try:
+                bio.when = sa.created.when
+                bio.save()
+            except:
+                pass
 
         if created:
             res.created = bio
