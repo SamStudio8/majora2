@@ -23,7 +23,7 @@ def try_date(str_):
             continue
         try:
             tdt = parse(s_, yearfirst=True, fuzzy=True)
-            if tdt and tdt.year > 2000 and tdt.year <= timezone.now().year:
+            if tdt and tdt.year >= (timezone.now().year - 1) and tdt.year <= timezone.now().year:
                 # Try and avoid absurd dates
                 dt = tdt
         except ValueError:
