@@ -58,36 +58,10 @@ def recv_new_sample(sender, sample_id, submitter, **kwargs):
     if settings.SLACK_CHANNEL:
         slack_message('slack/blank', {
         }, [{
-            "mrkdwn_in": ["text", "pretext", "fields"],
-            "title": "New sample",
-            "title_link": "",
-            "text": "%s has provided sample metadata for sample %s" % (submitter, sample_id),
-            "footer": "New sample spotted by Majora",
-            "footer_icon": "https://avatars.slack-edge.com/2019-05-03/627972616934_a621b7d3a28c2b6a7bd1_512.jpg",
-
-            "fields": [
-                {
-                    "title": "Metadata",
-                    "short": False
-                },
-                {
-                    "title": "Sample",
-                    "short": True
-                },
-                {
-                    "value": sample_id,
-                    "short": True
-                },
-                {
-                    "title": "Organisation",
-                    "short": True
-                },
-                {
-                    "value": submitter,
-                    "short": True
-                },
-            ],
-            "ts": int(time.time()),
+            "text": "Sample %s uploaded from %s" % (sample_id, submitter),
+            #"footer": "New sample spotted by Majora",
+            #"footer_icon": "https://avatars.slack-edge.com/2019-05-03/627972616934_a621b7d3a28c2b6a7bd1_512.jpg",
+            #"ts": int(time.time()),
         }])
 
 @receiver(signals.activated_registration)
