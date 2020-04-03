@@ -19,10 +19,13 @@ def quarantine_artifact(process, artifact):
 def try_date(str_):
     dt = None
     for s_ in re.split('[^a-zA-Z0-9]', str_):
-        if len(s_) < 4:
+        if len(s_) < 6:
             continue
         try:
-            dt = parse(s_, yearfirst=True)
+            tdt = parse(s_, yearfirst=True, fuzzy=True)
+            if tdt and tdt.year > 2000 and tdt.year <= timezone.now().year:
+                # Try and avoid absurd dates
+                dt = tdt
         except ValueError:
             pass
     return dt
