@@ -56,6 +56,10 @@ def handle_testsequencing(form, user=None, api_o=None):
     if not p:
         return None, False
 
+    run_group = form.cleaned_data.get("run_group")
+    if not run_group:
+        run_group = run_name
+    p.run_group = run_group
     p.instrument_make = form.cleaned_data["instrument_make"]
     p.instrument_model = form.cleaned_data["instrument_model"]
     p.flowcell_type = form.cleaned_data["flowcell_type"]

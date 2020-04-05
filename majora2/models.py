@@ -1201,7 +1201,7 @@ class LibraryArtifact(MajoraArtifact):
 
         if self.created:
             for record in self.created.records.all():
-                if record.in_artifact.kind == "Biosample":
+                if record.in_artifact and record.in_artifact.kind == "Biosample":
                     rec = record.in_artifact.as_struct()
                     rec.update({
                         "library_strategy": record.library_strategy,
@@ -1241,6 +1241,7 @@ class DNASequencingProcessGroup(MajoraArtifactProcessGroup):
 
 class DNASequencingProcess(MajoraArtifactProcess):
     run_name = models.CharField(max_length=128, unique=True)
+    run_group = models.CharField(max_length=128, blank=True, null=True)
 
     instrument_make = models.CharField(max_length=64)
     instrument_model = models.CharField(max_length=48)
@@ -1259,11 +1260,12 @@ class DNASequencingProcess(MajoraArtifactProcess):
 
         libraries = []
         for record in self.records.all():
-            if record.in_artifact.kind == "Library":
+            if record.in_artifact and record.in_artifact.kind == "Library":
                 libraries.append(record.in_artifact.as_struct())
 
         return {
             "run_name": self.run_name,
+            "run_group": self.run_group,
             "instrument_make": self.instrument_make,
             "instrument_model": self.instrument_model,
             "flowcell_type": self.flowcell_type,
