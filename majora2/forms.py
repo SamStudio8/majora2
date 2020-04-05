@@ -185,8 +185,8 @@ class TestSequencingForm(forms.Form):
     #flowcell_version = forms.CharField(max_length=48)
     flowcell_id = forms.CharField(max_length=48, required=False)
 
-    start_time = forms.DateTimeField(input_formats=["%Y-%m-%d %H:%M:%S"], required=False)
-    end_time = forms.DateTimeField(input_formats=["%Y-%m-%d %H:%M:%S"], required=False)
+    start_time = forms.DateTimeField(input_formats=["%Y-%m-%d %H:%M"], required=False)
+    end_time = forms.DateTimeField(input_formats=["%Y-%m-%d %H:%M"], required=False)
 
     @staticmethod
     def modify_preform(data):
