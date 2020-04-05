@@ -528,6 +528,25 @@ class DigitalResourceArtifact(MajoraArtifact):
                 ret.append(t)
         return reversed(ret)
 
+    @property #TODO dont like this but need to be fast, ideally pass the artifact to fixed_data function that defines this?
+    def cogtemp_get_qc(self):
+        try:
+            return self.get_metadatum('cog', 'qc')[0].value
+        except:
+            return None
+    @property
+    def cogtemp_get_public(self):
+        try:
+            return self.get_metadatum('cog', 'public')[0].value
+        except:
+            return None
+    @property
+    def cogtemp_get_sequencing(self):
+        for record in self.process_tree_bioinf:
+            if record.process_kind == "Sequencing":
+                return record.run_name
+
+
     @classmethod
     def sorto(cls, a):
         return sorted(a, key=lambda x: x.current_name)
