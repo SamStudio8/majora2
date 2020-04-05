@@ -1,0 +1,55 @@
+{% load humanize %}
+<div class="table-responsive">
+<table class="table table-hover table-active data-table">
+    <thead class="thead-dark">
+        <tr>
+            <th>File Name</th>
+            <th>Run Name</th>
+            <th>File Kind</th>
+            <th>Last Updated</th>
+            <th>QC</th>
+            <th>Public</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for artifact in gitems %}
+    <tr>
+        <td><a href="{% url 'detail_artifact' artifact.id %}"><b>{{ artifact.current_name }}</b></a></td>
+        <td>{{ artifact.cogtemp_get_sequencing }}</td>
+        <td>{{ artifact.current_kind }}</td>
+        <td>{{ artifact.observed.process.when | naturaltime }}</td>
+        <td>
+            {% if artifact.cogtemp_get_qc %}
+                {% if artifact.cogtemp_get_qc == '0' %}
+                    <span class="badge badge-danger">fail</span>
+                {% elif artifact.cogtemp_get_qc == '1' %}
+                    <span class="badge badge-success">pass</span>
+                {% endif %}
+            {% else %}
+                <span class="badge badge-info">tbc</span>
+            {% endif %}
+        </td>
+        <td>
+            {% if artifact.cogtemp_get_public %}
+                {% if artifact.cogtemp_get_public == '0' %}
+                    <span class="badge badge-danger">no</span>
+                {% elif artifact.cogtemp_get_public == '1' %}
+                    <span class="badge badge-success">yes</span>
+                {% endif %}
+            {% else %}
+                <span class="badge badge-info">tbc</span>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot class="thead-dark">
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+    </tfoot>
+</table>
+</div>
+
