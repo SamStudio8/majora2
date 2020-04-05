@@ -321,6 +321,7 @@ def add_sequencing(request):
                 json_data = forms.TestSequencingForm.modify_preform(json_data)
                 initial = fixed_data.fill_fixed_data("api.process.sequencing.add", user)
                 run["library_name"] = library_name
+                run["run_group"] = json_data.get("run_group")
                 form = forms.TestSequencingForm(run, initial=initial)
                 if form.is_valid():
                     form.cleaned_data.update(initial)
