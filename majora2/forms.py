@@ -407,6 +407,18 @@ class TestSampleForm(forms.Form):
             )
         )
 
+    @staticmethod
+    def modify_preform(data):
+        LOWERCASE_FIELDS = [
+            "swab_site",
+            "sample_type_collected",
+            "sample_type_received",
+        ]
+        for field in LOWERCASE_FIELDS:
+            if data.get(field):
+                data[field] = data[field].lower().replace(' ', '_')
+        return data
+
     def clean(self):
         cleaned_data = super().clean()
 
