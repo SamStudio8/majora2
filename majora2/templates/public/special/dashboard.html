@@ -22,13 +22,15 @@
                 <tr>
                     <th>Site</th>
                     <th class="text-right">Sequences</th>
+                    <th class="text-right">Public</th>
                 </tr>
             </thead>
             <tbody>
-                {% for entry in sequences %}
+                {% for name, entry in new_sequences %}
                 <tr>
-                    <td>{{ entry.org }}</td>
+                    <td>{{ entry.site }}</td>
                     <td class="text-right">{{ entry.count }}</td>
+                    <td class="text-right">{{ entry.public }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
