@@ -110,7 +110,8 @@ def profile(request):
         'groups': models.Favourite.objects.filter(user=request.user.id).exclude(group__isnull=True),
         'pgroups': models.Favourite.objects.filter(user=request.user.id).exclude(pgroup__isnull=True),
         'processes': models.MajoraArtifactProcess.objects.filter(who=request.user.id).order_by('-when'),
-        'samples': [b.out_artifact for bsr in models.BiosourceSamplingProcess.objects.filter(submission_org=request.user.profile.institute) for b in bsr.records.all()]
+        'samples': models.BiosampleArtifact.objects.filter(created__who__profile__institute__code=request.user.profile.institute.code),
+        'consensii': models.DigitalResourceArtifact.objects.filter(current_kind="consensus", created__who__profile__institute__code=request.user.profile.institute.code),
     })
 
 @login_required
