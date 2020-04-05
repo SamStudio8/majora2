@@ -411,12 +411,14 @@ class TestSampleForm(forms.Form):
     def modify_preform(data):
         LOWERCASE_FIELDS = [
             "swab_site",
-            "sample_type_collected",
             "sample_type_received",
         ]
         for field in LOWERCASE_FIELDS:
             if data.get(field):
                 data[field] = data[field].lower().replace(' ', '_')
+
+        #if data.get("swab_site", "").upper() == "NSTS" or data.get("swab_site", "").lower() == "nose and throat":
+        #    data["swab_site"] = "nose-throat"
         return data
 
     def clean(self):
