@@ -10,6 +10,8 @@ from . import util
 def _format_tuple(x):
     if hasattr(x, "process_kind"):
         return (x.kind, str(x.id), "")
+    elif hasattr(x, "group_kind"):
+        return (x.kind, str(x.id), x.dice_name)
     else:
         return (x.kind, str(x.id), x.dice_name)
 
@@ -81,12 +83,16 @@ def handle_testsequencing(form, user=None, api_o=None):
 
         p.who = user
         p.when = created_dt
-        p.save()
+    else:
+        if api_o:
+            api_o["updated"].append(_format_tuple(p))
+    p.save()
 
 
     # Create placeholder digitalgroup
     dgroup, dgroup_created = models.DigitalResourceGroup.objects.get_or_create(
             unique_name="sequencing-dummy-tree-%s" % run_name,
+            dice_name="sequencing-dummy-tree-%s" % run_name,
             current_name="sequencing-dummy-tree-%s" % run_name,
             physical=False
     )
@@ -118,6 +124,9 @@ def handle_testsequencing(form, user=None, api_o=None):
         a.created = bio
         a.save()
         rec2.save()
+        if api_o:
+            api_o["new"].append(_format_tuple(dgroup))
+            api_o["new"].append(_format_tuple(a))
     return p, sequencing_created
 
 
