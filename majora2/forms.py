@@ -412,6 +412,7 @@ class TestSampleForm(forms.Form):
     def modify_preform(data):
         LOWERCASE_FIELDS = [
             "swab_site",
+            "sample_type_collected",
             "sample_type_received",
         ]
         for field in LOWERCASE_FIELDS:
@@ -453,7 +454,7 @@ class TestSampleForm(forms.Form):
         # Validate swab site
         swab_site = cleaned_data.get("swab_site")
         sample_type = cleaned_data.get("sample_type_collected")
-        if "swab" not in sample_type and swab_site:
+        if sample_type and "swab" not in sample_type and swab_site:
             self.add_error("sample_type_collected", "Swab site specified but the sample type is not 'swab'")
         #if sample_type == "swab" and not swab_site:
         #    self.add_error("sample_type_collected", "Sample was a swab but you did not specify the swab site")
