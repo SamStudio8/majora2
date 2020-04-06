@@ -289,6 +289,7 @@ class TestSampleForm(forms.Form):
     sample_type_collected = forms.ChoiceField(
         choices= [
             (None, "Unknown"),
+            ("dry swab", "dry swab"),
             ("swab", "swab"),
             ("sputum", "sputum"),
             ("BAL", "BAL"),
