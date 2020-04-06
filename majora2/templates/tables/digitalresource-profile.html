@@ -20,7 +20,7 @@
         <td>{{ artifact.observed.process.when | naturaltime }}</td>
         <td>
             {% if artifact.cogtemp_get_qc %}
-                {% if artifact.cogtemp_get_qc == '0' %}
+                {% if artifact.cogtemp_get_qc == '-1' %}
                     <span class="badge badge-danger">fail</span>
                 {% elif artifact.cogtemp_get_qc == '1' %}
                     <span class="badge badge-success">pass</span>
@@ -31,8 +31,10 @@
         </td>
         <td>
             {% if artifact.cogtemp_get_public %}
-                {% if artifact.cogtemp_get_public == '0' %}
+                {% if artifact.cogtemp_get_public == '-1' %}
                     <span class="badge badge-danger">no</span>
+                {% elif artifact.cogtemp_get_public == '0' %}
+                    <span class="badge badge-warning">pending</span>
                 {% elif artifact.cogtemp_get_public == '1' %}
                     <span class="badge badge-success">yes</span>
                 {% endif %}
