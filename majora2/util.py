@@ -18,7 +18,7 @@ def quarantine_artifact(process, artifact):
 
 def try_date(str_):
     dt = None
-    for s_ in re.split('[^a-zA-Z0-9]', str_):
+    for s_ in re.split('[^0-9]', str_):
         if len(s_) < 6:
             continue
         try:
