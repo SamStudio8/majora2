@@ -180,7 +180,7 @@ def add_biosample(request):
                 sample_id = biosample.get("central_sample_id")
                 initial = fixed_data.fill_fixed_data("api.artifact.biosample.add", user)
 
-                json_data = forms.TestSampleForm.modify_preform(json_data)
+                biosample = forms.TestSampleForm.modify_preform(biosample)
                 form = forms.TestSampleForm(biosample, initial=initial)
                 if form.is_valid():
                     del initial["submitting_org"]
