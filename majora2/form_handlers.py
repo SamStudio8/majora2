@@ -100,14 +100,14 @@ def handle_testsequencing(form, user=None, api_o=None):
             current_name="sequencing-dummy-tree-%s" % run_name,
             physical=False
     )
-    if dgroup_created:
-        rec = models.DNASequencingProcessRecord(
-            process=p,
-            in_artifact=form.cleaned_data.get("library_name"),
-            out_group=dgroup,
-        )
-        rec.save()
+    rec, rec_created = models.DNASequencingProcessRecord.objects.get_or_create(
+        process=p,
+        in_artifact=form.cleaned_data.get("library_name"),
+        out_group=dgroup,
+    )
+    rec.save()
 
+    if dgroup_created:
         bio = models.AbstractBioinformaticsProcess(
             who = user,
             when = p.when,
