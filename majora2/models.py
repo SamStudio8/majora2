@@ -982,6 +982,7 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
             "received_date": self.received_date.strftime("%Y-%m-%d") if self.received_date else None,
             "submission_user": self.submission_user.username,
             "submission_org": self.submission_org.name if self.submission_org else None,
+            "submission_org_code": self.submission_org.code if self.submission_org else None,
 
             "source_sex": self.source_sex,
             "source_age": self.source_age,
@@ -1275,6 +1276,10 @@ class DNASequencingProcess(MajoraArtifactProcess):
             "end_time": self.end_time.strftime("%Y-%m-%d %H:%m") if self.start_time else None,
             #"duration": None,
             "libraries": libraries,
+
+            "sequencing_org": self.who.profile.institute.name if self.who.profile.institute else None,
+            "sequencing_org_code": self.who.profile.institute.code if self.who.profile.institute else None,
+            "sequencing_submission_date": self.when.strftime("%Y-%m-%d") if self.when else None,
         }
 
 class DNASequencingProcessRecord(MajoraArtifactProcessRecord):
