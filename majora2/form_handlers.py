@@ -158,7 +158,10 @@ def handle_testlibrary(form, user=None, api_o=None):
         )
         pool_p.save()
         library.created = pool_p
-        library.save()
+    else:
+        if api_o:
+            api_o["updated"].append(_format_tuple(library))
+    library.save()
     return library, library_created
 
 def handle_testlibraryrecord(form, user=None, api_o=None):
