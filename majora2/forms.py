@@ -417,7 +417,8 @@ class TestSampleForm(forms.Form):
         ]
         for field in LOWERCASE_FIELDS:
             if data.get(field):
-                data[field] = data[field].lower()
+                if data[field] != "BAL":
+                    data[field] = data[field].lower()
 
         #if data.get("swab_site", "").upper() == "NSTS" or data.get("swab_site", "").lower() == "nose and throat":
         #    data["swab_site"] = "nose-throat"
