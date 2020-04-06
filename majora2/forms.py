@@ -195,7 +195,7 @@ class TestSequencingForm(forms.Form):
         ]
         for field in UPPERCASE_FIELDS:
             if data.get(field):
-                data[field] = data[field].upper().replace(' ', '_')
+                data[field] = data[field].upper().strip().replace(' ', '_')
         return data
 
     def clean(self):

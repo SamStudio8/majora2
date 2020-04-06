@@ -318,7 +318,7 @@ def add_sequencing(request):
         # Add sequencing runs to library
         for run in runs:
             try:
-                json_data = forms.TestSequencingForm.modify_preform(json_data)
+                run = forms.TestSequencingForm.modify_preform(run)
                 initial = fixed_data.fill_fixed_data("api.process.sequencing.add", user)
                 run["library_name"] = library_name
                 run["run_group"] = json_data.get("run_group")
