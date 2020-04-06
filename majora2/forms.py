@@ -416,7 +416,7 @@ class TestSampleForm(forms.Form):
         ]
         for field in LOWERCASE_FIELDS:
             if data.get(field):
-                data[field] = data[field].lower().replace(' ', '_')
+                data[field] = data[field].lower()
 
         #if data.get("swab_site", "").upper() == "NSTS" or data.get("swab_site", "").lower() == "nose and throat":
         #    data["swab_site"] = "nose-throat"
@@ -453,7 +453,7 @@ class TestSampleForm(forms.Form):
         # Validate swab site
         swab_site = cleaned_data.get("swab_site")
         sample_type = cleaned_data.get("sample_type_collected")
-        if sample_type != "swab" and swab_site:
+        if "swab" not in sample_type and swab_site:
             self.add_error("sample_type_collected", "Swab site specified but the sample type is not 'swab'")
         #if sample_type == "swab" and not swab_site:
         #    self.add_error("sample_type_collected", "Sample was a swab but you did not specify the swab site")
