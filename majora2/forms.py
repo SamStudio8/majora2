@@ -454,8 +454,8 @@ class TestSampleForm(forms.Form):
         sample_type = cleaned_data.get("sample_type_collected")
         if sample_type != "swab" and swab_site:
             self.add_error("sample_type_collected", "Swab site specified but the sample type is not 'swab'")
-        if sample_type == "swab" and not swab_site:
-            self.add_error("sample_type_collected", "Sample was a swab but you did not specify the swab site")
+        #if sample_type == "swab" and not swab_site:
+        #    self.add_error("sample_type_collected", "Sample was a swab but you did not specify the swab site")
 
         # Validate accession
         secondary_identifier = cleaned_data.get("secondary_identifier")
