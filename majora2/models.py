@@ -12,8 +12,8 @@ from polymorphic.models import PolymorphicModel
 
 class MajoraArtifact(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # 
-    dice_name = models.CharField(max_length=48, blank=True, null=True, unique=True)
-    meta_name = models.CharField(max_length=48, blank=True, null=True)
+    dice_name = models.CharField(max_length=96, blank=True, null=True, unique=True)
+    meta_name = models.CharField(max_length=96, blank=True, null=True)
 
     root_artifact = models.ForeignKey('MajoraArtifact', blank=True, null=True, on_delete=models.PROTECT, related_name="descendants")
     quarantined = models.BooleanField(default=False)
@@ -309,8 +309,8 @@ class MajoraArtifactGroup(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
     unique_name = models.CharField(max_length=128, blank=True, null=True, unique=True) #TODO graduate away from meta_name, needs to be project unique rather than global, but it will work here 
 
-    dice_name = models.CharField(max_length=48, blank=True, null=True, unique=True) 
-    meta_name = models.CharField(max_length=48, blank=True, null=True) # TODO force unique?
+    dice_name = models.CharField(max_length=96, blank=True, null=True, unique=True) 
+    meta_name = models.CharField(max_length=96, blank=True, null=True) # TODO force unique?
 
     root_group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, on_delete=models.PROTECT, related_name="descendants")
     parent_group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, on_delete=models.PROTECT, related_name="children")
