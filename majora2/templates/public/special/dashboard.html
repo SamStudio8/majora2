@@ -27,11 +27,13 @@
             </thead>
             <tbody>
                 {% for name, entry in new_sequences %}
+                {% if entry.site and entry.count > 0 %}
                 <tr>
                     <td>{{ entry.site }}</td>
                     <td class="text-right">{{ entry.count }}</td>
                     <td class="text-right">{{ entry.public }}</td>
                 </tr>
+                {% endif %}
                 {% endfor %}
             </tbody>
         </table>
@@ -57,10 +59,12 @@
             </thead>
             <tbody>
                 {% for entry in collections %}
+                {% if entry.collected_by and entry.collected_by__count > 0 %}
                 <tr>
                     <td>{{ entry.collected_by }}</td>
                     <td class="text-right">{{ entry.collected_by__count }}</td>
                 </tr>
+                {% endif %}
                 {% endfor %}
             </tbody>
         </table>
@@ -79,10 +83,12 @@
             </thead>
             <tbody>
                 {% for entry in adm2 %}
+                {% if entry.adm2 and entry.count > 0 %}
                 <tr>
                     <td>{{ entry.adm2 }}</td>
                     <td class="text-right">{{ entry.count }}</td>
                 </tr>
+                {% endif %}
                 {% endfor %}
             </tbody>
         </table>
