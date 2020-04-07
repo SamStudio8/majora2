@@ -18,14 +18,15 @@ def quarantine_artifact(process, artifact):
 
 def try_date(str_):
     dt = None
-    for s_ in re.split('[^0-9]', str_):
-        if len(s_) < 6:
+    for s_ in re.split('[^0-9-]', str_):
+        if len(s_.replace("-", "")) < 6:
             continue
         try:
             tdt = parse(s_, yearfirst=True, fuzzy=True)
             if tdt and tdt.year >= (timezone.now().year - 1) and tdt.year <= timezone.now().year:
                 # Try and avoid absurd dates
                 dt = tdt
+                break # just use the first thing that looks like a date?
         except ValueError:
             pass
     return dt
