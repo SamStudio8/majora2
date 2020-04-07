@@ -1268,7 +1268,7 @@ class DNASequencingProcess(MajoraArtifactProcess):
             "flowcell_id": self.flowcell_id,
 
             "start_time": self.start_time.strftime("%Y-%m-%d %H:%m") if self.start_time else None,
-            "end_time": self.end_time.strftime("%Y-%m-%d %H:%m") if self.start_time else None,
+            "end_time": self.end_time.strftime("%Y-%m-%d %H:%m") if self.end_time else None,
             #"duration": None,
             "libraries": libraries,
 
