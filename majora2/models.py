@@ -531,20 +531,15 @@ class DigitalResourceArtifact(MajoraArtifact):
     @property #TODO dont like this but need to be fast, ideally pass the artifact to fixed_data function that defines this?
     def cogtemp_get_qc(self):
         try:
-            return self.get_metadatum('cog', 'qc')[0].value
+            return self.metadata.filter(meta_tag='cog', meta_name='qc')[0].value
         except:
             return None
     @property
     def cogtemp_get_public(self):
         try:
-            return self.get_metadatum('cog', 'public')[0].value
+            return self.metadata.filter(meta_tag='cog', meta_name='public')[0].value
         except:
             return None
-    @property
-    def cogtemp_get_sequencing(self):
-        for record in self.process_tree_bioinf:
-            if record.process_kind == "Sequencing":
-                return record.run_name
 
 
     @classmethod
