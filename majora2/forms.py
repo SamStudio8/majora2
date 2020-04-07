@@ -137,6 +137,7 @@ class TestLibraryBiosampleForm(forms.Form):
                 ("WGS", "WGS: Whole Genome Sequencing"),
                 ("WGA", "WGA: Whole Genome Amplification"),
                 ("AMPLICON", "AMPLICON: Sequencing of overlapping or distinct PCR or RT-PCR products"),
+                ("TARGETED_CAPTURE", "TARGETED_CAPTURE: Enrichment of a targeted subset of loci"),
                 ("OTHER", "?: Library strategy not listed"),
             ],
     )
@@ -417,8 +418,9 @@ class TestSampleForm(forms.Form):
         ]
         for field in LOWERCASE_FIELDS:
             if data.get(field):
+                data[field] = data[field].strip()
                 if data[field] != "BAL":
-                    data[field] = data[field].lower()
+                    data[field] = data[field].strip().lower()
 
         #if data.get("swab_site", "").upper() == "NSTS" or data.get("swab_site", "").lower() == "nose and throat":
         #    data["swab_site"] = "nose-throat"
