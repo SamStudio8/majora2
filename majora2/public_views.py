@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.db.models import Count
 from django.db.models import F
+from django.views.decorators.cache import cache_page
 
 from django.utils import timezone
 from django.db.models.functions import TruncDay
@@ -10,6 +11,7 @@ import datetime
 from . import models
 from . import util
 
+@cache_page(60 * 60)
 def sample_sequence_count_dashboard(request):
     collections = models.BiosourceSamplingProcess.objects.values("collected_by").annotate(Count("collected_by")).order_by("-collected_by__count")
     total_collections = models.BiosourceSamplingProcess.objects.count()
@@ -35,7 +37,7 @@ def sample_sequence_count_dashboard(request):
             sites[site_name]["public"] += 1
 
     return render(request, 'public/special/dashboard.html', {
-        "collections": collections,
+        #"collections": collections,
         "total_collections": total_collections,
         "new_sequences": sorted(sites.items(), key=lambda x: x[1]["count"], reverse=True),
         "total_sequences": total_c,
