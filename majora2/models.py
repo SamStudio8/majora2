@@ -977,7 +977,7 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
         return {
             "collection_date": self.collection_date.strftime("%Y-%m-%d") if self.collection_date else None,
             "received_date": self.received_date.strftime("%Y-%m-%d") if self.received_date else None,
-            "submission_user": self.submission_user.username,
+            "submission_user": self.submission_user.username if self.submission_user else None,
             "submission_org": self.submission_org.name if self.submission_org else None,
             "submission_org_code": self.submission_org.code if self.submission_org else None,
 
