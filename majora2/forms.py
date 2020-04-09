@@ -4,6 +4,7 @@ from django import forms
 
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.utils import timezone
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Submit, Row, Column
@@ -444,11 +445,15 @@ class TestSampleForm(forms.Form):
 
         # Check sample date is not in the future
         if cleaned_data.get("collection_date"):
-            if cleaned_data["collection_date"] > datetime.date.today():
+            if cleaned_data["collection_date"] > timezone.now().date():
                 self.add_error("collection_date", "Sample cannot be collected in the future")
+            if cleaned_data["collection_date"] < (timezone.now().date() - datetime.timedelta(years=1)):
+                self.add_error("collection_date", "Sample cannot be collected more than a year ago...")
         if cleaned_data.get("received_date"):
-            if cleaned_data["received_date"] > datetime.date.today():
+            if cleaned_data["received_date"] > timezone.now().date():
                 self.add_error("received_date", "Sample cannot be received in the future")
+            if cleaned_data["received_date"] < (timezone.now().date() - datetime.timedelta(years=1)):
+                self.add_error("received_date", "Sample cannot be received more than a year ago...")
 
         # Check for full postcode mistake
         adm2 = cleaned_data.get("adm2_private")
