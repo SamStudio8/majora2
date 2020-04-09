@@ -776,6 +776,8 @@ class MajoraArtifactProcess(PolymorphicModel):
     #howseen? eg. manual entry, LIMS API update...
     group = models.ForeignKey('MajoraArtifactProcessGroup', on_delete=models.PROTECT, related_name="processes", blank=True, null=True) #TODO do we really need this
 
+    hook_name = models.CharField(max_length=256, blank=True, null=True)
+
     class Meta:
         ordering = ["-when"]
 
