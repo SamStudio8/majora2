@@ -256,6 +256,16 @@ def add_library(request):
                     api_o["new"].append(form_handlers._format_tuple(biosample))
                     api_o["warnings"] += 1
                     sample_forced = True
+                if not biosample.created:
+                    sample_p = models.BiosourceSamplingProcess()
+                    sample_p.save()
+                    sampling_rec = models.BiosourceSamplingProcessRecord(
+                        process=sample_p,
+                        out_artifact=biosample,
+                    )
+                    sampling_rec.save()
+                    biosample.created = sample_p # Set the sample collection process
+                    biosample.save()
             else:
                 if models.BiosampleArtifact.objects.filter(central_sample_id=sample_id).count() != 1:
                     api_o["ignored"].append(sample_id)

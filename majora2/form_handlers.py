@@ -259,13 +259,7 @@ def handle_testsample(form, user=None, api_o=None):
         sample_p = sample.created
     else:
         # Create the sampling event
-        sample_p = models.BiosourceSamplingProcess(
-            who = user,
-            when = collection_date if collection_date else received_date,
-            submitted_by = submitted_by,
-            submission_user = user,
-            submission_org = form.cleaned_data.get("submitting_org"),
-        )
+        sample_p = models.BiosourceSamplingProcess()
         sample_p.save()
 
         sampling_rec = models.BiosourceSamplingProcessRecord(
@@ -276,7 +270,21 @@ def handle_testsample(form, user=None, api_o=None):
         sampling_rec.save()
         sample.created = sample_p # Set the sample collection process
         sample.save()
+
+    if not sample_p.who:
+        sample_p.who = user
+        sample_p.when = collection_date if collection_date else received_date
+        sample_p.submitted_by = submitted_by
+        sample_p.submission_user = user
+        sample_p.submission_org = form.cleaned_data.get("submitting_org")
+        sample_p.save()
         signals.new_sample.send(sender=None, sample_id=sample.central_sample_id, submitter=sample.created.submitted_by)
+        # fuck
+        if source:
+            for record in sample_p.records.all():
+                if record.out_artifact == sample:
+                    record.in_group = source
+                    record.save()
 
     sample_p.collection_date = collection_date
     sample_p.received_date = received_date
