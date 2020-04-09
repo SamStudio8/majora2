@@ -1203,7 +1203,7 @@ class LibraryArtifact(MajoraArtifact):
                         "library_strategy": record.library_strategy,
                         "library_source": record.library_source,
                         "library_selection": record.library_selection,
-                        "barcode": record.barcode,
+                        "library_adaptor_barcode": record.barcode,
                     })
                     biosamples.append(rec)
         ret = {
