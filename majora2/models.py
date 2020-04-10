@@ -1210,11 +1210,11 @@ class LibraryArtifact(MajoraArtifact):
                     biosamples.append(rec)
         ret = {
             "library_name": self.dice_name,
-            "layout_config": self.layout_config,
+            "library_layout_config": self.layout_config,
             "layout_read_length": self.layout_read_length,
             "layout_insert_length": self.layout_insert_length,
-            "sequencing_kit": self.seq_kit,
-            "sequencing_protocol": self.seq_protocol,
+            "library_seq_kit": self.seq_kit,
+            "library_seq_protocol": self.seq_protocol,
 
             "metadata": self.get_metadata_as_struct(),
 
