@@ -342,7 +342,8 @@ def handle_testdigitalresource(form, user=None, api_o=None):
 
     if len(form.cleaned_data.get("source_group")) > 0 or len(form.cleaned_data.get("source_artifact")) > 0:
         bio, b_created = models.AbstractBioinformaticsProcess.objects.get_or_create(
-                id = form.cleaned_data["pipe_id"],
+                #id = form.cleaned_data["pipe_id"],
+                hook_name = form.cleaned_data["pipe_hook"],
                 pipe_kind = form.cleaned_data["pipe_kind"],
                 pipe_name = form.cleaned_data["pipe_name"],
                 pipe_version = form.cleaned_data["pipe_version"],
