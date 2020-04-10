@@ -11,9 +11,12 @@ def bioinfo_process_hook_names(apps, schema_editor):
             current_name = None
             for record in p.records.all():
                 if record.in_artifact:
-                    if hasattr(record.in_artifact, "current_name") and record.in_artifact.current_name:
-                        current_name = record.in_artifact.dice_name
-                        break
+                    try:
+                        if record.in_artifact.dice_name:
+                            current_name = record.in_artifact.dice_name
+                            break
+                    except:
+                        pass
 
             if not p.hook_name and current_name:
                 p.hook_name = "bioinfo-%s" % current_name.replace("sequencing-dummy-reads-", "")
