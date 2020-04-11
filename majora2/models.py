@@ -760,13 +760,13 @@ class MajoraArtifactProcessRecord(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
     process = models.ForeignKey('MajoraArtifactProcess', on_delete=models.CASCADE, related_name="records")
 
-    bridge_artifact = models.ForeignKey('MajoraArtifact', blank=True, null=True, related_name='bridge_process', on_delete=models.PROTECT)
-    bridge_group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, related_name='bridge_process', on_delete=models.PROTECT)
+    bridge_artifact = models.ForeignKey('MajoraArtifact', blank=True, null=True, related_name='bridge_process', on_delete=models.CASCADE)
+    bridge_group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, related_name='bridge_process', on_delete=models.CASCADE)
 
-    in_group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, related_name='before_process', on_delete=models.PROTECT)
-    in_artifact = models.ForeignKey('MajoraArtifact', blank=True, null=True, related_name='before_process', on_delete=models.PROTECT)
-    out_artifact= models.ForeignKey('MajoraArtifact', blank=True, null=True, related_name='after_process', on_delete=models.PROTECT)
-    out_group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, related_name='after_process', on_delete=models.PROTECT)
+    in_group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, related_name='before_process', on_delete=models.CASCADE)
+    in_artifact = models.ForeignKey('MajoraArtifact', blank=True, null=True, related_name='before_process', on_delete=models.CASCADE)
+    out_artifact= models.ForeignKey('MajoraArtifact', blank=True, null=True, related_name='after_process', on_delete=models.CASCADE)
+    out_group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, related_name='after_process', on_delete=models.CASCADE)
 
 class MajoraArtifactProcess(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
@@ -1118,10 +1118,10 @@ class Profile(models.Model):
 class MajoraMetaRecord(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    artifact = models.ForeignKey('MajoraArtifact', blank=True, null=True, on_delete=models.PROTECT, related_name="metadata")
-    group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, on_delete=models.PROTECT, related_name="metadata")
-    process = models.ForeignKey('MajoraArtifactProcess', blank=True, null=True, on_delete=models.PROTECT, related_name="metadata")
-    pgroup = models.ForeignKey('MajoraArtifactProcessGroup', blank=True, null=True, on_delete=models.PROTECT, related_name="metadata")
+    artifact = models.ForeignKey('MajoraArtifact', blank=True, null=True, on_delete=models.CASCADE, related_name="metadata")
+    group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, on_delete=models.CASCADE, related_name="metadata")
+    process = models.ForeignKey('MajoraArtifactProcess', blank=True, null=True, on_delete=models.CASCADE, related_name="metadata")
+    pgroup = models.ForeignKey('MajoraArtifactProcessGroup', blank=True, null=True, on_delete=models.CASCADE, related_name="metadata")
 
     meta_tag = models.CharField(max_length=64)
     meta_name = models.CharField(max_length=64)
