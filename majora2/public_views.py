@@ -18,7 +18,7 @@ def sample_sequence_count_dashboard(request):
 
     adm2 = models.BiosourceSamplingProcess.objects.all().values(adm2=F("collection_location_adm2")).annotate(count=Count("adm2")).order_by("adm2")
 
-    consensus_spark = util.make_spark(models.DigitalResourceArtifact.objects.filter(created__when__isnull=False, created__when__gte=timezone.now().date()-datetime.timedelta(days=30)).annotate(date=TruncDay('created__when')).values("date").annotate(count=Count('id')).order_by("date"), days=30)
+    consensus_spark = util.make_spark(models.DigitalResourceArtifact.objects.filter(current_kind="consensus", created__when__isnull=False, created__when__gte=timezone.now().date()-datetime.timedelta(days=30)).annotate(date=TruncDay('created__when')).values("date").annotate(count=Count('id')).order_by("date"), days=30)
 
     #consensus_spark = util.make_spark(models.DNASequencingProcess.objects.filter(when__gte=timezone.now().date()-datetime.timedelta(days=30)).annotate(date=TruncDay('when')).values("date").annotate(count=Count('id')).order_by("date"), days=30)
     #total_consensii = models.DNASequencingProcess.objects.count()
