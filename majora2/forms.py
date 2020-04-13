@@ -471,6 +471,8 @@ class TestSampleForm(forms.Form):
         # Validate accession
         secondary_identifier = cleaned_data.get("secondary_identifier")
         if secondary_identifier and not cleaned_data.get("secondary_accession"):
+            if secondary_identifier[0].lower() != 'h':
+                self.add_error("secondary_identifier", "Looks like your secondary_identifier does not begin with hCoV, have you got the identifier and accession the wrong way around?")
             self.add_error("secondary_accession", "Accession for secondary identifier not provided. If you just want to get this over with, set the accession to 'PENDING'.")
 
 
