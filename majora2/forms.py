@@ -314,6 +314,7 @@ class TestSampleForm(forms.Form):
             ("nose", "nose"),
             ("throat", "throat"),
             ("nose-throat", "nose and throat"),
+            ("endotracheal", "endotracheal"),
         ],
         help_text="Provide only if sample_type_collected is swab",
         required=False,
