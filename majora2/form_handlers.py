@@ -278,7 +278,7 @@ def handle_testsample(form, user=None, api_o=None):
         sample_p.submission_user = user
         sample_p.submission_org = form.cleaned_data.get("submitting_org")
         sample_p.save()
-        signals.new_sample.send(sender=None, sample_id=sample.central_sample_id, submitter=sample.created.submitted_by)
+        #signals.new_sample.send(sender=None, sample_id=sample.central_sample_id, submitter=sample.created.submitted_by)
         # fuck
         if source:
             for record in sample_p.records.all():
