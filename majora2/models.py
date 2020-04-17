@@ -984,7 +984,7 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
             "source_sex": self.source_sex,
             "source_age": self.source_age,
 
-            #"collected_by": self.collected_by,
+            "collected_by": "",
 
             "adm0": self.collection_location_country,
             "adm1": self.collection_location_adm1,
