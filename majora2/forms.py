@@ -304,6 +304,7 @@ class TestSampleForm(forms.Form):
             (None, "Unknown"),
             ("primary", "primary"),
             ("extract", "extract"),
+            ("lysate", "lysate"),
             ("culture", "culture"),
         ],
         required=False,
