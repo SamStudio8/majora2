@@ -34,13 +34,20 @@
         {% with hierarchy=group.hierarchy %}
             {% include 'breadcrumbs.html' %}
         {% endwith %}
-            {% if group.group_kind == "Published Artifact Group" %}
+    </div>
+</div>
+{% if group.group_kind == "Published Artifact Group" %}
+<div class="mast2" style="margin-top:-25px; background-color: #999">
+    <div class="container">
                 Published: {{ group.published_date }} \\ 
                 Version: {{ group.published_version }} \\
                 Owner: {{ group.owner }} 
-            {% endif %}
+                {% for accession in group.accessions.all %}
+                    <span style="font-size: 1.2em"><span class="badge badge-left badge-dark">{{ accession.service }}</span><span class="badge badge-right badge-info">{{ accession.primary_accession }}</span></span>
+                {% endfor %}
     </div>
 </div>
+{% endif %}
 
 <div class="container">
 
