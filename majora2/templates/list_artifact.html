@@ -34,6 +34,11 @@
         {% with hierarchy=group.hierarchy %}
             {% include 'breadcrumbs.html' %}
         {% endwith %}
+            {% if group.group_kind == "Published Artifact Group" %}
+                Published: {{ group.published_date }} \\ 
+                Version: {{ group.published_version }} \\
+                Owner: {{ group.owner }} 
+            {% endif %}
     </div>
 </div>
 
