@@ -243,67 +243,6 @@ class MajoraArtifact(PolymorphicModel):
                 metadata["%s.%s" % (m.meta_tag, m.meta_name)] = m.value
         return metadata
 
-"""
-class MajoraGroup(PolymorphicModel):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
-    dice_name = models.CharField(max_length=48, blank=True, null=True, unique=True) 
-    meta_name = models.CharField(max_length=48, blank=True, null=True) # TODO force unique?
-
-    root_group = models.ForeignKey('MajoraGroup', blank=True, null=True, on_delete=models.PROTECT, related_name="descendants")
-    parent_group = models.ForeignKey('MajoraGroup', blank=True, null=True, on_delete=models.PROTECT, related_name="children")
-    groups = models.ManyToManyField('MajoraGroup', related_name="tagged_groups", blank=True) 
-    physical = models.BooleanField(default=False)
-
-    def __str__(self):
-        return "%s (%s)" % (self.name, self.id)
-
-    @property
-    def group_kind(self):
-        return 'Group'
-    @property
-    def name(self):
-        if self.meta_name:
-            return self.meta_name
-        return str(self.id)
-    @property
-    def n_child_artifacts(self):
-        return self.child_artifacts.count()
-    @property
-    def n_tagged_artifacts(self):
-        return self.tagged_artifacts.count()
-    @property
-    def hierarchy(self):
-        tree = []
-        tail = self
-        while tail:
-            tree.append(tail)
-            tail = tail.parent_group
-        tree.reverse()
-        return tree
-    def get_metadatum(self, tag, name):
-        m = self.metadata.filter(meta_tag=tag, meta_name=name)
-        if m.count() > 0:
-            return m
-
-        tail = self.parent_group
-        while tail:
-            m = tail.metadata.filter(meta_tag=tag, meta_name=name, inheritable=True)
-            if m.count() > 0:
-                return m
-            tail = tail.parent_group
-        return m
-
-class MajoraArtifactGroup2(MajoraGroup):
-    @property
-    def group_kind(self):
-        return 'Artifact Group'
-
-class MajoraProcessGroup2(MajoraGroup):
-    @property
-    def group_kind(self):
-        return 'Process Group'
-
-"""
 # TODO This will become the MajoraGroup
 class MajoraArtifactGroup(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
