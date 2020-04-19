@@ -416,6 +416,20 @@ class PublishedArtifactGroup(MajoraArtifactGroup):
     @property
     def name(self):
         return self.published_name
+    @property
+    def is_public(self):
+        return self.accessions.count() > 0
+
+# TODO This is a quick and dirty way to toss the accessions we're getting snowed with onto a PAG
+# Partly because we just want to be able to quickly count how many PAGs are public, by institute
+# I eventually want to move these tags onto the artifacts themselves but this needs more work (as I have big ideas for splitting apart the models for files in particular)
+class TemporaryAccessionRecord(models.Model):
+    pag = models.ForeignKey('PublishedArtifactGroup', on_delete=models.PROTECT, related_name="accessions")
+    #artifact = models.ForeignKey('MajoraArtifact', blank=True, null=True, on_delete=models.PROTECT)
+    service = models.CharField(max_length=64)
+    primary_accession = models.CharField(max_length=64)
+    secondary_accesison = models.CharField(max_length=64, blank=True, null=True)
+    tertiary_accession = models.CharField(max_length=64, blank=True, null=True)
 
 #class AbstractArtifactQC(PolymorphicModel):
 #    artifact = models.OneToOneField('MajoraArtifact', blank=True, null=True, on_delete=models.PROTECT)

@@ -18,7 +18,7 @@ from . import form_handlers
 
 import json
 
-MINIMUM_CLIENT_VERSION = "0.3.9"
+MINIMUM_CLIENT_VERSION = "0.4.0"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
@@ -391,5 +391,34 @@ def add_tag(request):
             handle_metadata(json_data.get("metadata", {}), 'group', json_data.get("group"), user, api_o)
         elif json_data.get("process"):
             handle_metadata(json_data.get("metadata", {}), 'process', json_data.get("process"), user, api_o)
+
+    return wrap_api_v2(request, f)
+
+def add_pag_accession(request):
+    def f(request, api_o, json_data, user=None):
+        pag_name = json_data.get("publish_group")
+        if not pag_name:
+            api_o["messages"].append("'publish_group' key missing or empty")
+            api_o["errors"] += 1
+            return
+
+        pag = models.PublishedArtifactGroup.objects.get(published_name=pag_name, is_latest=True)
+        if not pag:
+            api_o["messages"].append("PAG %s not known to Majora" % pag_name)
+            api_o["errors"] += 1
+            return
+
+        if not json_data.get("service") or not json_data.get("accession"):
+            api_o["messages"].append("'service' or 'accession' key missing or empty")
+            api_o["errors"] += 1
+            return
+
+        accession, created = models.TemporaryAccessionRecord.objects.get_or_create(
+                pag = pag,
+                service = json_data.get("service"),
+                primary_accession =  json_data.get("accession"),
+        )
+        if created:
+            api_o["updated"].append(form_handlers._format_tuple(pag))
 
     return wrap_api_v2(request, f)
