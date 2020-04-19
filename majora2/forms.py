@@ -483,6 +483,7 @@ class TestFileForm(forms.Form):
     bridge_artifact = forms.ModelChoiceField(queryset=models.MajoraArtifact.objects.all(), required=False, to_field_name="dice_name")
     source_artifact = forms.ModelMultipleChoiceField(queryset=models.MajoraArtifact.objects.all(), required=False, to_field_name="dice_name")
     source_group = forms.ModelMultipleChoiceField(queryset=models.MajoraArtifactGroup.objects.all(), required=False, to_field_name="dice_name")
+    publish_group = forms.CharField(max_length=128, required=False)
 
     #pipe_id = forms.UUIDField()
     pipe_hook = forms.CharField(max_length=256)

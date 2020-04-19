@@ -307,6 +307,7 @@ def handle_testsample(form, user=None, api_o=None):
 
 def handle_testdigitalresource(form, user=None, api_o=None):
 
+    res_updated = False
     node = form.cleaned_data["node_name"]
 
     # Get the directory
@@ -334,6 +335,9 @@ def handle_testdigitalresource(form, user=None, api_o=None):
                 current_name = form.cleaned_data["current_name"],
                 current_extension = form.cleaned_data["current_fext"],
         )
+
+    if res.current_hash != form.cleaned_data["current_hash"] or res.current_size != form.cleaned_data["current_size"]:
+        res_updated = True
     res.dice_name = str(res.id)
     res.current_hash = form.cleaned_data["current_hash"]
     res.current_size = form.cleaned_data["current_size"]
@@ -378,8 +382,22 @@ def handle_testdigitalresource(form, user=None, api_o=None):
             res.created = bio
             res.save()
 
+    if form.cleaned_data.get("publish_group"):
+        #TODO handle versioning using res_updated
+        #TODO Likely that only the FASTA changes, how to know to drag the BAM across?
+        #       Perhaps we need the users to give us a version number?
+        pag, pag_created = models.PublishedArtifactGroup.objects.get_or_create(
+                published_name=form.cleaned_data.get("publish_group"),
+                published_version=1,
+                published_date=res.created.when.date(),
+                is_latest=True,
+                owner=res.created.who,
+        )
+        res.groups.add(pag)
+        pag.save()
+
     if created and api_o:
         api_o["new"].append(_format_tuple(res))
-    elif res:
+    elif res_updated:
         api_o["updated"].append(_format_tuple(res))
     return res, created
