@@ -395,9 +395,18 @@ def handle_testdigitalresource(form, user=None, api_o=None):
         )
         res.groups.add(pag)
         pag.save()
+        if form.cleaned_data.get("bridge_artifact"):
+            b = form.cleaned_data.get("bridge_artifact")
+            b.groups.add(pag)
+            b.save()
+
         if pag_created and api_o:
             api_o["new"].append(_format_tuple(pag))
             api_o["updated"].append(_format_tuple(res))
+
+            if form.cleaned_data.get("bridge_artifact"):
+                api_o["updated"].append(_format_tuple(b))
+
 
     if created and api_o:
         api_o["new"].append(_format_tuple(res))

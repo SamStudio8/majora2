@@ -393,6 +393,9 @@ class MajoraArtifactGroup(PolymorphicModel):
 class PublishedArtifactGroup(MajoraArtifactGroup):
     published_name = models.CharField(max_length=128)
     published_version = models.PositiveIntegerField() #TODO replace this with a custom field that can handle semvar
+                                                      # even tempted to ditch this, make MAG top level root model
+                                                      # and each version is just a new PAG named with its version
+                                                      # then reconstruct path as:  <NAME> / <VERSION>
     published_date = models.DateField()
 
     is_draft = models.BooleanField(default=False) # ?
