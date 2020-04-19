@@ -416,9 +416,11 @@ def add_pag_accession(request):
         accession, created = models.TemporaryAccessionRecord.objects.get_or_create(
                 pag = pag,
                 service = json_data.get("service"),
-                primary_accession =  json_data.get("accession"),
         )
-        if created:
-            api_o["updated"].append(form_handlers._format_tuple(pag))
+        if accession:
+            accession.primary_accession = json_data.get("accession")
+            accession.save()
+            if api_o:
+                api_o["updated"].append(form_handlers._format_tuple(pag))
 
     return wrap_api_v2(request, f)
