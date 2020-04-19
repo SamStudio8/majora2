@@ -389,6 +389,33 @@ class MajoraArtifactGroup(PolymorphicModel):
             seen.add(proc)
         return reversed(a)
 
+
+class PublishedArtifactGroup(MajoraArtifactGroup):
+    published_name = models.CharField(max_length=128)
+    published_version = models.PositiveIntegerField() #TODO replace this with a custom field that can handle semvar
+    published_date = models.DateField()
+
+    is_draft = models.BooleanField(default=False) # ?
+    is_latest = models.BooleanField(default=False)
+    #replaced_by = models.ForeignKey('PublishedArtifactGroup', blank=True, null=True, on_delete=models.PROTECT, related_name="replaces")
+
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    #TODO owner_org?
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["published_name", "is_latest"], name="is_only_published"),
+        ]
+
+
+#class AbstractArtifactQC(PolymorphicModel):
+#    artifact = models.OneToOneField('MajoraArtifact', blank=True, null=True, on_delete=models.PROTECT)
+#    pass = models.BooleanField()
+
+#class SequenceMajoraQC(AbstractArtifactQC):
+#class AlignmentMajoraQC(AbstractArtifactQC):
+
+
 class DigitalResourceNode(MajoraArtifactGroup):
     node_name = models.CharField(max_length=128)
     # ip address
