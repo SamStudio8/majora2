@@ -1,8 +1,8 @@
 {% load humanize %}
 <div class="table-responsive">
-<table class="table table-hover table-active data-table">
-    <thead class="thead-dark">
-        <tr>
+<table id="dar" class="table table-hover table-active">
+    <thead>
+        <tr class="table-active">
             <th>File Name</th>
             <th>File Kind</th>
             <th>Size</th>
@@ -21,12 +21,14 @@
     </tr>
     {% endfor %}
     </tbody>
-    <tfoot class="thead-dark">
+    <tfoot>
+        <tr class="table-active">
         <th></th>
         <th></th>
         <th></th>
         <th></th>
         <th></th>
+        </tr>
     </tfoot>
 </table>
 </div>
@@ -60,7 +62,7 @@ $(document).ready(function() {
         };
     };
 
-   var table = $('.data-table').DataTable({
+   var table = $('#dar').DataTable({
       'columnDefs': [
           { type: 'file-size', targets: 2 }
       ],

@@ -1,8 +1,8 @@
 {% load humanize %}
 <div class="table-responsive">
     <table class="table table-hover table-active {% if dtable != 0%}data-table{% endif %}">
-    <thead class="thead-dark">
-        <tr>
+    <thead>
+        <tr class="table-active">
             <th>Sample ID</th>
             <th>Sample Source</th>
             <th>Collected at (by)</th>
@@ -26,13 +26,3 @@
 </table>
 </div>
 
-<script>
-$(document).ready(function() {
-   var table = $('.data-table').DataTable({
-      'columnDefs': [
-      ],
-      'order': [[0, 'asc']],
-
-   });
-});
-</script>
