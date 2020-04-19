@@ -1263,6 +1263,7 @@ class DNASequencingProcess(MajoraArtifactProcess):
             #"duration": None,
             "libraries": libraries,
 
+            "sequencing_uuid": str(self.id),
             "sequencing_org": self.who.profile.institute.name if self.who.profile.institute else None,
             "sequencing_org_code": self.who.profile.institute.code if self.who.profile.institute else None,
             "sequencing_submission_date": self.when.strftime("%Y-%m-%d") if self.when else None,
