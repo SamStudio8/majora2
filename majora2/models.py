@@ -407,6 +407,12 @@ class PublishedArtifactGroup(MajoraArtifactGroup):
             models.UniqueConstraint(fields=["published_name", "is_latest"], name="is_only_published"),
         ]
 
+    @property
+    def group_kind(self):
+        return "Published Artifact Group"
+    @property
+    def name(self):
+        return self.published_name
 
 #class AbstractArtifactQC(PolymorphicModel):
 #    artifact = models.OneToOneField('MajoraArtifact', blank=True, null=True, on_delete=models.PROTECT)
