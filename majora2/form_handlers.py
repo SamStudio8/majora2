@@ -402,10 +402,12 @@ def handle_testdigitalresource(form, user=None, api_o=None):
 
         if pag_created and api_o:
             api_o["new"].append(_format_tuple(pag))
-            api_o["updated"].append(_format_tuple(res))
-
             if form.cleaned_data.get("bridge_artifact"):
                 api_o["updated"].append(_format_tuple(b))
+
+        if res and not created and api_o:
+            api_o["updated"].append(_format_tuple(res))
+
 
 
     if created and api_o:
