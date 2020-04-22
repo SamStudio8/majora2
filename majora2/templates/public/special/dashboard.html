@@ -26,7 +26,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for name, entry in new_sequences %}
+                {% for entry in site_pags %}
                 {% if entry.site and entry.count > 0 %}
                 <tr>
                     <td>{{ entry.site }}</td>
