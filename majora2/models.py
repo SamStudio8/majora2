@@ -396,11 +396,14 @@ class PublishedArtifactGroup(MajoraArtifactGroup):
                                                       # even tempted to ditch this, make MAG top level root model
                                                       # and each version is just a new PAG named with its version
                                                       # then reconstruct path as:  <NAME> / <VERSION>
+    #pag_kind = models.CharField()
     published_date = models.DateField()
 
     is_draft = models.BooleanField(default=False) # ?
     is_latest = models.BooleanField(default=False)
     #replaced_by = models.ForeignKey('PublishedArtifactGroup', blank=True, null=True, on_delete=models.PROTECT, related_name="replaces")
+
+    is_public = models.BooleanField(default=False)
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     #TODO owner_org?
@@ -416,9 +419,6 @@ class PublishedArtifactGroup(MajoraArtifactGroup):
     @property
     def name(self):
         return self.published_name
-    @property
-    def is_public(self):
-        return self.accessions.count() > 0
 
 # TODO This is a quick and dirty way to toss the accessions we're getting snowed with onto a PAG
 # Partly because we just want to be able to quickly count how many PAGs are public, by institute
