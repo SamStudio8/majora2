@@ -704,7 +704,7 @@ class BiosampleArtifact(MajoraArtifact):
 
         ret = {
             "central_sample_id": self.central_sample_id,
-            "sender_sample_id": self.sender_sample_id,
+            #"sender_sample_id": self.sender_sample_id,
             "root_sample_id": self.root_sample_id,
             "secondary_identifier": self.secondary_identifier,
             "sample_type_collected": self.sample_type_collected,

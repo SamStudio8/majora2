@@ -7,7 +7,7 @@
         {% with sample=artifact %}
         <tr>
             <th>Sample</th>
-            <td><b><a href="{% url 'detail_artifact' sample.id %}">{{ sample.name }}</a></b>{% if sample.sender_sample_id %} ({{ sample.sender_sample_id }}){% endif %}</td>
+            <td><b><a href="{% url 'detail_artifact' sample.id %}">{{ sample.name }}</a></b></td>
         </tr>
         <tr>
             <th>Source</th>
