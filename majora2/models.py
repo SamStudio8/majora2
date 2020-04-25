@@ -24,6 +24,8 @@ class MajoraArtifact(PolymorphicModel):
     # Trying something different... again...
     created = models.ForeignKey("MajoraArtifactProcess", blank=True, null=True, on_delete=models.PROTECT, related_name="artifacts_created")
 
+    is_pagged = models.BooleanField(default=False)
+
     @property
     def artifact_kind(self):
         return 'Artifact'
