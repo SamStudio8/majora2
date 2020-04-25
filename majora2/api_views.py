@@ -196,7 +196,7 @@ def add_metrics(request):
             return
 
         for metric in metrics:
-            metrics[metric]["artifact"] = a
+            metrics[metric]["artifact"] = a.id
             if metric == "sequence":
                 form = forms.M2Metric_SequenceForm(metrics[metric])
             elif metric == "mapping":
@@ -205,7 +205,7 @@ def add_metrics(request):
                 form = forms.M2Metric_MappingTileForm(metrics[metric])
             else:
                 api_o["ignored"].append(metric)
-                api_o["messages"].append("'%s' does not describe a valid metric")
+                api_o["messages"].append("'%s' does not describe a valid metric" % metric)
                 api_o["warnings"] += 1
                 continue
 
