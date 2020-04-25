@@ -466,6 +466,17 @@ class PAGQualityReportRecord(models.Model):
 class TemporaryMajoraArtifactMetric(PolymorphicModel):
     artifact = models.ForeignKey('MajoraArtifact', on_delete=models.CASCADE)
 
+    @property
+    def kind(self):
+        return self.metric_kind
+    @property
+    def metric_kind(self):
+        return 'Metric'
+
+    @property
+    def as_struct(self):
+        return {}
+
 class TemporaryMajoraArtifactMetric_Sequence(TemporaryMajoraArtifactMetric):
     num_seqs = models.PositiveIntegerField()
     num_bases = models.PositiveIntegerField()
@@ -474,6 +485,19 @@ class TemporaryMajoraArtifactMetric_Sequence(TemporaryMajoraArtifactMetric):
     pc_invalid = models.PositiveIntegerField()
     longest_gap = models.PositiveIntegerField(blank=True, null=True)
     longest_ungap = models.PositiveIntegerField(blank=True, null=True)
+
+    @property
+    def metric_kind(self):
+        return 'Sequence'
+    @property
+    def as_struct(self):
+        return {
+            "num_seqs": self.num_seqs,
+            "num_bases": self.num_bases,
+            "pc_acgt": self.pc_acgt,
+            "pc_masked": self.pc_masked,
+            "pc_invalid": self.pc_invalid,
+        }
 
 class TemporaryMajoraArtifactMetric_Mapping(TemporaryMajoraArtifactMetric):
     num_pos = models.PositiveIntegerField()
@@ -491,18 +515,51 @@ class TemporaryMajoraArtifactMetric_Mapping(TemporaryMajoraArtifactMetric):
     pc_pos_cov_gte100 = models.FloatField(blank=True, null=True)
     pc_pos_cov_gte200 = models.FloatField(blank=True, null=True)
 
+    @property
+    def metric_kind(self):
+        return 'Mapping'
+    @property
+    def as_struct(self):
+        ret = {
+            "num_pos": self.num_pos,
+        }
+        if self.num_maps:
+            ret["num_maps"] = self.num_maps
+        if self.num_unmaps:
+            ret["num_unmaps"] = self.num_unmaps
+
+        if self.mean_cov:
+            ret["mean_cov"] = self.mean_cov
+        return ret
+
 
 class TemporaryMajoraArtifactMetric_Mapping_Tiles(TemporaryMajoraArtifactMetric):
     n_tiles = models.PositiveSmallIntegerField()
 
-    pc_tiles_meancov_gte1 = models.FloatField()
-    pc_tiles_meancov_gte5 = models.FloatField()
-    pc_tiles_meancov_gte10 = models.FloatField()
-    pc_tiles_meancov_gte20 = models.FloatField()
-    pc_tiles_meancov_gte50 = models.FloatField()
-    pc_tiles_meancov_gte100 = models.FloatField()
-    pc_tiles_meancov_gte200 = models.FloatField()
+    pc_tiles_medcov_gte1 = models.FloatField()
+    pc_tiles_medcov_gte5 = models.FloatField()
+    pc_tiles_medcov_gte10 = models.FloatField()
+    pc_tiles_medcov_gte20 = models.FloatField()
+    pc_tiles_medcov_gte50 = models.FloatField()
+    pc_tiles_medcov_gte100 = models.FloatField()
+    pc_tiles_medcov_gte200 = models.FloatField()
     # TODO tile-cov pairs as records
+
+    @property
+    def metric_kind(self):
+        return 'Tile'
+
+    @property
+    def as_struct(self):
+        return {
+                "pc_tiles_medcov_gte1": self.pc_tiles_medcov_gte1,
+                "pc_tiles_medcov_gte5": self.pc_tiles_medcov_gte5,
+                "pc_tiles_medcov_gte10": self.pc_tiles_medcov_gte10,
+                "pc_tiles_medcov_gte20": self.pc_tiles_medcov_gte20,
+                "pc_tiles_medcov_gte50": self.pc_tiles_medcov_gte50,
+                "pc_tiles_medcov_gte100": self.pc_tiles_medcov_gte100,
+                "pc_tiles_medcov_gte200": self.pc_tiles_medcov_gte200,
+        }
 
 class TemporaryMajoraArtifactMetric_Dehum(TemporaryMajoraArtifactMetric):
     #TODO prop dropped, pop n_hits etc
@@ -512,6 +569,10 @@ class TemporaryMajoraArtifactMetric_Dehum(TemporaryMajoraArtifactMetric):
     n_known = models.PositiveIntegerField()
     n_collateral = models.PositiveIntegerField()
     # TODO TemporaryMajoraArtifactMetric_Dehum_Record for individual ref-count pairs
+
+    @property
+    def metric_kind(self):
+        return 'Dehumanisation'
 
 
 class DigitalResourceNode(MajoraArtifactGroup):
