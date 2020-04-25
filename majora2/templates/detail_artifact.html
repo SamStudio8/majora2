@@ -260,9 +260,19 @@
             {% endfor %}
         </td>
     </tr>
+    <tr>
+        <th class="table-active" width="10%">Metrics</th>
+        <td>
+            {% with thing=artifact %}
+            {% include 'tables/metric-badges.html' %}
+            {% endwith %}
+        </td>
+    </tr>
     </table>
 </div>
 </div>
+
+
 
 {% include 'footer.html' %}
 
