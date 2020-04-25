@@ -87,9 +87,24 @@ class RegistrationForm(forms.Form):
                 raise forms.ValidationError("Unable to decode your key. Please ensure this is your public key and has been entered correctly.")
         return ssh_key
 
+
+class M2Metric_SequenceForm(forms.ModelForm):
+    class Meta:
+        model = models.TemporaryMajoraArtifactMetric_Sequence
+        exclude = []
+
+class M2Metric_MappingForm(forms.ModelForm):
+    class Meta:
+        model = models.TemporaryMajoraArtifactMetric_Mapping
+        exclude = []
+
+class M2Metric_MappingTileForm(forms.ModelForm):
+    class Meta:
+        model = models.TemporaryMajoraArtifactMetric_Mapping_Tiles
+        exclude = []
+
+
 class TestMetadataForm(forms.Form):
-
-
     artifact = forms.ModelChoiceField(queryset=models.MajoraArtifact.objects.all(), required=False, to_field_name="dice_name")
     group = forms.ModelChoiceField(queryset=models.MajoraArtifactGroup.objects.all(), required=False, to_field_name="dice_name")
     process = forms.ModelChoiceField(queryset=models.MajoraArtifactProcess.objects.all(), required=False)
