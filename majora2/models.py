@@ -434,37 +434,70 @@ class TemporaryAccessionRecord(models.Model):
     tertiary_accession = models.CharField(max_length=64, blank=True, null=True)
 
 
+class PAGQualityTest(models.Model):
+    name = models.CharField(max_length=64)
+
+class PAGQualityTestVersion(models.Model):
+    test = models.ForeignKey('PAGQualityTest', on_delete=models.PROTECT, related_name="versions")
+    version_number = models.PositiveSmallIntegerField()
+    version_date = models.DateField()
+
+#TODO PAGQualityTestRule > PAGQualityNumericTestRule, PAGQualityBooleanTestRule, ?
+class PAGQualityTestRule(models.Model):
+    test = models.ForeignKey('PAGQualityTestVersion', on_delete=models.PROTECT, related_name="rules")
+    rule_name = models.CharField(max_length=64)
+    rule_desc = models.CharField(max_length=128)
+
+    metric_namespace = models.CharField(max_length=64)
+    metric_name = models.CharField(max_length=64)
+    warn_min = models.FloatField(blank=True, null=True)
+    warn_max = models.FloatField(blank=True, null=True)
+    fail_min = models.FloatField(blank=True, null=True)
+    fail_max = models.FloatField(blank=True, null=True)
+
+class PAGQualityBasicTestDecision(models.Model):
+    test = models.ForeignKey('PAGQualityTestVersion', on_delete=models.PROTECT, related_name="decisions")
+    a = models.ForeignKey('PAGQualityTestRule', on_delete=models.PROTECT, related_name="rules_as_a")
+    b = models.ForeignKey('PAGQualityTestRule', on_delete=models.PROTECT, blank=True, null=True, related_name="rules_as_b")
+    op = models.CharField(max_length=3) # lol ?
+
+
 # TODO A quick and dirty way to store and group QC on the files. QC reports should be attached to artifacts directly.
 # I'm gonna throw them on a PAG because for this project we need fast PAG access.
+# although actually, if you QC an artifact, it should be published, so this might be a good model
 class PAGQualityReportGroup(models.Model):
     pag = models.ForeignKey('PublishedArtifactGroup', on_delete=models.PROTECT, related_name="quality_tests")
     is_pass = models.BooleanField(default=False) # we'll bubble passes up to the top group
-    test_set_name = models.CharField(max_length=64)
+    test_set = models.ForeignKey('PAGQualityTest', on_delete=models.PROTECT, related_name="report_groups", blank=True, null=True)
 
 class PAGQualityReport(models.Model):
     report_group = models.ForeignKey('PAGQualityReportGroup', on_delete=models.PROTECT, related_name="reports")
+    test_set_version = models.ForeignKey('PAGQualityTestVersion', on_delete=models.PROTECT, related_name="reports")
+
+    timestamp = models.DateTimeField()
     is_pass = models.BooleanField(default=False)
 
-    test_set_ruleset = models.CharField(max_length=64)
-    test_set_version = models.PositiveIntegerField() #TODO replace this with a custom field that can handle semvar
-    timestamp = models.DateTimeField()
-
-class PAGQualityReportRecord(models.Model):
+class PAGQualityReportRuleRecord(models.Model):
+    report = models.ForeignKey('PAGQualityReport', on_delete=models.PROTECT, related_name="tests")
+    rule = models.ForeignKey('PAGQualityTestRule', on_delete=models.PROTECT)
+    test_metric_str = models.CharField(max_length=64, blank=True, null=True)
     is_pass = models.BooleanField(default=False)
     is_warn = models.BooleanField(default=False)
-    report = models.ForeignKey('PAGQualityReport', on_delete=models.PROTECT, related_name="reports")
 
-    test_name = models.CharField(max_length=64)
-    test_desc = models.CharField(max_length=128)# pull these into another model
+class PAGQualityReportDecisionRecord(models.Model):
+    report = models.ForeignKey('PAGQualityReport', on_delete=models.PROTECT, related_name="decisions")
+    decision = models.ForeignKey('PAGQualityBasicTestDecision', on_delete=models.PROTECT)
 
-    test_value_s = models.CharField(max_length=64, blank=True, null=True)
-    test_value_f = models.FloatField(blank=True, null=True)
-
+    a = models.ForeignKey('PAGQualityReportRuleRecord', on_delete=models.PROTECT, related_name="decisions_as_a")
+    b = models.ForeignKey('PAGQualityReportRuleRecord', on_delete=models.PROTECT, blank=True, null=True, related_name="decisions_as_b")
+    is_pass = models.BooleanField(default=False)
+    is_warn = models.BooleanField(default=False)
 
 
 # Until Artifacts become less generic in Majora3, we have to encode properties about them somewhere
 class TemporaryMajoraArtifactMetric(PolymorphicModel):
     artifact = models.ForeignKey('MajoraArtifact', on_delete=models.CASCADE)
+    namespace = models.CharField(max_length=64, blank=True, null=True)
 
     @property
     def kind(self):
@@ -552,13 +585,13 @@ class TemporaryMajoraArtifactMetric_Mapping_Tiles(TemporaryMajoraArtifactMetric)
     @property
     def as_struct(self):
         return {
-                "pc_tiles_medcov_gte1": self.pc_tiles_medcov_gte1,
-                "pc_tiles_medcov_gte5": self.pc_tiles_medcov_gte5,
-                "pc_tiles_medcov_gte10": self.pc_tiles_medcov_gte10,
-                "pc_tiles_medcov_gte20": self.pc_tiles_medcov_gte20,
-                "pc_tiles_medcov_gte50": self.pc_tiles_medcov_gte50,
-                "pc_tiles_medcov_gte100": self.pc_tiles_medcov_gte100,
-                "pc_tiles_medcov_gte200": self.pc_tiles_medcov_gte200,
+            "pc_tiles_medcov_gte1": self.pc_tiles_medcov_gte1,
+            "pc_tiles_medcov_gte5": self.pc_tiles_medcov_gte5,
+            "pc_tiles_medcov_gte10": self.pc_tiles_medcov_gte10,
+            "pc_tiles_medcov_gte20": self.pc_tiles_medcov_gte20,
+            "pc_tiles_medcov_gte50": self.pc_tiles_medcov_gte50,
+            "pc_tiles_medcov_gte100": self.pc_tiles_medcov_gte100,
+            "pc_tiles_medcov_gte200": self.pc_tiles_medcov_gte200,
         }
 
 class TemporaryMajoraArtifactMetric_Dehum(TemporaryMajoraArtifactMetric):
