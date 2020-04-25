@@ -552,6 +552,7 @@ class DigitalResourceGroup(MajoraArtifactGroup):
 
 class DigitalResourceArtifact(MajoraArtifact):
     #current_node = models.ForeignKey('Node')
+    current_path = models.CharField(max_length=1024, blank=True, null=True) # TODO quick fix to get files quickly
 
     current_name = models.CharField(max_length=512)
     current_hash = models.CharField(max_length=64)
@@ -561,12 +562,24 @@ class DigitalResourceArtifact(MajoraArtifact):
     current_extension = models.CharField(max_length=48, default="")
     current_kind = models.CharField(max_length=48, default="File")
 
+    def make_path(self, no_node=False):
+        if no_node:
+            if self.primary_group:
+                s = self.primary_group.path + '/' + self.current_name
+                try:
+                    return s.split(":/")[1]
+                except:
+                    return s
+            else:
+                return self.current_name
+        else:
+            if self.primary_group:
+                return self.primary_group.path + '/' + self.current_name
+            else:
+                return '?/.../' + self.current_name
     @property
     def path(self):
-        if self.primary_group:
-            return self.primary_group.path + '/' + self.current_name
-        else:
-            return '?/.../' + self.current_name
+        return self.make_path()
     @property
     def artifact_kind(self):
         return 'Digital Resource'
