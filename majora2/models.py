@@ -442,6 +442,8 @@ class PAGQualityReportGroup(models.Model):
 class PAGQualityReport(models.Model):
     report_group = models.ForeignKey('PAGQualityReportGroup', on_delete=models.PROTECT, related_name="reports")
     is_pass = models.BooleanField(default=False)
+
+    test_set_ruleset = models.CharField(max_length=64)
     test_set_version = models.PositiveIntegerField() #TODO replace this with a custom field that can handle semvar
     timestamp = models.DateTimeField()
 
@@ -456,6 +458,43 @@ class PAGQualityReportRecord(models.Model):
     test_value_s = models.CharField(max_length=64, blank=True, null=True)
     test_value_f = models.FloatField(blank=True, null=True)
 
+
+
+# Until Artifacts become less generic in Majora3, we have to encode properties about them somewhere
+class TemporaryMajoraArtifactMetric(PolymorphicModel):
+    artifact = models.ForeignKey('MajoraArtifact', on_delete=models.CASCADE)
+
+class TemporaryMajoraArtifactMetric_Sequence(TemporaryMajoraArtifactMetric):
+    num_seqs = models.PositiveIntegerField()
+    num_bases = models.PositiveIntegerField()
+    pc_acgt = models.PositiveIntegerField()
+    pc_masked = models.PositiveIntegerField()
+    pc_invalid = models.PositiveIntegerField()
+    longest_gap = models.PositiveIntegerField(blank=True, null=True)
+    longest_ungap = models.PositiveIntegerField(blank=True, null=True)
+
+class TemporaryMajoraArtifactMetric_Mapping(TemporaryMajoraArtifactMetric):
+    num_pos = models.PositiveIntegerField()
+    num_maps = models.PositiveIntegerField(blank=True, null=True)
+    num_unmaps = models.PositiveIntegerField(blank=True, null=True)
+    median_cov = models.PositiveIntegerField(blank=True, null=True)
+    mean_cov = models.PositiveIntegerField(blank=True, null=True)
+    pc_pos_cov_gte1 = models.PositiveIntegerField(blank=True, null=True)
+    pc_pos_cov_gte5 = models.PositiveIntegerField(blank=True, null=True)
+    pc_pos_cov_gte10 = models.PositiveIntegerField(blank=True, null=True)
+    pc_pos_cov_gte20 = models.PositiveIntegerField(blank=True, null=True)
+    pc_pos_cov_gte50 = models.PositiveIntegerField(blank=True, null=True)
+    pc_pos_cov_gte100 = models.PositiveIntegerField(blank=True, null=True)
+    pc_pos_cov_gte200 = models.PositiveIntegerField(blank=True, null=True)
+
+class TemporaryMajoraArtifactMetric_Dehum(TemporaryMajoraArtifactMetric):
+    #TODO prop dropped, pop n_hits etc
+    total_dropped = models.PositiveIntegerField()
+    n_hits = models.PositiveIntegerField()
+    n_clipped = models.PositiveIntegerField()
+    n_known = models.PositiveIntegerField()
+    n_collateral = models.PositiveIntegerField()
+    # TODO TemporaryMajoraArtifactMetric_Dehum_Record for individual ref-count pairs
 
 
 class DigitalResourceNode(MajoraArtifactGroup):
