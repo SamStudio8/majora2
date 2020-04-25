@@ -167,6 +167,42 @@ def get_sequencing(request):
     return wrap_api_v2(request, f)
 
 
+def add_metrics(request):
+    def f(request, api_o, json_data, user=None):
+        artifact = json_data.get("artifact")
+        if not artifact:
+            api_o["messages"].append("'artifact' key missing or empty")
+            api_o["errors"] += 1
+        metrics = json_data.get("metrics", {})
+
+        for metric in metrics:
+            if metric == "sequence":
+                form = forms.M2Metric_SequenceForm(metrics[metric])
+            elif metric == "mapping":
+                form = forms.M2Metric_MappingForm(metrics[metric])
+            elif metric == "tile-mapping":
+                form = forms.M2Metric_MappingTileForm(metrics[metric])
+            else:
+                api_o["ignored"].append(metric)
+                api_o["messages"].append("'%s' does not describe a valid metric")
+                api_o["warnings"] += 1
+                continue
+
+            if form.is_valid():
+                try:
+                    metric = form.save()
+                    if not metric:
+                        api_o["ignored"].append(metric)
+                        api_o["errors"] += 1
+                except Exception as e:
+                    api_o["errors"] += 1
+                    api_o["messages"].append(str(e))
+            else:
+                api_o["errors"] += 1
+                api_o["ignored"].append(metric)
+                api_o["messages"].append(form.errors.get_json_data())
+
+
 
 def add_biosample(request):
     def f(request, api_o, json_data, user=None):
