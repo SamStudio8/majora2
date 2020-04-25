@@ -169,13 +169,34 @@ def get_sequencing(request):
 
 def add_metrics(request):
     def f(request, api_o, json_data, user=None):
-        artifact = json_data.get("artifact")
-        if not artifact:
-            api_o["messages"].append("'artifact' key missing or empty")
+
+        artifact = json_data.get("artifact", "")
+        artifact_path = json_data.get("artifact_path", "")
+
+        if (not artifact or len(artifact)) == 0 and (not artifact_path or len(artifact_path) == 0):
+            api_o["messages"].append("'artifact' or 'artifact_path' key missing or empty")
             api_o["errors"] += 1
+            return
+
         metrics = json_data.get("metrics", {})
 
+        a = None
+        if artifact:
+            try:
+                a = models.MajoraArtifact.objects.get(dice_name=artifact)
+            except:
+                pass
+        elif artifact_path:
+            #TODO Need a much better way to keep track of paths
+            a = models.DigitalResourceArtifact.objects.filter(current_path=artifact_path).first()
+
+        if not a:
+            api_o["ignored"].append(artifact)
+            api_o["errors"] += 1
+            return
+
         for metric in metrics:
+            metrics[metric]["artifact"] = a
             if metric == "sequence":
                 form = forms.M2Metric_SequenceForm(metrics[metric])
             elif metric == "mapping":
@@ -201,6 +222,7 @@ def add_metrics(request):
                 api_o["errors"] += 1
                 api_o["ignored"].append(metric)
                 api_o["messages"].append(form.errors.get_json_data())
+    return wrap_api_v2(request, f)
 
 
 
