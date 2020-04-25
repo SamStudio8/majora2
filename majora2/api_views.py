@@ -198,11 +198,14 @@ def add_metrics(request):
         for metric in metrics:
             metrics[metric]["artifact"] = a.id
             if metric == "sequence":
-                form = forms.M2Metric_SequenceForm(metrics[metric])
+                m = models.TemporaryMajoraArtifactMetric_Sequence.objects.filter(artifact=a).first()
+                form = forms.M2Metric_SequenceForm(metrics[metric], instance=m)
             elif metric == "mapping":
-                form = forms.M2Metric_MappingForm(metrics[metric])
+                m = models.TemporaryMajoraArtifactMetric_Mapping.objects.filter(artifact=a).first()
+                form = forms.M2Metric_MappingForm(metrics[metric], instance=m)
             elif metric == "tile-mapping":
-                form = forms.M2Metric_MappingTileForm(metrics[metric])
+                m = models.TemporaryMajoraArtifactMetric_Mapping_Tiles.objects.filter(artifact=a).first()
+                form = forms.M2Metric_MappingTileForm(metrics[metric], instance=m)
             else:
                 api_o["ignored"].append(metric)
                 api_o["messages"].append("'%s' does not describe a valid metric" % metric)
@@ -212,7 +215,9 @@ def add_metrics(request):
             if form.is_valid():
                 try:
                     metric = form.save()
-                    if not metric:
+                    if metric:
+                        api_o["updated"].append(form_handlers._format_tuple(a))
+                    else:
                         api_o["ignored"].append(metric)
                         api_o["errors"] += 1
                 except Exception as e:
