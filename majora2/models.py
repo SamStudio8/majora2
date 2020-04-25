@@ -431,12 +431,31 @@ class TemporaryAccessionRecord(models.Model):
     secondary_accesison = models.CharField(max_length=64, blank=True, null=True)
     tertiary_accession = models.CharField(max_length=64, blank=True, null=True)
 
-#class AbstractArtifactQC(PolymorphicModel):
-#    artifact = models.OneToOneField('MajoraArtifact', blank=True, null=True, on_delete=models.PROTECT)
-#    pass = models.BooleanField()
 
-#class SequenceMajoraQC(AbstractArtifactQC):
-#class AlignmentMajoraQC(AbstractArtifactQC):
+# TODO A quick and dirty way to store and group QC on the files. QC reports should be attached to artifacts directly.
+# I'm gonna throw them on a PAG because for this project we need fast PAG access.
+class PAGQualityReportGroup(models.Model):
+    pag = models.ForeignKey('PublishedArtifactGroup', on_delete=models.PROTECT, related_name="quality_tests")
+    is_pass = models.BooleanField(default=False) # we'll bubble passes up to the top group
+    test_set_name = models.CharField(max_length=64)
+
+class PAGQualityReport(models.Model):
+    report_group = models.ForeignKey('PAGQualityReportGroup', on_delete=models.PROTECT, related_name="reports")
+    is_pass = models.BooleanField(default=False)
+    test_set_version = models.PositiveIntegerField() #TODO replace this with a custom field that can handle semvar
+    timestamp = models.DateTimeField()
+
+class PAGQualityReportRecord(models.Model):
+    is_pass = models.BooleanField(default=False)
+    is_warn = models.BooleanField(default=False)
+    report = models.ForeignKey('PAGQualityReport', on_delete=models.PROTECT, related_name="reports")
+
+    test_name = models.CharField(max_length=64)
+    test_desc = models.CharField(max_length=128)# pull these into another model
+
+    test_value_s = models.CharField(max_length=64, blank=True, null=True)
+    test_value_f = models.FloatField(blank=True, null=True)
+
 
 
 class DigitalResourceNode(MajoraArtifactGroup):
