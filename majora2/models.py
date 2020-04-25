@@ -479,15 +479,30 @@ class TemporaryMajoraArtifactMetric_Mapping(TemporaryMajoraArtifactMetric):
     num_pos = models.PositiveIntegerField()
     num_maps = models.PositiveIntegerField(blank=True, null=True)
     num_unmaps = models.PositiveIntegerField(blank=True, null=True)
-    median_cov = models.PositiveIntegerField(blank=True, null=True)
-    mean_cov = models.PositiveIntegerField(blank=True, null=True)
-    pc_pos_cov_gte1 = models.PositiveIntegerField(blank=True, null=True)
-    pc_pos_cov_gte5 = models.PositiveIntegerField(blank=True, null=True)
-    pc_pos_cov_gte10 = models.PositiveIntegerField(blank=True, null=True)
-    pc_pos_cov_gte20 = models.PositiveIntegerField(blank=True, null=True)
-    pc_pos_cov_gte50 = models.PositiveIntegerField(blank=True, null=True)
-    pc_pos_cov_gte100 = models.PositiveIntegerField(blank=True, null=True)
-    pc_pos_cov_gte200 = models.PositiveIntegerField(blank=True, null=True)
+
+    median_cov = models.FloatField(blank=True, null=True)
+    mean_cov = models.FloatField(blank=True, null=True)
+
+    pc_pos_cov_gte1 = models.FloatField(blank=True, null=True)
+    pc_pos_cov_gte5 = models.FloatField(blank=True, null=True)
+    pc_pos_cov_gte10 = models.FloatField(blank=True, null=True)
+    pc_pos_cov_gte20 = models.FloatField(blank=True, null=True)
+    pc_pos_cov_gte50 = models.FloatField(blank=True, null=True)
+    pc_pos_cov_gte100 = models.FloatField(blank=True, null=True)
+    pc_pos_cov_gte200 = models.FloatField(blank=True, null=True)
+
+
+class TemporaryMajoraArtifactMetric_Mapping_Tiles(TemporaryMajoraArtifactMetric):
+    n_tiles = models.PositiveSmallIntegerField()
+
+    pc_tiles_meancov_gte1 = models.FloatField()
+    pc_tiles_meancov_gte5 = models.FloatField()
+    pc_tiles_meancov_gte10 = models.FloatField()
+    pc_tiles_meancov_gte20 = models.FloatField()
+    pc_tiles_meancov_gte50 = models.FloatField()
+    pc_tiles_meancov_gte100 = models.FloatField()
+    pc_tiles_meancov_gte200 = models.FloatField()
+    # TODO tile-cov pairs as records
 
 class TemporaryMajoraArtifactMetric_Dehum(TemporaryMajoraArtifactMetric):
     #TODO prop dropped, pop n_hits etc
