@@ -18,7 +18,7 @@ from . import form_handlers
 
 import json
 
-MINIMUM_CLIENT_VERSION = "0.5.0"
+MINIMUM_CLIENT_VERSION = "0.6.0"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
@@ -167,13 +167,195 @@ def get_sequencing(request):
     return wrap_api_v2(request, f)
 
 
+def add_qc(request):
+    def f(request, api_o, json_data, user=None):
+        pag_name = json_data.get("publish_group")
+        test_name = json_data.get("test_name")
+        test_version = json_data.get("test_version")
+
+        if (not pag_name) or (not test_name) or (not test_version):
+            api_o["messages"].append("'pag_name', 'test' or 'version' key missing or empty")
+            api_o["errors"] += 1
+            return
+        if len(pag_name)==0 or len(test_name)==0 or len(str(test_version))==0:
+            api_o["messages"].append("'pag_name', 'test' or 'version' key missing or empty")
+            api_o["errors"] += 1
+            return
+
+        pag = models.PublishedArtifactGroup.objects.filter(is_latest=True, published_name=pag_name).first() # There can be only one
+        if not pag:
+            api_o["messages"].append("Invalid 'pag_name'")
+            api_o["ignored"].append(pag_name)
+            api_o["errors"] += 1
+            return
+
+        tv = models.PAGQualityTestVersion.objects.filter(test__name=test_name, version_number=test_version).first()
+        if not tv:
+            api_o["messages"].append("Invalid 'test'")
+            api_o["ignored"].append(pag_name)
+            api_o["errors"] += 1
+            return
+
+        # Gather metrics from PAG
+        metrics = {}
+        for artifact in pag.tagged_artifacts.all():
+            # For this project we don't need to worry about duplicates
+            # but this is an outstanding problem... TODO
+            for metric in artifact.temporarymajoraartifactmetric_set.all():
+                if metric.namespace:
+                    if metric.namespace not in metrics:
+                        metrics[metric.namespace] = metric.as_struct
+                    else:
+                        api_o["messages"].append("Cannot automatically QC a PAG with multiple objects containing the same metric type...")
+                        api_o["errors"] += 1
+                        return
+
+        results = {}
+        for rule in tv.rules.all():
+            curr_res = {
+                "rule": rule,
+                "test_metric_str": None,
+                "is_pass": None,
+                "is_warn": None,
+                "is_fail": None,
+            }
+            # Determine if the test can be performed
+            if rule.metric_namespace not in metrics:
+                api_o["messages"].append("Namespace %s not found in metrics" % rule.metric_namespace)
+                api_o["ignored"].append(rule.metric_namespace)
+                api_o["errors"] += 1
+                continue
+            if rule.metric_name not in metrics[rule.metric_namespace] or metrics[rule.metric_namespace][rule.metric_name] is None:
+                api_o["messages"].append("Metric %s.%s not found in metrics" % (rule.metric_namespace, rule.metric_name))
+                api_o["ignored"].append(rule.metric_name)
+                api_o["errors"] += 1
+                continue
+            curr_metric = metrics[rule.metric_namespace][rule.metric_name]
+            curr_res["test_metric_str"] = str(curr_metric)
+
+            # Check warnings
+            if rule.warn_min:
+                if curr_metric < rule.warn_min:
+                    curr_res["is_warn"] = True
+                else:
+                    curr_res["is_warn"] = False
+            if not curr_res["is_warn"] and rule.warn_max:
+                if curr_metric > rule.warn_max:
+                    curr_res["is_warn"] = True
+                else:
+                    curr_res["is_warn"] = False
+
+            # Check failures
+            if rule.fail_min:
+                if curr_metric < rule.fail_min:
+                    curr_res["is_fail"] = True
+                else:
+                    curr_res["is_fail"] = False
+            if not curr_res["is_fail"] and rule.fail_max:
+                if curr_metric > rule.fail_max:
+                    curr_res["is_fail"] = True
+                else:
+                    curr_res["is_fail"] = False
+
+            curr_res["is_pass"] = not curr_res["is_fail"]
+            results[rule] = curr_res
+
+        #TODO What if the same rule is checked many times? (It should not be anyway but...)
+        if len(results) != len(tv.rules.all()):
+            api_o["messages"].append("Refusing to create QC report as not all target metrics could be assessed...")
+            api_o["metrics"] = metrics
+            api_o["errors"] += 1
+            return
+
+        n_fails = 0
+        decisions = {}
+        for decision in tv.decisions.all():
+            curr_dec = {
+                "decision": decision,
+                "a": None,
+                "b": None,
+                "is_pass": None,
+                "is_warn": None,
+                "is_fail": None,
+            }
+
+            if decision.a not in results:
+                api_o["messages"].append("Could not make a decision for rule as metric appears to have not been selecting for testing")
+                api_o["errors"] += 1
+                return
+
+            curr_dec["a"] = decision.a
+            if not decision.b:
+                curr_dec["is_warn"] = results[decision.a]["is_warn"]
+                curr_dec["is_fail"] = results[decision.a]["is_fail"]
+            else:
+                curr_dec["b"] = decision.b
+                if decision.b not in results:
+                    api_o["messages"].append("Could not make a decision for rule as metric appears to have not been selecting for testing")
+                    api_o["errors"] += 1
+                    return
+                if decision.op == "AND":
+                    curr_dec["is_warn"] = results[decision.a]["is_warn"] or results[decision.a]["is_warn"] # Warnings always roll up
+                    curr_dec["is_fail"] = results[decision.a]["is_fail"] and results[decision.b]["is_fail"]
+                elif decision.op == "OR":
+                    curr_dec["is_warn"] = results[decision.a]["is_warn"] or results[decision.a]["is_warn"]
+                    curr_dec["is_fail"] = results[decision.a]["is_fail"] or results[decision.b]["is_fail"]
+                else:
+                    api_o["messages"].append("Unknown decision operator encountered")
+                    api_o["errors"] += 1
+                    return
+            curr_dec["is_pass"] = not curr_dec["is_fail"]
+            if not curr_dec["is_pass"]:
+                n_fails += 1
+            decisions[decision] = curr_dec
+
+        if len(decisions) != len(tv.decisions.all()):
+            api_o["messages"].append("Refusing to create QC report as not all target metrics could be assessed...")
+            api_o["errors"] += 1
+            return
+
+        # Looks good?
+        is_pass = n_fails == 0
+        report_g, created = models.PAGQualityReportGroup.objects.get_or_create(
+                pag = pag,
+                is_pass = is_pass,
+                test_set = tv.test
+        )
+        report_g.save()
+        report, created = models.PAGQualityReport.objects.get_or_create(
+                report_group = report_g,
+                test_set_version = tv,
+                is_pass = is_pass,
+                timestamp = timezone.now()
+        )
+        report.save()
+
+        saved_rules = {}
+        for rule, rule_result in results.items():
+            rule_result["report"] = report
+            rule_rec, created = models.PAGQualityReportRuleRecord.objects.get_or_create(
+                    **rule_result
+            )
+            rule_rec.save()
+            saved_rules[rule] = rule_rec
+
+        for decision, decision_result in decisions.items():
+            decision_result["report"] = report
+            decision_result["a"] = saved_rules[decision_result["a"]]
+            decision_result["b"] = saved_rules[decision_result["b"]]
+            dec_rec, created = models.PAGQualityReportDecisionRecord.objects.get_or_create(
+                    **decision_result
+            )
+            dec_rec.save()
+    return wrap_api_v2(request, f)
+
 def add_metrics(request):
     def f(request, api_o, json_data, user=None):
 
         artifact = json_data.get("artifact", "")
         artifact_path = json_data.get("artifact_path", "")
 
-        if (not artifact or len(artifact)) == 0 and (not artifact_path or len(artifact_path) == 0):
+        if (not artifact or len(artifact) == 0) and (not artifact_path or len(artifact_path) == 0):
             api_o["messages"].append("'artifact' or 'artifact_path' key missing or empty")
             api_o["errors"] += 1
             return
@@ -191,12 +373,13 @@ def add_metrics(request):
             a = models.DigitalResourceArtifact.objects.filter(current_path=artifact_path).first()
 
         if not a:
-            api_o["ignored"].append(artifact)
+            api_o["ignored"].append((artifact, artifact_path))
             api_o["errors"] += 1
             return
 
         for metric in metrics:
             metrics[metric]["artifact"] = a.id
+            metrics[metric]["namespace"] = metric
             if metric == "sequence":
                 m = models.TemporaryMajoraArtifactMetric_Sequence.objects.filter(artifact=a).first()
                 form = forms.M2Metric_SequenceForm(metrics[metric], instance=m)
