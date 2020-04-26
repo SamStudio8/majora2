@@ -319,9 +319,9 @@ def add_qc(request):
         is_pass = n_fails == 0
         report_g, created = models.PAGQualityReportGroup.objects.get_or_create(
                 pag = pag,
-                is_pass = is_pass,
                 test_set = tv.test
         )
+        report_g.is_pass = is_pass
         report_g.save()
         report, created = models.PAGQualityReport.objects.get_or_create(
                 report_group = report_g,

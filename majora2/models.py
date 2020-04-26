@@ -475,14 +475,14 @@ class PAGQualityReportGroup(models.Model):
         return self.reports.latest('timestamp')
 
 class PAGQualityReport(models.Model):
-    report_group = models.ForeignKey('PAGQualityReportGroup', on_delete=models.PROTECT, related_name="reports")
-    test_set_version = models.ForeignKey('PAGQualityTestVersion', on_delete=models.PROTECT, related_name="reports")
+    report_group = models.ForeignKey('PAGQualityReportGroup', on_delete=models.CASCADE, related_name="reports")
+    test_set_version = models.ForeignKey('PAGQualityTestVersion', on_delete=models.CASCADE, related_name="reports")
 
     timestamp = models.DateTimeField()
     is_pass = models.BooleanField(default=False)
 
 class PAGQualityReportRuleRecord(models.Model):
-    report = models.ForeignKey('PAGQualityReport', on_delete=models.PROTECT, related_name="tests")
+    report = models.ForeignKey('PAGQualityReport', on_delete=models.CASCADE, related_name="tests")
     rule = models.ForeignKey('PAGQualityTestRule', on_delete=models.PROTECT)
     test_metric_str = models.CharField(max_length=64, blank=True, null=True)
     is_pass = models.BooleanField(default=False)
@@ -490,11 +490,11 @@ class PAGQualityReportRuleRecord(models.Model):
     is_fail = models.BooleanField(default=False)
 
 class PAGQualityReportDecisionRecord(models.Model):
-    report = models.ForeignKey('PAGQualityReport', on_delete=models.PROTECT, related_name="decisions")
+    report = models.ForeignKey('PAGQualityReport', on_delete=models.CASCADE, related_name="decisions")
     decision = models.ForeignKey('PAGQualityBasicTestDecision', on_delete=models.PROTECT)
 
-    a = models.ForeignKey('PAGQualityReportRuleRecord', on_delete=models.PROTECT, related_name="decisions_as_a")
-    b = models.ForeignKey('PAGQualityReportRuleRecord', on_delete=models.PROTECT, blank=True, null=True, related_name="decisions_as_b")
+    a = models.ForeignKey('PAGQualityReportRuleRecord', on_delete=models.CASCADE, related_name="decisions_as_a")
+    b = models.ForeignKey('PAGQualityReportRuleRecord', on_delete=models.CASCADE, blank=True, null=True, related_name="decisions_as_b")
     is_pass = models.BooleanField(default=False)
     is_warn = models.BooleanField(default=False)
     is_fail = models.BooleanField(default=False)
