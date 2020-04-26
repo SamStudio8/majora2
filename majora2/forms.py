@@ -474,8 +474,8 @@ class TestSampleForm(forms.Form):
                 self.add_error("received_date", "Sample cannot be received more than a year ago...")
 
         # Check if the adm2 looks like a postcode
-        adm2 = cleaned_date.get("adm2")
-        if not adm2.isalpha():
+        adm2 = cleaned_data.get("adm2", "")
+        if len(adm2) > 0 and not adm2.isalpha():
             self.add_error("adm2", "adm2 cannot contain numbers. Use adm2_private if you are trying to provide an outer postcode")
 
         # Check for full postcode mistake
