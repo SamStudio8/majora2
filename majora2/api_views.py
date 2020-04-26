@@ -240,7 +240,7 @@ def add_qc(request):
                 else:
                     curr_res["is_warn"] = False
             if not curr_res["is_warn"] and rule.warn_max:
-                if curr_metric > rule.warn_max:
+                if curr_metric >= rule.warn_max:
                     curr_res["is_warn"] = True
                 else:
                     curr_res["is_warn"] = False
@@ -251,8 +251,9 @@ def add_qc(request):
                     curr_res["is_fail"] = True
                 else:
                     curr_res["is_fail"] = False
+
             if not curr_res["is_fail"] and rule.fail_max:
-                if curr_metric > rule.fail_max:
+                if curr_metric >= rule.fail_max:
                     curr_res["is_fail"] = True
                 else:
                     curr_res["is_fail"] = False

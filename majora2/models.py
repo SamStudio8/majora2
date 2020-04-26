@@ -470,6 +470,10 @@ class PAGQualityReportGroup(models.Model):
     is_pass = models.BooleanField(default=False) # we'll bubble passes up to the top group
     test_set = models.ForeignKey('PAGQualityTest', on_delete=models.PROTECT, related_name="report_groups", blank=True, null=True)
 
+    @property
+    def get_latest(self):
+        return self.reports.latest('timestamp')
+
 class PAGQualityReport(models.Model):
     report_group = models.ForeignKey('PAGQualityReportGroup', on_delete=models.PROTECT, related_name="reports")
     test_set_version = models.ForeignKey('PAGQualityTestVersion', on_delete=models.PROTECT, related_name="reports")

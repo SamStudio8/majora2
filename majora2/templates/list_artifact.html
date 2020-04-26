@@ -54,6 +54,30 @@
 <div class="row">
 <div class="col-md-12">
 
+
+{% if group.group_kind == "Published Artifact Group" %}
+<h3>Quality Control</h3>
+{% for qc in group.quality_tests.all %}
+<b>{{ qc.test_set.name }}</b> // {{ qc.get_latest.timestamp | naturaltime }} // 
+{% if qc.is_pass %}
+    <span class="badge badge-success">PASS</span>
+{% else %}
+    <span class="badge badge-danger">FAIL</span>
+{% endif %}
+<ul>
+{% for d in qc.get_latest.decisions.all %}
+    {% if d.b %}
+    <li><b>{{ d.a.rule.rule_name }} {{ d.decision.op }} {{ d.b.rule.rule_name }}</b></li>
+    {{ d.a.rule.rule_name }} // {{ d.a.rule.metric_name }} was {{ d.a.test_metric_str }} // {% if d.a.is_pass %}<span class="badge badge-success">PASS</span>{% elif d.a.is_warn %}<span class="badge badge-danger">FAIL</span>{% else %}<span class="badge badge-warning">WARN</span>{% endif %}<br/>
+    {{ d.b.rule.rule_name }} // {{ d.b.rule.metric_name }} was {{ d.b.test_metric_str }} // {% if d.b.is_pass %}<span class="badge badge-success">PASS</span>{% elif d.b.is_fail %}<span class="badge badge-danger">FAIL</span>{% else %}<span class="badge badge-warning">WARN</span>{% endif %}
+    {% else %}
+    {% endif %}
+{% endfor %}
+</ul>
+{% endfor %}
+{% endif %}
+<hr>
+
 {% if group.tagged_groups.all %}
 <h2>Associated Groups</h2>
 <div class="table-responsive">
@@ -173,6 +197,7 @@
 </table>
 </div>
 {% endif %}
+
 
 
 {% if group.group_tagged_artifacts %}
