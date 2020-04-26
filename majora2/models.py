@@ -435,7 +435,7 @@ class TemporaryAccessionRecord(models.Model):
 
 
 class PAGQualityTest(models.Model):
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=64, unique=True)
 
 class PAGQualityTestVersion(models.Model):
     test = models.ForeignKey('PAGQualityTest', on_delete=models.PROTECT, related_name="versions")
@@ -459,7 +459,7 @@ class PAGQualityBasicTestDecision(models.Model):
     test = models.ForeignKey('PAGQualityTestVersion', on_delete=models.PROTECT, related_name="decisions")
     a = models.ForeignKey('PAGQualityTestRule', on_delete=models.PROTECT, related_name="rules_as_a")
     b = models.ForeignKey('PAGQualityTestRule', on_delete=models.PROTECT, blank=True, null=True, related_name="rules_as_b")
-    op = models.CharField(max_length=3) # lol ?
+    op = models.CharField(max_length=3, blank=True, null=True) # lol ?
 
 
 # TODO A quick and dirty way to store and group QC on the files. QC reports should be attached to artifacts directly.
@@ -483,6 +483,7 @@ class PAGQualityReportRuleRecord(models.Model):
     test_metric_str = models.CharField(max_length=64, blank=True, null=True)
     is_pass = models.BooleanField(default=False)
     is_warn = models.BooleanField(default=False)
+    is_fail = models.BooleanField(default=False)
 
 class PAGQualityReportDecisionRecord(models.Model):
     report = models.ForeignKey('PAGQualityReport', on_delete=models.PROTECT, related_name="decisions")
@@ -492,6 +493,7 @@ class PAGQualityReportDecisionRecord(models.Model):
     b = models.ForeignKey('PAGQualityReportRuleRecord', on_delete=models.PROTECT, blank=True, null=True, related_name="decisions_as_b")
     is_pass = models.BooleanField(default=False)
     is_warn = models.BooleanField(default=False)
+    is_fail = models.BooleanField(default=False)
 
 
 # Until Artifacts become less generic in Majora3, we have to encode properties about them somewhere
@@ -524,13 +526,18 @@ class TemporaryMajoraArtifactMetric_Sequence(TemporaryMajoraArtifactMetric):
         return 'Sequence'
     @property
     def as_struct(self):
-        return {
+        ret = {
             "num_seqs": self.num_seqs,
             "num_bases": self.num_bases,
             "pc_acgt": self.pc_acgt,
             "pc_masked": self.pc_masked,
             "pc_invalid": self.pc_invalid,
         }
+        if self.longest_gap:
+            ret["longest_gap"] = self.longest_gap
+        if self.longest_ungap:
+            ret["longest_ungap"] = self.longest_ungap
+        return ret
 
 class TemporaryMajoraArtifactMetric_Mapping(TemporaryMajoraArtifactMetric):
     num_pos = models.PositiveIntegerField()
