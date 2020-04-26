@@ -473,9 +473,14 @@ class TestSampleForm(forms.Form):
             if cleaned_data["received_date"] < (timezone.now().date() - datetime.timedelta(days=365)):
                 self.add_error("received_date", "Sample cannot be received more than a year ago...")
 
+        # Check if the adm2 looks like a postcode
+        adm2 = cleaned_date.get("adm2")
+        if not adm2.isalpha():
+            self.add_error("adm2", "adm2 cannot contain numbers. Use adm2_private if you are trying to provide an outer postcode")
+
         # Check for full postcode mistake
-        adm2 = cleaned_data.get("adm2_private")
-        if " " in adm2:
+        adm2_private = cleaned_data.get("adm2_private")
+        if " " in adm2_private:
             self.add_error("adm2_private", "Enter the first part of the postcode only")
 
         # Validate swab site
