@@ -1171,6 +1171,7 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
             "adm0": self.collection_location_country,
             "adm1": self.collection_location_adm1,
             "adm2": self.collection_location_adm2,
+            "adm2_private": "",
 
             "biosample_sources": biosample_sources,
         }
