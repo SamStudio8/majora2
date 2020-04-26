@@ -1,15 +1,16 @@
 # majora
 *Malleable All-seeing Journal Of Research Artifacts*
 
-Majora is another bloody LIMS that happens to be written in Django.
-Even though it's another LIMS, there are some good ideas behind Majora, namely:
+Majora is a django-based wet-and-dry information management system.
+Majora is being rapidly developed as part of the COVID-19 Genomics UK Consortium (COG-UK) response to the outbreak of SARS-CoV-2.
 
-* `diceware` based sample naming strategy; to reduce transcribing and picking errors
-* `datamatrix` barcoding system that will attempt to reduce the time-overhead in telling the LIMS where samples are
-* Nested container model that can adaquately represent any physical storage strategy
-* You could run it without the internet by deploying the django-app to a local webserver
-* Natively record basic sequencing experiment information as well as track samples
-* Avoids using the empirically inferior QR code in favour of the superior datamatrix
-* Interfaces directly with a Zebra printer by spewing out ZPL over serial to make labels happen
+Although many LIMS' exist, Majora is quite good because:
 
-Despite having an excellent contrived backronym, Majora is not ready for you to use, it's barely ready for me to use. Please do not open any issues if a large creepy moon crashes into your lab as a result of invoking Majora.
+* It models data for both sites of the bench, meaning both samples and digital files can be stored together
+* It considers artifacts as an adventure of different processes, meaning you can reconstruct the journey a sample has taken from a tube check-in at the lab, to an upload of data to a public database
+* Majora provides a polymorphic 'Artifact' model that can be expanded into any custom models you like
+* Majora pushes the idea of using a `diceware` based sample naming strategy; to reduce transcribing and picking errors
+* It has support for `datamatrix` barcodes which are far superior to garbage QR codes
+* You can define quality control thresholds and have Majora apply them to your dataset and publish the result
+* Majora is flexible and can store almost any metadata about any artifact
+* Majora has [a command client that works](https://github.com/SamStudio8/ocarina/)
