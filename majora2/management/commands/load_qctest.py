@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
+from django.template.defaultfilters import slugify
 
 from majora2 import models
 
@@ -16,10 +17,15 @@ class Command(BaseCommand):
             fields = line.strip().split('\t')
 
             if line_i == 0:
+                test_group_name = fields[0]
+                test_egroup, test_egoup_created = models.PAGQualityTestEquivalenceGroup.objects.get_or_create(name=test_group_name, slug=slugify(test_group_name))
+                test_egroup.save()
+                print(test_egroup.slug)
+            if line_i == 1:
                 test_set_name = fields[0]
-                test, test_created = models.PAGQualityTest.objects.get_or_create(name=test_set_name)
+                test, test_created = models.PAGQualityTest.objects.get_or_create(name=test_set_name, group=test_egroup, slug=slugify(test_set_name))
                 test.save()
-            elif line_i == 1:
+            elif line_i == 2:
                 version_number = int(fields[0])
                 version_date = datetime.datetime.strptime(fields[1], "%Y-%m-%d")
                 tv, tv_created = models.PAGQualityTestVersion.objects.get_or_create(test=test, version_number=version_number, version_date=version_date)
@@ -65,6 +71,20 @@ class Command(BaseCommand):
                             test=tv,
                             a=rules[a_name],
                             b=rules[b_name],
+                            op=op,
+                    )
+                elif line.startswith("F"):
+                    op = fields[6]
+                    if op != "EQ" and op != "NEQ" and op is not None:
+                        print("Invalid op... Skipping filter line")
+                        continue
+                    tfilter, tfilter_created = models.PAGQualityTestFilter.objects.get_or_create(
+                            test=test,
+                            filter_name=fields[1],
+                            filter_desc=fields[2],
+                            metadata_namespace=fields[3],
+                            metadata_name=fields[4],
+                            filter_on_str=fields[5],
                             op=op,
                     )
                 else:

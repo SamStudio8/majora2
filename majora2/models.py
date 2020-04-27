@@ -434,8 +434,31 @@ class TemporaryAccessionRecord(models.Model):
     tertiary_accession = models.CharField(max_length=64, blank=True, null=True)
 
 
-class PAGQualityTest(models.Model):
+class PAGQualityTestEquivalenceGroup(models.Model):
+    slug = models.SlugField(max_length=64, blank=True, null=True)
     name = models.CharField(max_length=64, unique=True)
+
+class PAGQualityTest(models.Model):
+    group = models.ForeignKey('PAGQualityTestEquivalenceGroup', on_delete=models.PROTECT, related_name="tests", blank=True, null=True)
+    name = models.CharField(max_length=64, unique=True)
+    slug = models.SlugField(max_length=64, blank=True, null=True)
+
+class PAGQualityTestFilter(models.Model):
+    test = models.ForeignKey('PAGQualityTest', on_delete=models.PROTECT, related_name="filters") # these are not versioned so you can only apply them to the top model, not the version model
+    filter_name = models.CharField(max_length=64)
+    filter_desc = models.CharField(max_length=128)
+
+    force_field = models.BooleanField(default=True)
+
+    #metric_namespace = models.CharField(max_length=64, blank=True, null=True)
+    #metric_name = models.CharField(max_length=64, blank=True, null=True)
+
+    metadata_namespace = models.CharField(max_length=64, blank=True, null=True)
+    metadata_name = models.CharField(max_length=64, blank=True, null=True)
+
+    filter_on_str =  models.CharField(max_length=64)
+    #filter_test_value_numeric =  models.CharField(max_length=64) # use this if op is set to gt/lt(e)
+    op = models.CharField(max_length=3, blank=True, null=True) # lol ? #API allows NEQ or EQ here atm
 
 class PAGQualityTestVersion(models.Model):
     test = models.ForeignKey('PAGQualityTest', on_delete=models.PROTECT, related_name="versions")
@@ -465,10 +488,19 @@ class PAGQualityBasicTestDecision(models.Model):
 # TODO A quick and dirty way to store and group QC on the files. QC reports should be attached to artifacts directly.
 # I'm gonna throw them on a PAG because for this project we need fast PAG access.
 # although actually, if you QC an artifact, it should be published, so this might be a good model
-class PAGQualityReportGroup(models.Model):
-    pag = models.ForeignKey('PublishedArtifactGroup', on_delete=models.PROTECT, related_name="quality_tests")
+class PAGQualityReportEquivalenceGroup(models.Model):
+    pag = models.ForeignKey('PublishedArtifactGroup', on_delete=models.PROTECT, related_name="quality_groups")
+    test_group = models.ForeignKey('PAGQualityTestEquivalenceGroup', on_delete=models.PROTECT, related_name="report_groups", blank=True, null=True)
     is_pass = models.BooleanField(default=False) # we'll bubble passes up to the top group
+
+class PAGQualityReportGroup(models.Model):
+    pag = models.ForeignKey('PublishedArtifactGroup', on_delete=models.PROTECT, related_name="quality_tests", blank=True, null=True)
+    group = models.ForeignKey('PAGQualityReportEquivalenceGroup', on_delete=models.PROTECT, related_name="quality_tests", blank=True, null=True)
+
     test_set = models.ForeignKey('PAGQualityTest', on_delete=models.PROTECT, related_name="report_groups", blank=True, null=True)
+
+    is_pass = models.BooleanField(default=False) # we'll bubble passes up to the top group
+    is_skip = models.BooleanField(default=False)
 
     @property
     def get_latest(self):
@@ -480,6 +512,7 @@ class PAGQualityReport(models.Model):
 
     timestamp = models.DateTimeField()
     is_pass = models.BooleanField(default=False)
+    is_skip = models.BooleanField(default=False)
 
 class PAGQualityReportRuleRecord(models.Model):
     report = models.ForeignKey('PAGQualityReport', on_delete=models.CASCADE, related_name="tests")
