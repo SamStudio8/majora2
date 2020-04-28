@@ -384,6 +384,7 @@ def add_qc(request):
                 pag = pag,
                 test_group = t_group,
         )
+        ereport_g.is_pass = is_pass
         ereport_g.save()
 
         for tv in test_data:
@@ -392,13 +393,13 @@ def add_qc(request):
                     group = ereport_g,
                     test_set = tv.test,
             )
-            report_g.is_pass = is_pass
+            report_g.is_pass = test_data[tv]["is_pass"]
             report_g.is_skip = test_data[tv]["is_skip"]
             report_g.save()
             report, created = models.PAGQualityReport.objects.get_or_create(
                     report_group = report_g,
                     test_set_version = tv,
-                    is_pass = is_pass,
+                    is_pass = test_data[tv]["is_pass"],
                     is_skip = test_data[tv]["is_skip"],
                     timestamp = timezone.now(),
             )
