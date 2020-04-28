@@ -608,6 +608,8 @@ class TemporaryMajoraArtifactMetric_Mapping(TemporaryMajoraArtifactMetric):
     def as_struct(self):
         ret = {
             "num_pos": self.num_pos,
+            "pc_pos_cov_gte10": self.pc_pos_cov_gte10,
+            "pc_pos_cov_gte20": self.pc_pos_cov_gte20,
         }
         if self.num_maps:
             ret["num_maps"] = self.num_maps
