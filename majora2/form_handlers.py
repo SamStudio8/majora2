@@ -339,6 +339,7 @@ def handle_testdigitalresource(form, user=None, api_o=None):
     if res.current_hash != form.cleaned_data["current_hash"] or res.current_size != form.cleaned_data["current_size"]:
         res_updated = True
     res.dice_name = str(res.id)
+    res.current_path = path
     res.current_hash = form.cleaned_data["current_hash"]
     res.current_size = form.cleaned_data["current_size"]
     res.current_kind = form.cleaned_data["resource_type"]
