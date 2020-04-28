@@ -54,25 +54,32 @@ class Command(BaseCommand):
                     rules[fields[1]] = rule
 
                 elif line.startswith("D"):
-                    a_name = fields[1]
-                    b_name = fields[3]
-                    op = fields[2]
-                    if op != "OR" and op != "AND" and op is not None:
-                        print("Invalid op... Skipping decision line")
-                        continue
-                    if op and not b_name:
-                        print("Cannot set op without rule_b... Skipping decision line")
-                        continue
-                    if a_name not in rules or b_name not in rules:
-                        print("Rules cannot be found in test set... Skipping decision line")
-                        continue
+                    if len(fields) == 4:
+                        a_name = fields[1]
+                        b_name = fields[3]
+                        op = fields[2]
+                        if op != "OR" and op != "AND" and op is not None:
+                            print("Invalid op... Skipping decision line")
+                            continue
+                        if op and not b_name:
+                            print("Cannot set op without rule_b... Skipping decision line")
+                            continue
+                        if a_name not in rules or b_name not in rules:
+                            print("Rules cannot be found in test set... Skipping decision line")
+                            continue
 
-                    decision, decision_created = models.PAGQualityBasicTestDecision.objects.get_or_create(
-                            test=tv,
-                            a=rules[a_name],
-                            b=rules[b_name],
-                            op=op,
-                    )
+                        decision, decision_created = models.PAGQualityBasicTestDecision.objects.get_or_create(
+                                test=tv,
+                                a=rules[a_name],
+                                b=rules[b_name],
+                                op=op,
+                        )
+                    else:
+                        a_name = fields[1]
+                        decision, decision_created = models.PAGQualityBasicTestDecision.objects.get_or_create(
+                                test=tv,
+                                a=rules[a_name],
+                        )
                 elif line.startswith("F"):
                     op = fields[6]
                     if op != "EQ" and op != "NEQ" and op is not None:

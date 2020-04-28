@@ -377,21 +377,20 @@ def add_qc(request):
 
         # Looks good?
         is_pass = n_fails == 0
-
-
         ereport_g, created = models.PAGQualityReportEquivalenceGroup.objects.get_or_create(
                 pag = pag,
                 test_group = t_group,
         )
+        ereport_g.save()
 
         for tv in test_data:
             report_g, created = models.PAGQualityReportGroup.objects.get_or_create(
                     pag = pag,
                     group = ereport_g,
                     test_set = tv.test,
-                    is_skip = test_data[tv]["is_skip"],
             )
             report_g.is_pass = is_pass
+            report_g.is_skip = test_data[tv]["is_skip"]
             report_g.save()
             report, created = models.PAGQualityReport.objects.get_or_create(
                     report_group = report_g,
@@ -417,7 +416,9 @@ def add_qc(request):
             for decision, decision_result in test_data[tv]["decisions"].items():
                 decision_result["report"] = report
                 decision_result["a"] = saved_rules[decision_result["a"]]
-                decision_result["b"] = saved_rules[decision_result["b"]]
+
+                if decision_result["b"]:
+                    decision_result["b"] = saved_rules[decision_result["b"]]
                 dec_rec, created = models.PAGQualityReportDecisionRecord.objects.get_or_create(
                         **decision_result
                 )

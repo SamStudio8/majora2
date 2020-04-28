@@ -57,24 +57,45 @@
 
 {% if group.group_kind == "Published Artifact Group" %}
 <h3>Quality Control</h3>
-{% for qc in group.quality_tests.all %}
-<b>{{ qc.test_set.name }} (v{{ qc.get_latest.test_set_version.version_number }} {{ qc.get_latest.test_set_version.version_date }})</b> // {{ qc.get_latest.timestamp | naturaltime }} // 
-{% if qc.is_pass %}
+{% for qcg in group.quality_groups.all %}
+<b>{{ qcg.test_group.name }}</b> //
+{% if qcg.is_pass %}
     <span class="badge badge-success">PASS</span>
 {% else %}
     <span class="badge badge-danger">FAIL</span>
 {% endif %}
+
 <ul>
-{% for d in qc.get_latest.decisions.all %}
-    {% if d.b %}
-    <li><b>{{ d.a.rule.rule_name }} {{ d.decision.op }} {{ d.b.rule.rule_name }}</b></li>
-    {{ d.a.rule.rule_name }} // {{ d.a.rule.metric_name }} was {{ d.a.test_metric_str }} // {% if d.a.is_pass %}<span class="badge badge-warning">WARN</span>{% elif d.a.is_warn %}<span class="badge badge-danger">FAIL</span>{% else %}<span class="badge badge-success">PASS</span>{% endif %}<br/>
-    {{ d.b.rule.rule_name }} // {{ d.b.rule.metric_name }} was {{ d.b.test_metric_str }} // {% if d.b.is_pass %}<span class="badge badge-warning">WARN</span>{% elif d.b.is_fail %}<span class="badge badge-danger">FAIL</span>{% else %}<span class="badge badge-success">PASS</span>{% endif %}
-    {% else %}
-    {% endif %}
+{% for qc in qcg.quality_tests.all %}
+<li><b>{{ qc.test_set.name }} (v{{ qc.get_latest.test_set_version.version_number }} {{ qc.get_latest.test_set_version.version_date }})</b> // {{ qc.get_latest.timestamp | naturaltime }} //
+{% if qc.is_skip %}
+    <span class="badge badge-info">NA</span>
+{% elif qc.is_pass %}
+    <span class="badge badge-success">PASS</span>
+{% else %}
+    <span class="badge badge-danger">FAIL</span>
+{% endif %}
+
+    <ul>
+    {% for d in qc.get_latest.decisions.all %}
+        {% if d.b %}
+            <li><b>{{ d.a.rule.rule_name }} {{ d.decision.op }} {{ d.b.rule.rule_name }}</b></li>
+            <ul>
+                <li>{{ d.a.rule.rule_name }} // {{ d.a.rule.metric_name }} was {{ d.a.test_metric_str }} // {% if d.a.is_pass %}<span class="badge badge-warning">WARN</span>{% elif d.a.is_warn %}<span class="badge badge-danger">FAIL</span>{% else %}<span class="badge badge-success">PASS</span>{% endif %}</li>
+                <li>{{ d.b.rule.rule_name }} // {{ d.b.rule.metric_name }} was {{ d.b.test_metric_str }} // {% if d.b.is_pass %}<span class="badge badge-warning">WARN</span>{% elif d.b.is_fail %}<span class="badge badge-danger">FAIL</span>{% else %}<span class="badge badge-success">PASS</span>{% endif %}</li>
+            </ul>
+        {% else %}
+            <li><b>{{ d.a.rule.rule_name }}</b></li>
+            <ul><li>
+                    {{ d.a.rule.rule_name }} // {{ d.a.rule.metric_name }} was {{ d.a.test_metric_str }} // {% if d.a.is_pass %}<span class="badge badge-warning">WARN</span>{% elif d.a.is_warn %}<span class="badge badge-danger">FAIL</span>{% else %}<span class="badge badge-success">PASS</span>{% endif %}</li></ul>
+        {% endif %}
+    {% endfor %}
+    </ul>
+</li>
 {% endfor %}
 </ul>
 {% endfor %}
+
 {% endif %}
 <hr>
 
