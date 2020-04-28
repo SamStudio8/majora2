@@ -561,9 +561,9 @@ class TemporaryMajoraArtifactMetric(PolymorphicModel):
 class TemporaryMajoraArtifactMetric_Sequence(TemporaryMajoraArtifactMetric):
     num_seqs = models.PositiveIntegerField()
     num_bases = models.PositiveIntegerField()
-    pc_acgt = models.PositiveIntegerField()
-    pc_masked = models.PositiveIntegerField()
-    pc_invalid = models.PositiveIntegerField()
+    pc_acgt = models.FloatField()
+    pc_masked = models.FloatField()
+    pc_invalid = models.FloatField()
     longest_gap = models.PositiveIntegerField(blank=True, null=True)
     longest_ungap = models.PositiveIntegerField(blank=True, null=True)
 
