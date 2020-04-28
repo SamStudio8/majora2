@@ -579,9 +579,9 @@ class TemporaryMajoraArtifactMetric_Sequence(TemporaryMajoraArtifactMetric):
             "pc_masked": self.pc_masked,
             "pc_invalid": self.pc_invalid,
         }
-        if self.longest_gap:
+        if self.longest_gap is not None:
             ret["longest_gap"] = self.longest_gap
-        if self.longest_ungap:
+        if self.longest_ungap is not None:
             ret["longest_ungap"] = self.longest_ungap
         return ret
 
@@ -611,12 +611,12 @@ class TemporaryMajoraArtifactMetric_Mapping(TemporaryMajoraArtifactMetric):
             "pc_pos_cov_gte10": self.pc_pos_cov_gte10,
             "pc_pos_cov_gte20": self.pc_pos_cov_gte20,
         }
-        if self.num_maps:
+        if self.num_maps is not None:
             ret["num_maps"] = self.num_maps
-        if self.num_unmaps:
+        if self.num_unmaps is not None:
             ret["num_unmaps"] = self.num_unmaps
 
-        if self.mean_cov:
+        if self.mean_cov is not None:
             ret["mean_cov"] = self.mean_cov
         return ret
 
