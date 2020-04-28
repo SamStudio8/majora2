@@ -329,6 +329,7 @@ def add_qc(request):
                 api_o["errors"] += 1
                 return
 
+            curr_test_fails = 0
             for decision in tv.decisions.all():
                 curr_dec = {
                     "decision": decision,
@@ -368,7 +369,9 @@ def add_qc(request):
                 curr_dec["is_pass"] = not curr_dec["is_fail"]
                 if not curr_dec["is_pass"]:
                     n_fails += 1
+                    curr_test_fails += 1
                 test_data[tv]["decisions"][decision] = curr_dec
+            test_data[tv]["is_pass"] = curr_test_fails == 0
 
             if len(test_data[tv]["decisions"]) != len(tv.decisions.all()):
                 api_o["messages"].append("Refusing to create QC report as not all target metrics could be assessed...")
@@ -423,6 +426,8 @@ def add_qc(request):
                         **decision_result
                 )
                 dec_rec.save()
+
+        api_o["test_results"] = str(test_data)
     return wrap_api_v2(request, f)
 
 def add_metrics(request):

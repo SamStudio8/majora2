@@ -478,11 +478,20 @@ class PAGQualityTestRule(models.Model):
     fail_min = models.FloatField(blank=True, null=True)
     fail_max = models.FloatField(blank=True, null=True)
 
+    def __str__(self):
+        return self.rule_name
+
 class PAGQualityBasicTestDecision(models.Model):
     test = models.ForeignKey('PAGQualityTestVersion', on_delete=models.PROTECT, related_name="decisions")
     a = models.ForeignKey('PAGQualityTestRule', on_delete=models.PROTECT, related_name="rules_as_a")
     b = models.ForeignKey('PAGQualityTestRule', on_delete=models.PROTECT, blank=True, null=True, related_name="rules_as_b")
     op = models.CharField(max_length=3, blank=True, null=True) # lol ?
+
+    def __str__(self):
+        if self.b:
+            return "%s %s %s" % (self.a.rule_name, self.op, self.b.rule_name)
+        else:
+            return self.a.rule_name
 
 
 # TODO A quick and dirty way to store and group QC on the files. QC reports should be attached to artifacts directly.
