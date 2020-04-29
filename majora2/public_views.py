@@ -20,6 +20,10 @@ def sample_sequence_count_dashboard(request):
     consensus_spark = util.make_spark(models.DigitalResourceArtifact.objects.filter(current_kind="consensus", created__when__isnull=False, created__when__gte=timezone.now().date()-datetime.timedelta(days=30)).annotate(date=TruncDay('created__when')).values("date").annotate(count=Count('id')).order_by("date"), days=30)
 
     pags_by_site = models.PublishedArtifactGroup.objects.values(site=F('owner__profile__institute__name')).annotate(count=Count('pk'), public=Count('pk', filter=Q(is_public=True)), private=Count('pk', filter=Q(is_public=False))).order_by('-count')
+    qc_by_site = {x['site']: x for x in models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc", is_pass=True).values(site=F('pag__owner__profile__institute__name')).annotate(is_pass=Count('site'))}
+    for site_i, site in enumerate(pags_by_site):
+        if site['site'] in qc_by_site:
+            pags_by_site[site_i].update(qc_by_site[site['site']])
     total_pags = models.PublishedArtifactGroup.objects.count()
 
     return render(request, 'public/special/dashboard.html', {

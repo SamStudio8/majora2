@@ -22,6 +22,7 @@
                 <tr>
                     <th>Site</th>
                     <th class="text-right">Sequences</th>
+                    <th class="text-right">QC Pass</th>
                     <th class="text-right">Public</th>
                 </tr>
             </thead>
@@ -31,6 +32,7 @@
                 <tr>
                     <td>{{ entry.site }}</td>
                     <td class="text-right">{{ entry.count }}</td>
+                    <td class="text-right">{{ entry.is_pass }}</td>
                     <td class="text-right">{{ entry.public }}</td>
                 </tr>
                 {% endif %}
