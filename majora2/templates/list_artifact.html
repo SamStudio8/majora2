@@ -81,13 +81,13 @@
         {% if d.b %}
             <li><b>{{ d.a.rule.rule_name }} {{ d.decision.op }} {{ d.b.rule.rule_name }}</b></li>
             <ul>
-                <li>{{ d.a.rule.rule_name }} // {{ d.a.rule.metric_name }} was {{ d.a.test_metric_str }} // {% if d.a.is_fail %}<span class="badge badge-danger">FAIL</span>{% elif d.a.is_warn %}<span class="badge badge-warning">WARN</span>{% else %}<span class="badge badge-success">PASS</span>{% endif %}</li>
-                <li>{{ d.b.rule.rule_name }} // {{ d.b.rule.metric_name }} was {{ d.b.test_metric_str }} // {% if d.b.is_fail %}<span class="badge badge-danger">FAIL</span>{% elif d.b.is_warn %}<span class="badge badge-warning">WARN</span>{% else %}<span class="badge badge-success">PASS</span>{% endif %}</li>
+                <li>{{ d.a.rule.rule_name }} // {{ d.a.rule.metric_name }} was {{ d.a.test_metric_str }} (min: {{d.a.rule.fail_min}}, max: {{d.a.rule.fail_max}}) // {% if d.a.is_fail %}<span class="badge badge-danger">FAIL</span>{% elif d.a.is_warn %}<span class="badge badge-warning">WARN</span>{% else %}<span class="badge badge-success">PASS</span>{% endif %}</li>
+                <li>{{ d.b.rule.rule_name }} // {{ d.b.rule.metric_name }} was {{ d.b.test_metric_str }} (min: {{d.b.rule.fail_min}}, max: {{d.b.rule.fail_max}}) // {% if d.b.is_fail %}<span class="badge badge-danger">FAIL</span>{% elif d.b.is_warn %}<span class="badge badge-warning">WARN</span>{% else %}<span class="badge badge-success">PASS</span>{% endif %}</li>
             </ul>
         {% else %}
             <li><b>{{ d.a.rule.rule_name }}</b></li>
             <ul>
-                <li>{{ d.a.rule.rule_name }} // {{ d.a.rule.metric_name }} was {{ d.a.test_metric_str }} // {% if d.a.is_fail %}<span class="badge badge-danger">FAIL</span>{% elif d.a.is_warn %}<span class="badge badge-warning">WARN</span>{% else %}<span class="badge badge-success">PASS</span>{% endif %}</li>
+                <li>{{ d.a.rule.rule_name }} // {{ d.a.rule.metric_name }} was {{ d.a.test_metric_str }} (min: {{d.a.rule.fail_min}}, max: {{d.a.rule.fail_max}}) // {% if d.a.is_fail %}<span class="badge badge-danger">FAIL</span>{% elif d.a.is_warn %}<span class="badge badge-warning">WARN</span>{% else %}<span class="badge badge-success">PASS</span>{% endif %}</li>
             </ul>
         {% endif %}
     {% endfor %}
