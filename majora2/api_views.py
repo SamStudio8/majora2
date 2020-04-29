@@ -261,6 +261,7 @@ def add_qc(request):
 
             if is_skip:
                 test_data[tv]["is_skip"] = True
+                test_data[tv]["is_pass"] = False
                 continue # to next test
             else:
                 test_data[tv]["is_skip"] = False
