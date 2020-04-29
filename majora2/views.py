@@ -111,7 +111,6 @@ def profile(request):
         'pgroups': models.Favourite.objects.filter(user=request.user.id).exclude(pgroup__isnull=True),
         'processes': models.MajoraArtifactProcess.objects.filter(who=request.user.id).order_by('-when'),
         'samples': models.BiosampleArtifact.objects.filter(created__who__profile__institute__code=request.user.profile.institute.code),
-        'consensii': models.DigitalResourceArtifact.objects.filter(current_kind="consensus", created__who__profile__institute__code=request.user.profile.institute.code),
         'pags': models.PublishedArtifactGroup.objects.filter(owner__profile__institute__code=request.user.profile.institute.code, is_latest=True),
     })
 
