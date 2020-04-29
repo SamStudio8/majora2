@@ -57,9 +57,6 @@
             <a class="nav-link active" id="pills-biosample-tab" data-toggle="pill" href="#pills-biosample" role="tab" aria-controls="pills-biosample" aria-selected="true">Biosamples</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" id="pills-consensus-tab" data-toggle="pill" href="#pills-consensus" role="tab" aria-controls="pills-consensus" aria-selected="false">Consensus</a>
-        </li>
-        <li class="nav-item">
             <a class="nav-link" id="pills-published-tab" data-toggle="pill" href="#pills-published" role="tab" aria-controls="pills-published" aria-selected="false">Groups</a>
         </li>
         </ul>
@@ -68,12 +65,6 @@
                 <h2>Biosamples <code>{{ request.user.profile.institute.code }}</code></h2>
                 {% with gitems=samples %}
                     {% include 'tables/biosample.html' %}
-                {% endwith %}
-            </div>
-            <div class="tab-pane fade" id="pills-consensus" role="tabpanel" aria-labelledby="pills-consensus-tab">
-                <h2>Consensus Sequences <code>{{ request.user.profile.institute.code }}</code></h2>
-                {% with gitems=consensii %}
-                    {% include 'tables/digitalresource-profile.html' %}
                 {% endwith %}
             </div>
             <div class="tab-pane fade" id="pills-published" role="tabpanel" aria-labelledby="pills-published-tab">
