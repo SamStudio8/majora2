@@ -15,6 +15,8 @@ from . import models
 
 from sshpubkeys import SSHKey
 
+import re
+
 class RegistrationForm(forms.Form):
     username = forms.CharField(max_length=150, disabled=True, required=False)
     first_name = forms.CharField(max_length=30)
@@ -475,7 +477,7 @@ class TestSampleForm(forms.Form):
 
         # Check if the adm2 looks like a postcode
         adm2 = cleaned_data.get("adm2", "")
-        if len(adm2) > 0 and not adm2.isalpha():
+        if len(adm2) > 0 and not re.search('\d', adm2):
             self.add_error("adm2", "adm2 cannot contain numbers. Use adm2_private if you are trying to provide an outer postcode")
 
         # Check for full postcode mistake
