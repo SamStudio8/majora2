@@ -477,7 +477,7 @@ class TestSampleForm(forms.Form):
 
         # Check if the adm2 looks like a postcode
         adm2 = cleaned_data.get("adm2", "")
-        if len(adm2) > 0 and not re.search('\d', adm2):
+        if len(adm2) > 0 and re.search('\d', adm2):
             self.add_error("adm2", "adm2 cannot contain numbers. Use adm2_private if you are trying to provide an outer postcode")
 
         # Check for full postcode mistake
