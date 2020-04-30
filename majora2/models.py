@@ -245,6 +245,9 @@ class MajoraArtifact(PolymorphicModel):
                 metadata["%s.%s" % (m.meta_tag, m.meta_name)] = m.value
         return metadata
 
+    def get_pags(self):
+        return self.groups.filter(Q(PublishedArtifactGroup___is_latest=True))
+
 # TODO This will become the MajoraGroup
 class MajoraArtifactGroup(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
@@ -948,6 +951,8 @@ class BiosampleArtifact(MajoraArtifact):
             "sample_type_received": self.sample_type_current,
             "swab_site": self.sample_site,
             "secondary_accession": self.secondary_accession,
+
+            "published_as": ",".join([pag.published_name for pag in self.get_pags()]),
         }
         collection = {}
         if self.created:
