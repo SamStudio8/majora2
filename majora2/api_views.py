@@ -166,6 +166,37 @@ def get_sequencing(request):
 
     return wrap_api_v2(request, f)
 
+def get_pag_by_qc(request):
+    def f(request, api_o, json_data, user=None):
+        test_name = json_data.get("test_name")
+
+        if not test_name or len(test_name) == 0:
+            api_o["messages"].append("'test_name', key missing or empty")
+            api_o["errors"] += 1
+            return
+        t_group = models.PAGQualityTestEquivalenceGroup.objects.filter(slug=test_name).first()
+        if not t_group:
+            api_o["messages"].append("Invalid 'test_name'")
+            api_o["ignored"].append(test_name)
+            api_o["errors"] += 1
+            return
+
+        if json_data.get("pass_only"):
+            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_pass=True)
+        else:
+            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True)
+
+        pags = {}
+        for test_report in pass_pags:
+            try:
+                pags[test_report.pag.published_name] = test_report.pag.as_struct()
+            except Exception as e:
+                api_o["errors"] += 1
+                api_o["messages"].append(str(e))
+                continue
+        api_o["get"] = pags
+
+    return wrap_api_v2(request, f)
 
 def add_qc(request):
     def f(request, api_o, json_data, user=None):

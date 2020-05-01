@@ -248,6 +248,9 @@ class MajoraArtifact(PolymorphicModel):
     def get_pags(self):
         return self.groups.filter(Q(PublishedArtifactGroup___is_latest=True))
 
+    def as_struct(self):
+        return {}
+
 # TODO This will become the MajoraGroup
 class MajoraArtifactGroup(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
@@ -418,6 +421,25 @@ class PublishedArtifactGroup(MajoraArtifactGroup):
             models.UniqueConstraint(fields=["published_name", "is_latest"], name="is_only_published"),
         ]
 
+    def as_struct(self):
+
+        artifacts = {}
+        for artifact in self.tagged_artifacts.all():
+            if artifact.artifact_kind not in artifacts:
+                artifacts[artifact.artifact_kind] = []
+            artifacts[artifact.artifact_kind].append(artifact.as_struct())
+                
+        return {
+            "published_name": self.published_name,
+            "published_version": self.published_version,
+            "published_date": self.published_date.strftime("%Y-%m-%d") if self.published_date else None,
+            "is_latest": self.is_latest,
+
+            "qc_reports": {report.test_group.slug: report.as_struct() for report in self.quality_groups.all()},
+            "artifacts": artifacts,
+            "accessions": [accession.as_struct() for accession in self.accessions.all()],
+        }
+
     @property
     def group_kind(self):
         return "Published Artifact Group"
@@ -435,6 +457,12 @@ class TemporaryAccessionRecord(models.Model):
     primary_accession = models.CharField(max_length=64)
     secondary_accesison = models.CharField(max_length=64, blank=True, null=True)
     tertiary_accession = models.CharField(max_length=64, blank=True, null=True)
+
+    def as_struct(self):
+        return {
+            "service": self.service,
+            "primary_accession": self.primary_accession,
+        }
 
 
 class PAGQualityTestEquivalenceGroup(models.Model):
@@ -504,6 +532,12 @@ class PAGQualityReportEquivalenceGroup(models.Model):
     pag = models.ForeignKey('PublishedArtifactGroup', on_delete=models.PROTECT, related_name="quality_groups")
     test_group = models.ForeignKey('PAGQualityTestEquivalenceGroup', on_delete=models.PROTECT, related_name="report_groups", blank=True, null=True)
     is_pass = models.BooleanField(default=False) # we'll bubble passes up to the top group
+
+    def as_struct(self):
+        return {
+            "is_pass": self.is_pass,
+            "test_name": self.test_group.slug,
+        }
 
 class PAGQualityReportGroup(models.Model):
     pag = models.ForeignKey('PublishedArtifactGroup', on_delete=models.PROTECT, related_name="quality_tests", blank=True, null=True)
@@ -713,6 +747,15 @@ class DigitalResourceArtifact(MajoraArtifact):
 
     current_extension = models.CharField(max_length=48, default="")
     current_kind = models.CharField(max_length=48, default="File")
+
+    def as_struct(self):
+        return {
+            "current_path": self.current_path,
+            "current_name": self.current_name,
+            "current_hash": self.current_hash,
+            "current_size": self.current_size,
+            "current_kind": self.current_kind,
+        }
 
     def make_path(self, no_node=False):
         if no_node:
