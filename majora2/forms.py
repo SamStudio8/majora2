@@ -12,6 +12,7 @@ from crispy_forms.bootstrap import FormActions
 
 from .account_views import generate_username
 from . import models
+from . import fixed_data
 
 from sshpubkeys import SSHKey
 
@@ -281,11 +282,7 @@ class TestSampleForm(forms.Form):
             ("HOSPITAL", "HOSPITAL"),
             ("CAREHOME", "CAREHOME"),
         ], required=False)
-    collection_strategy = forms.ChoiceField(choices=[
-            (None, ""),
-            ("SURVEILLANCE", "S"),
-            ("CLUSTER", "C"),
-        ], required=False)
+    sampling_strategy = forms.ChoiceField(choices=fixed_data.sampling_strategy_choices(), required=False)
 
 
     adm2 = forms.CharField(

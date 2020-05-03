@@ -6,6 +6,7 @@ from django.utils import timezone
 from . import models
 from . import signals
 from . import util
+from . import fixed_data
 
 def _format_tuple(x):
     if hasattr(x, "process_kind"):
@@ -297,7 +298,7 @@ def handle_testsample(form, user=None, api_o=None):
     sample_p.source_sex = form.cleaned_data.get("source_sex")
     sample_p.source_category = form.cleaned_data.get("source_category")
     sample_p.source_setting = form.cleaned_data.get("source_setting")
-    sample_p.sampling_strategy = form.cleaned_data.get("sampling_strategy")
+    sample_p.sampling_strategy = fixed_data.sampling_strategy_choices(form.cleaned_data.get("sampling_strategy"))
 
     sample_p.save()
 
