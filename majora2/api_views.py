@@ -412,11 +412,13 @@ def add_qc(request):
                 return
 
         # Looks good?
+        tz_now_dt = timezone.now()
         is_pass = n_fails == 0
         ereport_g, created = models.PAGQualityReportEquivalenceGroup.objects.get_or_create(
                 pag = pag,
                 test_group = t_group,
         )
+        ereport_g.last_updated = tz_now_dt
         ereport_g.is_pass = is_pass
         ereport_g.save()
 
@@ -434,7 +436,7 @@ def add_qc(request):
                     test_set_version = tv,
                     is_pass = test_data[tv]["is_pass"],
                     is_skip = test_data[tv]["is_skip"],
-                    timestamp = timezone.now(),
+                    timestamp = tz_now_dt,
             )
             report.save()
 

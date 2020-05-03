@@ -533,6 +533,7 @@ class PAGQualityReportEquivalenceGroup(models.Model):
     test_group = models.ForeignKey('PAGQualityTestEquivalenceGroup', on_delete=models.PROTECT, related_name="report_groups", blank=True, null=True)
     is_pass = models.BooleanField(default=False) # we'll bubble passes up to the top group
 
+    last_updated = models.DateTimeField(blank=True, null=True)
     def as_struct(self):
         return {
             "is_pass": self.is_pass,
