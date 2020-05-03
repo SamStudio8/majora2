@@ -452,11 +452,19 @@ class TestSampleForm(forms.Form):
             "sample_type_collected",
             "sample_type_received",
         ]
+        UPPERCASE_FIELDS = [
+            "source_category",
+            "source_setting",
+            "sampling_strategy",
+        ]
         for field in LOWERCASE_FIELDS:
             if data.get(field):
                 data[field] = data[field].strip()
                 if data[field] != "BAL":
                     data[field] = data[field].strip().lower()
+        for field in UPPERCASE_FIELDS:
+            if data.get(field):
+                data[field] = data[field].strip().upper()
 
         #if data.get("swab_site", "").upper() == "NSTS" or data.get("swab_site", "").lower() == "nose and throat":
         #    data["swab_site"] = "nose-throat"
