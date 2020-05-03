@@ -78,3 +78,17 @@ def recv_activated_registration(sender, username, email, **kwargs):
         fail_silently=False,
     )
 
+
+@receiver(signals.task_end)
+def recv_task_end(sender, task, task_id, **kwargs):
+    if settings.SLACK_CHANNEL:
+        slack_message('slack/blank', {
+        }, [{
+            "mrkdwn_in": ["text", "pretext", "fields"],
+            "title": "Task ended",
+            "title_link": "",
+            "text": "Task %s (%s) appears to have finished" % (task, task_id),
+            "footer": "Task end spotted by Majora",
+            "footer_icon": "https://avatars.slack-edge.com/2019-05-03/627972616934_a621b7d3a28c2b6a7bd1_512.jpg",
+            "ts": int(time.time()),
+        }])

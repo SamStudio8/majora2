@@ -10,3 +10,4 @@ python-dateutil
 django-crispy-forms
 mysqlclient
 sshpubkeys
+django-celery-results

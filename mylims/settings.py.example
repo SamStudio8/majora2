@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'majora2',
     'django_slack',
     'crispy_forms',
+    'django_celery_results',
 ]
 
 MIDDLEWARE = [
@@ -150,3 +151,6 @@ USER_PREFIX = ""
 
 EMAIL_SUBJECT_PREFIX = "[Majora]"
 #DEFAULT_FROM_EMAIL = "majora@"
+
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'django-cache'

@@ -57,12 +57,13 @@ urlpatterns = [
     path('api/v2/meta/metric/add/', csrf_exempt(api_views.add_metrics), name="api.meta.metric.add"),
     path('api/v2/meta/qc/add/', csrf_exempt(api_views.add_qc), name="api.meta.qc.add"),
     path('api/v2/pag/accession/add/', csrf_exempt(api_views.add_pag_accession), name="api.pag.accession.add"),
-    path('api/v2/pag/qc/get/', csrf_exempt(api_views.get_pag_by_qc), name="api.pag.qc.get"),
+    path('api/v2/pag/qc/get/', csrf_exempt(api_views.get_pag_by_qc_celery), name="api.pag.qc.get"),
     path('api/v2/majora/summary/get/', csrf_exempt(api_views.get_dashboard_metrics), name="api.majora.summary.get"),
 
     #path('api/v2/artifact/digitalresource/add/', csrf_exempt(api_views.add_digitalresource), name="api.artifact.digitalresource.add"),
 
 
+    path('api/v2/majora/task/get/', csrf_exempt(api_views.get_task_result), name="api.majora.task.get"),
 
     # Home
     path('', views.home, name='home'),
