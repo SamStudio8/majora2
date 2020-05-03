@@ -271,6 +271,23 @@ class TestSampleForm(forms.Form):
             ("M", "M"),
             ("Other", "Other"),
         ], required=False, help_text="Reported sex")
+
+    source_category = forms.ChoiceField(choices=[
+            (None, ""),
+            ("HCW", "HCW"),
+        ], required=False)
+    source_setting = forms.ChoiceField(choices=[
+            (None, ""),
+            ("HOSPITAL", "HOSPITAL"),
+            ("CAREHOME", "CAREHOME"),
+        ], required=False)
+    collection_strategy = forms.ChoiceField(choices=[
+            (None, ""),
+            ("SURVEILLANCE", "S"),
+            ("CLUSTER", "C"),
+        ], required=False)
+
+
     adm2 = forms.CharField(
             label="County",
             max_length=100,

@@ -295,6 +295,10 @@ def handle_testsample(form, user=None, api_o=None):
     sample_p.private_collection_location_adm2 = form.cleaned_data.get("adm2_private")
     sample_p.source_age = form.cleaned_data.get("source_age")
     sample_p.source_sex = form.cleaned_data.get("source_sex")
+    sample_p.source_category = form.cleaned_data.get("source_category")
+    sample_p.source_setting = form.cleaned_data.get("source_setting")
+    sample_p.sampling_strategy = form.cleaned_data.get("sampling_strategy")
+
     sample_p.save()
 
     if source and sample.created:
