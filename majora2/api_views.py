@@ -190,6 +190,7 @@ def get_pag_by_qc(request):
         for test_report in pass_pags:
             try:
                 pags[test_report.pag.published_name] = test_report.pag.as_struct()
+                pags[test_report.pag.published_name]["status"] = "PASS" if test_report.is_pass else "FAIL"
             except Exception as e:
                 api_o["errors"] += 1
                 api_o["messages"].append(str(e))
