@@ -428,7 +428,7 @@ class PublishedArtifactGroup(MajoraArtifactGroup):
             if artifact.artifact_kind not in artifacts:
                 artifacts[artifact.artifact_kind] = []
             artifacts[artifact.artifact_kind].append(artifact.as_struct())
-                
+
         return {
             "published_name": self.published_name,
             "published_version": self.published_version,

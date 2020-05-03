@@ -19,7 +19,7 @@ from . import form_handlers
 import json
 import datetime
 
-MINIMUM_CLIENT_VERSION = "0.9.1"
+MINIMUM_CLIENT_VERSION = "0.9.3"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
@@ -170,6 +170,7 @@ def get_sequencing(request):
 def get_pag_by_qc(request):
     def f(request, api_o, json_data, user=None):
         test_name = json_data.get("test_name")
+        dra_current_kind = json_data.get("dra_current_kind")
 
         if not test_name or len(test_name) == 0:
             api_o["messages"].append("'test_name', key missing or empty")
@@ -187,15 +188,29 @@ def get_pag_by_qc(request):
         else:
             pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True)
 
-        pags = {}
-        for test_report in pass_pags:
-            try:
-                pags[test_report.pag.published_name] = test_report.pag.as_struct()
-                pags[test_report.pag.published_name]["status"] = "PASS" if test_report.is_pass else "FAIL"
-            except Exception as e:
-                api_o["errors"] += 1
-                api_o["messages"].append(str(e))
-                continue
+        if dra_current_kind:
+            pags = {}
+            for test_report in pass_pags:
+                pags[test_report.pag.published_name] = {}
+                pags[test_report.pag.published_name]["artifacts"] = {}
+                try:
+                    pags[test_report.pag.published_name]["artifacts"]["Digital Resource"] = [a.as_struct() for a in test_report.pag.tagged_artifacts.filter(DigitalResourceArtifact___current_kind=dra_current_kind)]
+                    pags[test_report.pag.published_name]["status"] = "PASS" if test_report.is_pass else "FAIL"
+                except Exception as e:
+                    api_o["errors"] += 1
+                    api_o["messages"].append(str(e))
+                    continue
+        else:
+            # Return everything?
+            pags = {}
+            for test_report in pass_pags:
+                try:
+                    pags[test_report.pag.published_name] = test_report.pag.as_struct()
+                    pags[test_report.pag.published_name]["status"] = "PASS" if test_report.is_pass else "FAIL"
+                except Exception as e:
+                    api_o["errors"] += 1
+                    api_o["messages"].append(str(e))
+                    continue
         api_o["get"] = pags
 
     return wrap_api_v2(request, f)
@@ -805,6 +820,4 @@ def get_dashboard_metrics(request):
             "total_sequences": models.PublishedArtifactGroup.objects.count(),
             "site_qc": all_pags,
         }
-
-
     return wrap_api_v2(request, f)
