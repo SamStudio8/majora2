@@ -17,6 +17,7 @@ from . import fixed_data
 from . import form_handlers
 
 import json
+import datetime
 
 MINIMUM_CLIENT_VERSION = "0.9.1"
 
@@ -785,5 +786,25 @@ def add_pag_accession(request):
             accession.save()
             if api_o:
                 api_o["updated"].append(form_handlers._format_tuple(pag))
+
+    return wrap_api_v2(request, f)
+
+def get_dashboard_metrics(request):
+    def f(request, api_o, json_data, user=None):
+        from django.db.models import Count, F, Q
+
+        gte_date=None
+        try:
+            gte_date =datetime.datetime.strptime("%Y-%m-%d", json_data.get("gte_date", ""))
+            all_pags = [{ 'site': x['site'], 'count': x['count'], 'pass_count': x['passc'], 'fail_count': x['failc']} for x in models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc", last_updated__gt=gte_date).values(site=F('pag__owner__profile__institute__code')).annotate(count=Count('pk'), failc=Count('pk', filter=Q(is_pass=False)), passc=Count('pk', filter=Q(is_pass=True))).order_by('-count')]
+        except:
+            all_pags = [{ 'site': x['site'], 'count': x['count'], 'pass_count': x['passc'], 'fail_count': x['failc']} for x in models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc").values(site=F('pag__owner__profile__institute__code')).annotate(count=Count('pk'), failc=Count('pk', filter=Q(is_pass=False)), passc=Count('pk', filter=Q(is_pass=True))).order_by('-count')]
+
+
+        api_o["get"] = {
+            "total_sequences": models.PublishedArtifactGroup.objects.count(),
+            "site_qc": all_pags,
+        }
+
 
     return wrap_api_v2(request, f)
