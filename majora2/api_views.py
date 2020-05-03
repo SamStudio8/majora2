@@ -885,6 +885,7 @@ def get_task_result(request):
         res = AsyncResult(task_id)
         if res.state == "SUCCESS":
             api_o.update(res.get())
+            res.forget() # Clear this result
         else:
             api_o["warnings"] += 1
             api_o["messages"].append("Task is not (yet) SUCCESS...")
