@@ -23,11 +23,11 @@
         </tr>
         <tr>
             <th>Participant</th>
-            <td>{{ sample.created.source_age }}{{ sample.created.source_sex }}</td>
+            <td>{{ sample.created.source_age }}{{ sample.created.source_sex }} {{ sample.created.source_category }} {{ sample.created.source_setting }}</td>
         </tr>
         <tr>
             <th>Type</th>
-            <td>{{ sample.sample_type_collected }} {% if sample.sample_type_collected == "swab" %}({{ sample.sample_site }}){% endif %}</td>
+            <td>{{ sample.sample_type_collected }} {% if sample.sample_type_collected == "swab" %}({{ sample.sample_site }}){% endif %} {{ sample.created.sampling_strategy }}</td>
         </tr>
         {% endwith %}
         </tbody>
