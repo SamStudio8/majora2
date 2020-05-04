@@ -1441,6 +1441,7 @@ class Institute(models.Model):
     code = models.CharField(max_length=10)
     name = models.CharField(max_length=100)
 
+    gisaid_opted = models.BooleanField(default=False)
     gisaid_user = models.CharField(max_length=100, null=True, blank=True)
     gisaid_mail = models.EmailField(null=True, blank=True)
     gisaid_lab_name = models.CharField(max_length=512, null=True, blank=True)

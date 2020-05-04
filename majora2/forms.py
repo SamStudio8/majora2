@@ -18,6 +18,63 @@ from sshpubkeys import SSHKey
 
 import re
 
+class InstituteForm(forms.Form):
+    name = forms.CharField(max_length=100, disabled=True, required=False)
+    code = forms.CharField(max_length=10, disabled=True, required=False)
+
+    gisaid_opted = forms.BooleanField()
+    gisaid_user = forms.CharField(max_length=100, required=False, label="GISAID username", help_text="Submissions will be send on behalf of this user")
+    gisaid_mail = forms.EmailField(required=False, label="E-mail address", help_text="E-mail address to share with GISAID curators")
+    gisaid_lab_name = forms.CharField(max_length=512, required=False, label="Originating lab name(s)", help_text="The name or names of originating labs you would like to credit")
+    gisaid_lab_addr = forms.CharField(max_length=512, required=False, label="Originating lab address(es)", help_text="Use the broadest address that encompasses all the originating labs")
+    gisaid_list = forms.CharField(max_length=2048, required=False, widget=forms.Textarea(attrs={"rows": 5}), label="Author list")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset("Institute",
+                Row(
+                    Column('code', css_class="form-group col-md-2 mb-0"),
+                    Column('name', css_class="form-group col-md-10 mb-0"),
+                    css_class="form-row",
+                ),
+                Row(
+                    Column('gisaid_opted', css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                )
+            ),
+            Fieldset("GISAID: User",
+                Row(
+                    Column('gisaid_user', css_class="form-group col-md-6 mb-0"),
+                    Column('gisaid_mail', css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                )
+            ),
+            Fieldset("GISAID: Originating Lab",
+                Row(
+                    Column('gisaid_lab_name', css_class="form-group col-md-6 mb-0"),
+                    Column('gisaid_lab_addr', css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                )
+            ),
+            Fieldset("GISAID: Authors",
+                'gisaid_list'
+            ),
+            FormActions(
+                    Submit('save', 'Save'),
+                    css_class="text-right",
+            )
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get("gisaid_opted", False):
+            for field in ["gisaid_user", "gisaid_mail", "gisaid_lab_name", "gisaid_lab_addr", "gisaid_list"]:
+                if not cleaned_data.get(field):
+                    self.add_error(field, "Required if opting-in to GISAID submissions")
+
 class RegistrationForm(forms.Form):
     username = forms.CharField(max_length=150, disabled=True, required=False)
     first_name = forms.CharField(max_length=30)

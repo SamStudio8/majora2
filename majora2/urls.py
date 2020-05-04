@@ -32,6 +32,7 @@ urlpatterns = [
     # FORMS ####################################################################
     path('forms/testsample/', views.form_sampletest, name='form_sampletest'),
     path('forms/register/', account_views.form_register, name='form_register'),
+    path('forms/institute/', account_views.form_institute, name='form_institute'),
     
     # BOT ######################################################################
     path('bot/accounts/approve', csrf_exempt(bot_views.bot_approve_registration)),

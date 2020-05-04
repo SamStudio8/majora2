@@ -37,7 +37,7 @@
         </tr>
         <tr>
             <th>Organisation</th>
-            <td>{{ user.profile.institute }}</td>
+            <td>{{ user.profile.institute }} <a class="badge badge-info" style="text-decoration: underline;" href="{% url 'form_institute' %}">Update</a></td>
         </tr>
         <tr>
             <th>API Key</th>

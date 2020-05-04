@@ -1,0 +1,19 @@
+{% load instance %}
+{% load crispy_forms_tags %}
+{% include 'header.html' with title="Institute" %}
+<div class="mast2">
+    <div class="container">
+    </div>
+</div>
+<div class="container">
+
+<h1>Update institute settings</h1>
+<hr>
+
+<form action="{% url 'form_institute' %}" method="post">
+    {% csrf_token %}
+    {% crispy form %}
+</form>
+</div>
+{% include 'footer.html' %}
+

@@ -42,6 +42,31 @@ def form_register(request):
         form = forms.RegistrationForm()
     return render(request, 'forms/register.html', {'form': form})
 
+@login_required
+def form_institute(request):
+    from django.forms.models import model_to_dict
+
+    if not hasattr(request.user, "profile"):
+        return HttpResponseBadRequest() # bye
+
+    org = get_object_or_404(models.Institute, code=request.user.profile.institute.code)
+
+    init = model_to_dict(org)
+    if request.method == "POST":
+        form = forms.InstituteForm(request.POST, initial=init)
+        if form.is_valid():
+            org.gisaid_opted = form.cleaned_data.get("gisaid_opted")
+            org.gisaid_user = form.cleaned_data.get("gisaid_user")
+            org.gisaid_mail = form.cleaned_data.get("gisaid_mail")
+            org.gisaid_lab_name = form.cleaned_data.get("gisaid_lab_name")
+            org.gisaid_lab_addr = form.cleaned_data.get("gisaid_lab_adrr")
+            org.gisaid_list = form.cleaned_data.get("gisaid_list")
+            org.save()
+            return render(request, 'accounts/institute_success.html')
+    else:
+        form = forms.InstituteForm(initial=init)
+    return render(request, 'forms/institute.html', {'form': form})
+
 
 @csrf_exempt
 def list_ssh_keys(request, username=None):
