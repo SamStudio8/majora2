@@ -812,7 +812,7 @@ def get_dashboard_metrics(request):
 
         gte_date=None
         try:
-            gte_date =datetime.datetime.strptime("%Y-%m-%d", json_data.get("gte_date", ""))
+            gte_date = datetime.datetime.strptime(json_data.get("gte_date", ""), "%Y-%m-%d")
             all_pags = [{ 'site': x['site'], 'count': x['count'], 'pass_count': x['passc'], 'fail_count': x['failc']} for x in models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc", last_updated__gt=gte_date).values(site=F('pag__owner__profile__institute__code')).annotate(count=Count('pk'), failc=Count('pk', filter=Q(is_pass=False)), passc=Count('pk', filter=Q(is_pass=True))).order_by('-count')]
         except:
             all_pags = [{ 'site': x['site'], 'count': x['count'], 'pass_count': x['passc'], 'fail_count': x['failc']} for x in models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc").values(site=F('pag__owner__profile__institute__code')).annotate(count=Count('pk'), failc=Count('pk', filter=Q(is_pass=False)), passc=Count('pk', filter=Q(is_pass=True))).order_by('-count')]
