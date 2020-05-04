@@ -59,7 +59,7 @@ def form_institute(request):
             org.gisaid_user = form.cleaned_data.get("gisaid_user")
             org.gisaid_mail = form.cleaned_data.get("gisaid_mail")
             org.gisaid_lab_name = form.cleaned_data.get("gisaid_lab_name")
-            org.gisaid_lab_addr = form.cleaned_data.get("gisaid_lab_adrr")
+            org.gisaid_lab_addr = form.cleaned_data.get("gisaid_lab_addr")
             org.gisaid_list = form.cleaned_data.get("gisaid_list")
             org.save()
             return render(request, 'accounts/institute_success.html')
