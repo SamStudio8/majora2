@@ -778,12 +778,22 @@ def add_tag(request):
 def add_pag_accession(request):
     def f(request, api_o, json_data, user=None):
         pag_name = json_data.get("publish_group")
+        pag_contains = json_data.get("contains")
         if not pag_name:
             api_o["messages"].append("'publish_group' key missing or empty")
             api_o["errors"] += 1
             return
 
-        pag = models.PublishedArtifactGroup.objects.get(published_name=pag_name, is_latest=True)
+        if pag_contains:
+            qs = models.PublishedArtifactGroup.objects.get(published_name__contains=pag_name, is_latest=True)
+            if qs.count() > 1:
+                api_o["messages"].append("%s does not uniquely identify a PAG in Majora" % pag_name)
+                api_o["errors"] += 1
+                return
+            pag = qs.first()
+        else:
+            pag = models.PublishedArtifactGroup.objects.get(published_name=pag_name, is_latest=True)
+
         if not pag:
             api_o["messages"].append("PAG %s not known to Majora" % pag_name)
             api_o["errors"] += 1
@@ -800,6 +810,8 @@ def add_pag_accession(request):
         )
         if accession:
             accession.primary_accession = json_data.get("accession")
+            accession.secondary_accession = json_data.get("accession2")
+            accession.tertiary_accession = json_data.get("accession3")
             accession.save()
             if api_o:
                 api_o["updated"].append(form_handlers._format_tuple(pag))
