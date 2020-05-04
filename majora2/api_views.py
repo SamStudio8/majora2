@@ -881,8 +881,8 @@ def get_task_result(request):
             api_o["errors"] += 1
             return
 
-        from celery.result import AsyncResult
-        res = AsyncResult(task_id)
+        from mylims.celery import app
+        res = app.AsyncResult(task_id)
         if res.state == "SUCCESS":
             api_o.update(res.get())
             res.forget() # Clear this result
