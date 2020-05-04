@@ -785,7 +785,7 @@ def add_pag_accession(request):
             return
 
         if pag_contains:
-            qs = models.PublishedArtifactGroup.objects.get(published_name__contains=pag_name, is_latest=True)
+            qs = models.PublishedArtifactGroup.objects.filter(published_name__contains=pag_name, is_latest=True)
             if qs.count() > 1:
                 api_o["messages"].append("%s does not uniquely identify a PAG in Majora" % pag_name)
                 api_o["errors"] += 1
