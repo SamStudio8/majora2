@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+ADMINS = [('Sam', 'sam@example.org')]
 
 # Application definition
 
@@ -151,6 +152,7 @@ USER_PREFIX = ""
 
 EMAIL_SUBJECT_PREFIX = "[Majora]"
 #DEFAULT_FROM_EMAIL = "majora@"
+#SERVER_EMAIL = "majora@"
 
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_CACHE_BACKEND = 'django-cache'
