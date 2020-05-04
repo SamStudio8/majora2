@@ -756,6 +756,7 @@ class DigitalResourceArtifact(MajoraArtifact):
             "current_hash": self.current_hash,
             "current_size": self.current_size,
             "current_kind": self.current_kind,
+            "metadata": self.get_metadata_as_struct(),
         }
 
     def make_path(self, no_node=False):
@@ -997,6 +998,7 @@ class BiosampleArtifact(MajoraArtifact):
             "secondary_accession": self.secondary_accession,
 
             "published_as": ",".join([pag.published_name for pag in self.get_pags()]),
+            "metadata": self.get_metadata_as_struct(),
         }
         collection = {}
         if self.created:
