@@ -64,6 +64,7 @@ urlpatterns = [
 
 
     path('api/v2/majora/task/get/', csrf_exempt(api_views.get_task_result), name="api.majora.task.get"),
+    path('api/v2/majora/task/delete/', csrf_exempt(api_views.del_task_result), name="api.majora.task.delete"),
 
     # Home
     path('', views.home, name='home'),
