@@ -17,7 +17,7 @@ def fill_fixed_data(k, user=None):
     else:
         return {}
 
-def sampling_strategy_choices(convert_choice=None):
+def sampling_strategy_choices(convert_choice=False, choice=None):
     lookup = {
         "S": "SURVEILLANCE",
         "C": "CLUSTER",
@@ -25,8 +25,8 @@ def sampling_strategy_choices(convert_choice=None):
         "": None,
     }
     if convert_choice:
-        if convert_choice in lookup:
-            return lookup[convert_choice]
+        if choice in lookup:
+            return lookup[choice]
         else:
             return None
     else:
