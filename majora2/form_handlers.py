@@ -12,7 +12,10 @@ def _format_tuple(x):
     if hasattr(x, "process_kind"):
         return (x.kind, str(x.id), "")
     elif hasattr(x, "group_kind"):
-        return (x.kind, str(x.id), x.dice_name)
+        if x.group_kind == "Published Artifact Group":
+            return (x.kind, str(x.id), x.published_name)
+        else:
+            return (x.kind, str(x.id), x.dice_name)
     else:
         return (x.kind, str(x.id), x.dice_name)
 
