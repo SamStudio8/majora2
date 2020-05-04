@@ -412,6 +412,7 @@ class PublishedArtifactGroup(MajoraArtifactGroup):
     #replaced_by = models.ForeignKey('PublishedArtifactGroup', blank=True, null=True, on_delete=models.PROTECT, related_name="replaces")
 
     is_public = models.BooleanField(default=False)
+    public_timestamp = models.DateTimeField(blank=True, null=True)
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     #TODO owner_org?

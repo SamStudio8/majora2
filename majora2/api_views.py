@@ -19,7 +19,7 @@ from . import form_handlers
 import json
 import datetime
 
-MINIMUM_CLIENT_VERSION = "0.10.4"
+MINIMUM_CLIENT_VERSION = "0.10.5"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
@@ -815,6 +815,12 @@ def add_pag_accession(request):
             accession.save()
             if api_o:
                 api_o["updated"].append(form_handlers._format_tuple(pag))
+
+            if json_data.get("public") and not pag.is_public:
+                pag.is_public = True
+                pag.public_timestamp = timezone.now()
+                pag.save()
+                api_o["messages"].append("PAG marked as public")
 
     return wrap_api_v2(request, f)
 
