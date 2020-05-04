@@ -439,6 +439,17 @@ class PublishedArtifactGroup(MajoraArtifactGroup):
             "qc_reports": {report.test_group.slug: report.as_struct() for report in self.quality_groups.all()},
             "artifacts": artifacts,
             "accessions": [accession.as_struct() for accession in self.accessions.all()],
+
+            "owner": self.owner.username,
+            "owner_org_code": self.owner.profile.institute.code if self.owner.profile.institute else None,
+
+            "owner_org_gisaid_user": self.owner.profile.institute.gisaid_user if self.owner.profile.institute else None,
+            "owner_org_gisaid_mail": self.owner.profile.institute.gisaid_mail if self.owner.profile.institute else None,
+            "owner_org_gisaid_lab_name": self.owner.profile.institute.gisaid_lab_name if self.owner.profile.institute else None,
+            "owner_org_gisaid_lab_addr": self.owner.profile.institute.gisaid_lab_addr if self.owner.profile.institute else None,
+            "owner_org_gisaid_list": self.owner.profile.institute.gisaid_list if self.owner.profile.institute else None,
+
+
         }
 
     @property
@@ -1429,6 +1440,12 @@ class MajoraMetaRecord(PolymorphicModel):
 class Institute(models.Model):
     code = models.CharField(max_length=10)
     name = models.CharField(max_length=100)
+
+    gisaid_user = models.CharField(max_length=100, null=True, blank=True)
+    gisaid_mail = models.EmailField(null=True, blank=True)
+    gisaid_lab_name = models.CharField(max_length=512, null=True, blank=True)
+    gisaid_lab_addr = models.CharField(max_length=512, null=True, blank=True)
+    gisaid_list = models.CharField(max_length=2048, null=True, blank=True)
 
     def __str__(self):
         return "%s: %s" % (self.code, self.name)
