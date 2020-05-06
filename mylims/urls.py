@@ -20,7 +20,6 @@ from two_factor.urls import urlpatterns as tf_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include(tf_urls)),
 
     #path('accounts/login/', auth_views.LoginView.as_view(
     #    template_name='admin/login.html',
@@ -39,4 +38,5 @@ urlpatterns = [
 
     #path('accounts/', include('django.contrib.auth.urls')),
     path('', include('majora2.urls')),
+    path('', include(tf_urls)),
 ]

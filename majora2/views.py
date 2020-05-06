@@ -22,6 +22,9 @@ from django.contrib.auth.models import User
 
 
 from django.contrib.auth.decorators import login_required
+from django_otp.decorators import otp_required
+
+from .account_views import django_2fa_mixin_hack
 
 @login_required
 def barcode(request, uuid):
