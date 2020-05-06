@@ -19,7 +19,7 @@ from . import form_handlers
 import json
 import datetime
 
-MINIMUM_CLIENT_VERSION = "0.10.5"
+MINIMUM_CLIENT_VERSION = "0.12.1"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
@@ -134,73 +134,76 @@ def handle_metrics(metrics, tag_type, tag_to, user, api_o):
             metrics[metric]["min_ct"] = 0
             metrics[metric]["max_ct"] = 0
             form = forms.M2Metric_ThresholdCycleForm(metrics[metric], instance=m)
-        elif metric.startswith("ct_"):
-            metrics[metric]["artifact_metric"] = models.TemporaryMajoraArtifactMetric_ThresholdCycle.objects.filter(artifact=tag_to).first()
-            form = forms.M2MetricRecord_ThresholdCycleForm(metrics[metric])
-            is_model = False
-
         else:
             api_o["ignored"].append(metric)
             api_o["messages"].append("'%s' does not describe a valid metric" % metric)
             api_o["warnings"] += 1
             continue
 
-        if is_model:
-            if form.is_valid():
-                try:
-                    metric_ob = form.save()
-                    if metric_ob:
-                        api_o["updated"].append(form_handlers._format_tuple(tag_to))
-                    else:
-                        api_o["ignored"].append(metric)
-                        api_o["errors"] += 1
-                except Exception as e:
+        if form.is_valid():
+            try:
+                metric_ob = form.save()
+                if metric_ob:
+                    api_o["updated"].append(form_handlers._format_tuple(tag_to))
+
+                    # Handle optional records
+                    for metric_rec_name in metrics[metric].get("records", {}):
+                        metric_rec = metrics[metric]["records"][metric_rec_name]
+                        if metric == "ct":
+                            metric_rec["artifact_metric"] = metric_ob
+                            form = forms.M2MetricRecord_ThresholdCycleForm(metric_rec)
+                            if form.is_valid():
+                                try:
+                                    artifact_metric = form.cleaned_data["artifact_metric"]
+                                    rec_obj, rec_obj_created = models.TemporaryMajoraArtifactMetricRecord_ThresholdCycle.objects.get_or_create(
+                                            artifact_metric = artifact_metric,
+                                            test_platform = form.cleaned_data.get("test_platform"),
+                                            test_target = form.cleaned_data.get("test_target"),
+                                            test_kit = form.cleaned_data.get("test_kit"),
+                                    )
+                                    if rec_obj:
+                                        rec_obj.ct_value = form.cleaned_data["ct_value"]
+                                        rec_obj.save()
+                                        artifact_metric.num_tests = len(artifact_metric.metric_records.all())
+                                        ct_min = None
+                                        ct_max = None
+                                        for record in artifact_metric.metric_records.all():
+                                            ct = record.ct_value
+                                            if not ct_min:
+                                                ct_min = ct
+                                            elif ct < ct_min:
+                                                ct_min = ct
+
+                                            if not ct_max:
+                                                ct_max = ct
+                                            elif ct > ct_max:
+                                                ct_max = ct
+
+                                        artifact_metric.min_ct = ct_min
+                                        artifact_metric.max_ct = ct_max
+                                        artifact_metric.save()
+
+                                    if not rec_obj:
+                                        api_o["ignored"].append("%s:%s" % (metric, metric_rec_name))
+                                        api_o["errors"] += 1
+                                except Exception as e:
+                                    api_o["errors"] += 1
+                                    api_o["messages"].append(str(e))
+                            else:
+                                api_o["errors"] += 1
+                                api_o["ignored"].append("%s:%s" % (metric, metric_rec_name))
+                                api_o["messages"].append(form.errors.get_json_data())
+                        # End Metric Records
+                else:
+                    api_o["ignored"].append(metric)
                     api_o["errors"] += 1
-                    api_o["messages"].append(str(e))
-            else:
+            except Exception as e:
                 api_o["errors"] += 1
-                api_o["ignored"].append(metric)
-                api_o["messages"].append(form.errors.get_json_data())
+                api_o["messages"].append(str(e))
         else:
-            if form.is_valid():
-                try:
-                    if metric.startswith("ct_"):
-                        artifact_metric = form.cleaned_data["artifact_metric"]
-                        ob, ob_created = models.TemporaryMajoraArtifactMetricRecord_ThresholdCycle.objects.get_or_create(
-                                artifact_metric = artifact_metric,
-                                test_platform = form.cleaned_data.get("test_platform"),
-                                test_target = form.cleaned_data.get("test_target"),
-                                test_kit = form.cleaned_data.get("test_kit"),
-                        )
-                        if ob:
-                            ob.ct_value = form.cleaned_data["ct_value"]
-                            ob.save()
-
-                            ct = ob.ct_value
-                            if ob_created:
-                                artifact_metric.num_tests += 1
-
-                            if not artifact_metric.min_ct:
-                                artifact_metric.min_ct = ct
-                            elif ct < artifact_metric.min_ct:
-                                artifact_metric.min_ct = ct
-
-                            if not artifact_metric.max_ct:
-                                artifact_metric.max_ct = ct
-                            elif ct > artifact_metric.max_ct:
-                                artifact_metric.max_ct = ct
-                            artifact_metric.save()
-
-                    if not ob:
-                        api_o["ignored"].append(metric)
-                        api_o["errors"] += 1
-                except Exception as e:
-                    api_o["errors"] += 1
-                    api_o["messages"].append(str(e))
-            else:
-                api_o["errors"] += 1
-                api_o["ignored"].append(metric)
-                api_o["messages"].append(form.errors.get_json_data())
+            api_o["errors"] += 1
+            api_o["ignored"].append(metric)
+            api_o["messages"].append(form.errors.get_json_data())
 
 
 
