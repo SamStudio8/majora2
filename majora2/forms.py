@@ -166,6 +166,32 @@ class M2Metric_MappingTileForm(forms.ModelForm):
         model = models.TemporaryMajoraArtifactMetric_Mapping_Tiles
         exclude = []
 
+class M2Metric_ThresholdCycleForm(forms.ModelForm):
+    class Meta:
+        model = models.TemporaryMajoraArtifactMetric_ThresholdCycle
+        exclude = []
+
+class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a modelform, but w/e
+    artifact_metric = forms.ModelChoiceField(queryset=models.TemporaryMajoraArtifactMetric_ThresholdCycle.objects.all(), required=True)
+    ct_value = forms.FloatField(required=True)
+    test_kit = forms.ChoiceField(
+            choices=[
+                (None, ""),
+                ("TEST", "TEST"),
+            ],
+    )
+    test_platform = forms.ChoiceField(
+            choices=[
+                (None, ""),
+                ("TEST", "TEST"),
+            ],
+    )
+    test_target = forms.ChoiceField(
+            choices=[
+                (None, ""),
+                ("TEST", "TEST"),
+            ],
+    )
 
 class TestMetadataForm(forms.Form):
     artifact = forms.ModelChoiceField(queryset=models.MajoraArtifact.objects.all(), required=False, to_field_name="dice_name")
@@ -190,7 +216,6 @@ class TestMetadataForm(forms.Form):
 
 
 class TestLibraryForm(forms.Form):
-
     library_name = forms.CharField(max_length=48, min_length=5)
     library_layout_config = forms.ChoiceField(
             choices=[

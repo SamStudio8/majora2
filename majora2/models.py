@@ -608,6 +608,40 @@ class TemporaryMajoraArtifactMetric(PolymorphicModel):
     def as_struct(self):
         return {}
 
+class TemporaryMajoraArtifactMetricRecord(PolymorphicModel):
+    artifact_metric = models.ForeignKey('TemporaryMajoraArtifactMetric', on_delete=models.CASCADE, related_name="metric_records")
+
+class TemporaryMajoraArtifactMetric_ThresholdCycle(TemporaryMajoraArtifactMetric):
+    num_tests = models.PositiveIntegerField()
+    min_ct = models.FloatField()
+    max_ct = models.FloatField()
+
+    @property
+    def metric_kind(self):
+        return 'Ct'
+    @property
+    def as_struct(self):
+        return {
+            "num_tests": self.num_tests,
+            "min_ct": self.min_ct,
+            "max_ct": self.max_ct,
+            "records": [record.as_struct() for record in self.metric_records.all()],
+        }
+
+class TemporaryMajoraArtifactMetricRecord_ThresholdCycle(TemporaryMajoraArtifactMetricRecord):
+    ct_value = models.FloatField(blank=True, null=True)
+    test_platform = models.CharField(max_length=48, blank=True, null=True)
+    test_target = models.CharField(max_length=48, blank=True, null=True)
+    test_kit = models.CharField(max_length=48, blank=True, null=True)
+
+    def as_struct(self):
+        return {
+            "ct_value": self.ct_value,
+            "test_platform": self.test_platform,
+            "test_target": self.test_target,
+            "test_kit": self.test_kit,
+        }
+
 class TemporaryMajoraArtifactMetric_Sequence(TemporaryMajoraArtifactMetric):
     num_seqs = models.PositiveIntegerField()
     num_bases = models.PositiveIntegerField()
