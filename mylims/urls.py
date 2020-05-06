@@ -16,24 +16,27 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from django.contrib.auth import views as auth_views
+from two_factor.urls import urlpatterns as tf_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('accounts/login/', auth_views.LoginView.as_view(
-        template_name='admin/login.html',
-        redirect_authenticated_user=True,
-        extra_context={
-            'site_header': 'Majora',
-            'site_title': 'Majora',
-            'title': 'Authenticate',
-            #'next': '/accounts/profile/',
-        }),
-        name="login",
-    ),
-    path('accounts/logout/', auth_views.LogoutView.as_view(
+    path('', include(tf_urls)),
+
+    #path('accounts/login/', auth_views.LoginView.as_view(
+    #    template_name='admin/login.html',
+    #    redirect_authenticated_user=True,
+    #    extra_context={
+    #        'site_header': 'Majora',
+    #        'site_title': 'Majora',
+    #        'title': 'Authenticate',
+    #        #'next': '/accounts/profile/',
+    #    }),
+    #    name="login",
+    #),
+    path('account/logout/', auth_views.LogoutView.as_view(
         next_page='/',
     ), name="logout"),
 
-    path('accounts/', include('django.contrib.auth.urls')),
+    #path('accounts/', include('django.contrib.auth.urls')),
     path('', include('majora2.urls')),
 ]

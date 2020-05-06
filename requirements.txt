@@ -13,3 +13,5 @@ sshpubkeys
 celery
 django-celery-results
 celery[s3]
+phonenumberslite
+django-two-factor-auth
