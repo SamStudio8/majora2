@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.utils import timezone
 
 from . import models
 from . import util
@@ -13,6 +14,7 @@ from . import forms
 from . import signals
 
 import json
+import uuid
 
 from two_factor.utils import default_device
 
@@ -140,3 +142,24 @@ def list_user_names(request):
                     ]))
             return HttpResponse("\n".join(keys), content_type="text/plain")
     return HttpResponseBadRequest() # bye
+
+@login_required
+def api_keys(request):
+    return render(request, 'api_keys.html', {
+        'user': request.user,
+        'available': models.ProfileAPIKeyDefinition.objects.all(),
+        'generated': models.ProfileAPIKey.objects.filter(profile=request.user.profile),
+    })
+
+@login_required
+def api_keys_activate(request, key_name):
+    key_def = get_object_or_404(models.ProfileAPIKeyDefinition, key_name=key_name)
+    k, key_is_new = models.ProfileAPIKey.objects.get_or_create(profile=request.user.profile, key_definition=key_def)
+
+    k.key = uuid.uuid4()
+    now = timezone.now()
+    k.validity_start = now
+    k.validity_end = now + key_def.lifespan
+    k.save()
+
+    return redirect(reverse('api_keys'))

@@ -1,0 +1,80 @@
+{% include 'header.html' %}
+{% load humanize %}
+<div class="mast" style="margin-bottom:0">
+    <div class="container">
+        <div class="row">
+        <div class="col-md-6">
+            <span class="badge badge-warning">User</span>
+            <span class="uuid-mast" style="margin-top:0; padding-top:0;">{{ user.id }}</span>
+        </div>
+        <div class="col-md-6 text-right">
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-md-12">
+            <h1>{{ user.username }}</h1>
+        </div>
+        </div>
+    </div>
+</div>
+<div class="mast2">
+</div>
+
+<div class="container">
+
+<h1>Available Keys</h1>
+<br>
+<table class="table">
+    <thead class="table-dark">
+    <tr>
+        <th>Key Name</th>
+        <th>Can read</th>
+        <th>Can write</th>
+        <th>Activate</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for key in available %}
+    <tr>
+        <td>{{ key.key_name }}</td>
+        <td>{{ key.is_read_key }}</td>
+        <td>{{ key.is_write_key }}</td>
+        <td><a href="{% url 'api_keys_activate' key.key_name %}">ACTIVATE</a>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+
+<h1>Generated Keys</h1>
+<br>
+<table class="table">
+    <thead class="table-dark">
+    <tr>
+        <th>Key Name</th>
+        <th>Key</th>
+        <th>Expiry</th>
+        <th>Renew</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for key in generated %}
+    <tr>
+        <td>{{ key.key_definition.key_name }}</td>
+        <td><code>{{ key.key }}</code></td>
+        <td>{{ key.validity_end | naturaltime }}</td>
+        <td><a href="{% url 'api_keys_activate' key.key_definition.key_name %}">RENEW</a>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+</div>
+</div>
+</div>
+
+{% include 'footer.html' %}
+
+
+

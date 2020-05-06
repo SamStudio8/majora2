@@ -1444,6 +1444,23 @@ class Profile(models.Model):
     ssh_key = models.TextField(blank=True, null=True)
     api_key = models.CharField(max_length=128, default=uuid.uuid4)
 
+class ProfileAPIKeyDefinition(models.Model):
+    key_name = models.CharField(max_length=48, unique=True)
+    is_service_key = models.BooleanField()
+    is_read_key = models.BooleanField()
+    is_write_key = models.BooleanField()
+    lifespan = models.DurationField()
+
+class ProfileAPIKey(models.Model):
+    profile = models.ForeignKey('Profile', on_delete=models.PROTECT)
+    key_definition = models.ForeignKey('ProfileAPIKeyDefinition', on_delete=models.PROTECT)
+    key = models.CharField(max_length=128, default=uuid.uuid4)
+    validity_start = models.DateTimeField(null=True, blank=True)
+    validity_end = models.DateTimeField(null=True, blank=True)
+
+    was_revoked = models.BooleanField(default=False)
+    revoked_reason = models.CharField(max_length=24, blank=True, null=True)
+
 #TODO How to properly link models?
 #TODO MajoraCoreObject could be inherited by artifact, group etc.
 class MajoraMetaRecord(PolymorphicModel):

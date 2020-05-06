@@ -25,6 +25,8 @@ urlpatterns = [
     path('chain/<uuid:group_uuid>/', views.group_process, name='group_process'),
 
     path('accounts/profile/', views.profile, name='profile'),
+    path('keys/list/', account_views.api_keys, name='api_keys'),
+    path('keys/activate/<str:key_name>', account_views.api_keys_activate, name='api_keys_activate'),
 
     # DATAMATRIX ###############################################################
     path('dm/<uuid:uuid>/', views.barcode, name="barcode"),
