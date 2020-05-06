@@ -46,7 +46,7 @@
                 {% if not request.user.is_verified %}
                     <a class="badge badge-danger" href="{% url 'two_factor:setup' %}">Enable 2FA</a>
                 {% else %}
-                    <a class="badge badge-success" href="{% url 'two_factor:setup' %}">2FA Enabled</a>
+                    <a class="badge badge-success" href="{% url 'two_factor:profile' %}">2FA Enabled</a>
                 {% endif %}
             </td>
         </tr>
