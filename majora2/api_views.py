@@ -134,6 +134,18 @@ def handle_metrics(metrics, tag_type, tag_to, user, api_o):
             metrics[metric]["min_ct"] = 0
             metrics[metric]["max_ct"] = 0
             form = forms.M2Metric_ThresholdCycleForm(metrics[metric], instance=m)
+
+            # Catch null values gently on uploader
+            any_ct = False
+            for metric_rec_name in metrics[metric].get("records", {}):
+                metric_rec = metrics[metric]["records"][metric_rec_name]
+                if metric_rec.get("ct_value"):
+                    any_ct = True
+            if not any_ct:
+                api_o["ignored"].append("%s" % metric)
+                api_o["messages"].append("'%s' records look empty" % metric)
+                api_o["warnings"] += 1
+                continue
         else:
             api_o["ignored"].append(metric)
             api_o["messages"].append("'%s' does not describe a valid metric" % metric)
@@ -152,6 +164,11 @@ def handle_metrics(metrics, tag_type, tag_to, user, api_o):
                         if metric == "ct":
                             metric_rec["artifact_metric"] = metric_ob
                             form = forms.M2MetricRecord_ThresholdCycleForm(metric_rec)
+                            # Catch null values gently on uploader
+                            if not metric_rec.get("ct_value"):
+                                api_o["ignored"].append("%s:%s" % (metric, metric_rec_name))
+                                api_o["warnings"] += 1
+                                continue
                             if form.is_valid():
                                 try:
                                     artifact_metric = form.cleaned_data["artifact_metric"]
