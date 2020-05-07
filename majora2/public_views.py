@@ -31,7 +31,7 @@ def sample_sequence_count_dashboard(request):
         "total_collections": total_collections,
         "total_sequences": total_pags,
         "site_pags": pags_by_site,
-        "adm2": adm2,
+        "adm2": [],
         "n_regions": len(adm2),
 
         "consensus_spark": consensus_spark,
