@@ -268,6 +268,8 @@ class TestLibraryBiosampleForm(forms.Form):
                 ("OTHER", "?: Other library enrichment, screening, or selection process"),
             ],
     )
+    library_primers = forms.CharField(max_length=48, required=False)
+    library_protocol = forms.CharField(max_length=48, required=False)
 
 
 class TestSequencingForm(forms.Form):

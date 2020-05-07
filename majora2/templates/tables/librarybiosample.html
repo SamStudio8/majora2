@@ -5,6 +5,7 @@
         <tr class="table-active">
             <th>Sample ID</th>
             <th>Adaptor#</th>
+            <th>Protocol / Primers</th>
             <th>Sample Source</th>
             <th>Collected at (by)</th>
             <th>Collection date</th>
@@ -18,6 +19,7 @@
     <tr>
         <td><a href="{% url 'detail_artifact' artifact.id %}"><b>{{ artifact.name }}</b></a></td>
         <td><b>{{ record.barcode }}</b></td>
+        <td><b>{{ record.library_protocol }} / {{ record.library_primers }}</b></td>
         <td>{% if artifact.primary_group %}<b><a href="{% url 'group_artifact' artifact.primary_group.id %}">{{ artifact.primary_group }}</a></b>{% else %}Unlinked{% endif %} ({{ artifact.created.source_age }}{{ artifact.created.source_sex }})</td>
         <td>{{ artifact.created.collection_location_adm1 }} / {{ artifact.created.collection_location_adm2 }}</br>
             {{artifact.created.collected_by}}</td>

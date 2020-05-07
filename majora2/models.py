@@ -1544,6 +1544,8 @@ class LibraryArtifact(MajoraArtifact):
                         "library_source": record.library_source,
                         "library_selection": record.library_selection,
                         "library_adaptor_barcode": record.barcode,
+                        "library_protocol": record.library_protocol,
+                        "library_primers": record.library_primers,
                     })
                     biosamples.append(rec)
         ret = {
@@ -1570,6 +1572,10 @@ class LibraryPoolingProcessRecord(MajoraArtifactProcessRecord):
     library_strategy = models.CharField(max_length=24, blank=True, null=True)
     library_source = models.CharField(max_length=24, blank=True, null=True)
     library_selection = models.CharField(max_length=24, blank=True, null=True)
+
+    #TODO These belong in a proper process before pooling but we don't have time
+    library_primers = models.CharField(max_length=48, blank=True, null=True)
+    library_protocol = models.CharField(max_length=48, blank=True, null=True)
 
 
 class DNASequencingProcessGroup(MajoraArtifactProcessGroup):
