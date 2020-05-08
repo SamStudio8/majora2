@@ -13,3 +13,4 @@ sshpubkeys
 celery
 django-celery-results
 celery[s3]
+serpy
