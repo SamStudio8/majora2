@@ -4,6 +4,7 @@ from __future__ import absolute_import, unicode_literals
 from celery import shared_task, current_task
 from . import models
 from . import signals
+from . import serializers
 
 
 @shared_task
@@ -28,39 +29,6 @@ def count_widgets():
 @shared_task
 def structify_pags(api_o):
     # Return everything?
-    import serpy
-    class ArtifactSerializer(serpy.Serializer):
-        id = serpy.StrField()
-        dice_name = serpy.StrField()
-        artifact_kind = serpy.StrField()
-    class DigitalResourceArtifactSerializer(ArtifactSerializer):
-        current_path = serpy.StrField()
-        current_name = serpy.StrField()
-        current_kind = serpy.StrField()
-    class PAGSerializer(serpy.Serializer):
-        id = serpy.StrField()
-        published_name = serpy.StrField()
-        published_version = serpy.IntField()
-        published_date = serpy.MethodField('serialize_published_date')
-
-        #tagged_artifacts = ArtifactSerializer(many=True, attr='tagged_artifacts.all', call=True)
-        tagged_artifacts = serpy.MethodField('serialize_tagged_artifacts')
-
-        def serialize_tagged_artifacts(self, pag):
-            a = []
-            for artifact in pag.tagged_artifacts.all():
-                if artifact.artifact_kind == "Digital Resource":
-                    a.append(DigitalResourceArtifactSerializer(artifact).data)
-                else:
-                    a.append(ArtifactSerializer(artifact).data)
-            return a
-
-        def serialize_published_date(self, pag):
-            return pag.published_date.isoformat()
-    class PAGQCSerializer(serpy.Serializer):
-        id = serpy.StrField()
-        pag = PAGSerializer()
-
     #pags = {}
     #for test_report in models.PAGQualityReportEquivalenceGroup.objects.select_related('pag').prefetch_related('pag__tagged_artifacts').all():
     #    try:
@@ -71,7 +39,7 @@ def structify_pags(api_o):
     #        api_o["messages"].append(str(e))
     #        continue
     #api_o["get"] = pags
-    api_o["get"] = PAGQCSerializer(models.PAGQualityReportEquivalenceGroup.objects.select_related('pag').prefetch_related('pag__tagged_artifacts').all(), many=True).data
+    api_o["get"] = serializers.PAGQCSerializer(models.PAGQualityReportEquivalenceGroup.objects.select_related('pag').prefetch_related('pag__tagged_artifacts').all(), many=True).data
 
     signals.task_end.send(sender=current_task.request, task="structify_pags", task_id=current_task.request.id)
     return api_o
