@@ -246,7 +246,7 @@ class MajoraArtifact(PolymorphicModel):
         return metadata
 
     def get_pags(self):
-        return self.groups.filter(Q(PublishedArtifactGroup___is_latest=True))
+        return self.groups.filter(Q(PublishedArtifactGroup___is_latest=True, PublishedArtifactGroup___is_suppressed=False))
 
     def as_struct(self):
         return {}
@@ -417,12 +417,24 @@ class PublishedArtifactGroup(MajoraArtifactGroup):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     #TODO owner_org?
 
+    is_suppressed = models.BooleanField(default=False)
+    suppressed_date = models.DateTimeField(blank=True, null=True)
+    suppressed_reason = models.CharField(max_length=128, blank=True, null=True)
+
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["published_name", "is_latest"], name="is_only_published"),
         ]
 
     def as_struct(self):
+        if self.is_suppressed:
+            return {
+                "published_name": self.published_name,
+                "is_suppressed": self.is_suppressed,
+                "suppressed_date": self.suppressed_date.strftime("%Y-%m-%d") if self.suppressed_date else None,
+                "suppressed_reason": self.suppressed_reason,
+            }
+
 
         artifacts = {}
         for artifact in self.tagged_artifacts.all():

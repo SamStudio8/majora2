@@ -301,9 +301,9 @@ def get_pag_by_qc(request):
             return
 
         if json_data.get("pass_only"):
-            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_pass=True)
+            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_pass=True, is_suppressed=False)
         else:
-            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True)
+            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_suppressed=False)
 
         if dra_current_kind:
             pags = {}
@@ -901,14 +901,14 @@ def add_pag_accession(request):
             return
 
         if pag_contains:
-            qs = models.PublishedArtifactGroup.objects.filter(published_name__contains=pag_name, is_latest=True)
+            qs = models.PublishedArtifactGroup.objects.filter(published_name__contains=pag_name, is_latest=True, is_suppressed=False)
             if qs.count() > 1:
                 api_o["messages"].append("%s does not uniquely identify a PAG in Majora" % pag_name)
                 api_o["errors"] += 1
                 return
             pag = qs.first()
         else:
-            pag = models.PublishedArtifactGroup.objects.get(published_name=pag_name, is_latest=True)
+            pag = models.PublishedArtifactGroup.objects.get(published_name=pag_name, is_latest=True, is_suppressed=False)
 
         if not pag:
             api_o["messages"].append("PAG %s not known to Majora" % pag_name)
@@ -977,9 +977,9 @@ def get_pag_by_qc_celery(request):
             return
 
         if json_data.get("pass_only"):
-            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_pass=True)
+            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_pass=True, is_suppressed=False)
         else:
-            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True)
+            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_suppressed=False)
 
         pags = {}
         if dra_current_kind:
