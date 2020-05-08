@@ -1147,7 +1147,7 @@ class MajoraArtifactProcess(PolymorphicModel):
     @property
     def ordered_artifacts(self):
         ret = {}
-        for record in self.records.all():
+        for record in self.records.all().prefetch_related('in_artifact'):
             if record.in_group:
                 if record.in_group.kind not in ret:
                     ret[record.in_group.kind] = set([])
@@ -1548,7 +1548,7 @@ class LibraryArtifact(MajoraArtifact):
         biosamples = []
 
         if self.created:
-            for record in self.created.records.all():
+            for record in self.created.records.all().prefetch_related('in_artifact'):
                 if record.in_artifact and record.in_artifact.kind == "Biosample":
                     rec = record.in_artifact.as_struct()
                     rec.update({
@@ -1613,7 +1613,7 @@ class DNASequencingProcess(MajoraArtifactProcess):
     def as_struct(self):
 
         libraries = []
-        for record in self.records.all():
+        for record in self.records.all().prefetch_related('in_artifact'):
             if record.in_artifact and record.in_artifact.kind == "Library":
                 libraries.append(record.in_artifact.as_struct())
 
