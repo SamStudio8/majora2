@@ -301,9 +301,9 @@ def get_pag_by_qc(request):
             return
 
         if json_data.get("pass_only"):
-            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_pass=True, is_suppressed=False)
+            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_pass=True, pag__is_suppressed=False)
         else:
-            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_suppressed=False)
+            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, pag__is_suppressed=False)
 
         if dra_current_kind:
             pags = {}
@@ -977,9 +977,9 @@ def get_pag_by_qc_celery(request):
             return
 
         if json_data.get("pass_only"):
-            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_pass=True, is_suppressed=False)
+            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_pass=True, pag__is_suppressed=False)
         else:
-            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_suppressed=False)
+            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, pag__is_suppressed=False)
 
         pags = {}
         if dra_current_kind:
