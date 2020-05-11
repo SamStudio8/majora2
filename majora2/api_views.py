@@ -300,10 +300,27 @@ def get_pag_by_qc(request):
             api_o["errors"] += 1
             return
 
-        if json_data.get("pass_only"):
-            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_pass=True, is_suppressed=False)
+        reports = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_suppressed=False)
+
+        if json_data.get("pass") and json_data.get("fail"):
+            pass
+        elif json_data.get("pass"):
+            reports = reports.filter(is_pass=True)
+        elif json_data.get("fail"):
+            reports = reports.filter(is_pass=False)
         else:
-            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_suppressed=False)
+            pass
+
+        if json_data.get("public") and json_data.get("private"):
+            pass
+        elif json_data.get("public"):
+            reports = reports.filter(pag__is_public=True)
+        elif json_data.get("private"):
+            reports = reports.filter(pag__is_public=False)
+        else:
+            pass
+
+        pass_pags = reports
 
         if dra_current_kind:
             pags = {}
