@@ -1039,6 +1039,8 @@ class BiosampleArtifact(MajoraArtifact):
     @property
     def artifact_kind(self):
         return 'Biosample'
+    def get_serializer(self):
+        return serializers.BiosampleArtifactSerializer
     @property
     def name(self):
         if self.dice_name:

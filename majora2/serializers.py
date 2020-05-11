@@ -4,6 +4,56 @@ class ArtifactSerializer(serpy.Serializer):
     dice_name = serpy.StrField()
     artifact_kind = serpy.StrField()
 
+class BiosampleArtifactSerializer(ArtifactSerializer):
+    central_sample_id = serpy.StrField()
+    sample_type_collected = serpy.StrField()
+    sample_type_received = serpy.StrField(attr="sample_type_current")
+    swab_site = serpy.StrField(attr="sample_site")
+    # metadata
+
+    # Collection stuff
+    def serialize_collection_collection_date(self, biosample):
+        if biosample.created and biosample.created.collection_date:
+            return biosample.created.collection_date.isoformat()
+    def serialize_collection_received_date(self, biosample):
+        if biosample.created and biosample.created.received_date:
+            return biosample.created.received_date.isoformat()
+    def translate_adm1(self, biosample):
+         value = biosample.created.collection_location_adm1
+         countries = {
+             "UK-ENG": "England",
+             "UK-WLS": "Wales",
+             "UK-SCT": "Scotland",
+             "UK-NIR": "Northern Ireland",
+         }
+         if value in countries:
+             return countries[value]
+         return value
+
+    collection_date = serpy.MethodField('serialize_collection_collection_date')
+    received_date = serpy.MethodField('serialize_collection_received_date')
+
+    submission_user = serpy.StrField(attr='created.submission_user.username')
+    submission_org = serpy.StrField(attr='created.submission_org.name')
+    submission_org_code = serpy.StrField(attr='created.submission_org.code')
+
+    source_sex = serpy.StrField(attr="created.source_sex", required=False)
+    source_age = serpy.IntField(attr="created.source_age", required=False)
+
+    source_category = serpy.StrField(attr="created.source_category", required=False)
+    source_setting = serpy.StrField(attr="created.source_setting", required=False)
+    sampling_strategy = serpy.StrField(attr="created.sampling_strategy", required=False)
+
+    collected_by = None
+
+    adm0 = serpy.StrField(attr="created.collection_location_country")
+    adm1 = serpy.StrField(attr="created.collection_location_adm1")
+    adm1_trans = serpy.MethodField('translate_adm1')
+    adm2 = serpy.StrField(attr="created.collection_location_adm2")
+    adm2_private = None
+
+
+    
 class DigitalResourceArtifactSerializer(ArtifactSerializer):
     current_path = serpy.StrField()
     current_name = serpy.StrField()
