@@ -19,7 +19,7 @@ from . import form_handlers
 import json
 import datetime
 
-MINIMUM_CLIENT_VERSION = "0.13.0"
+MINIMUM_CLIENT_VERSION = "0.14.0"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
