@@ -1,8 +1,21 @@
 import serpy
+
+
 class ArtifactSerializer(serpy.Serializer):
     id = serpy.StrField()
     dice_name = serpy.StrField()
     artifact_kind = serpy.StrField()
+    metadata = serpy.MethodField('get_metadata_as_struct')
+    def get_metadata_as_struct(self, artifact, flat=False):
+        metadata = {}
+        for m in artifact.metadata.all():
+            if not flat:
+                if m.meta_tag not in metadata:
+                    metadata[m.meta_tag] = {}
+                metadata[m.meta_tag][m.meta_name] = m.value
+            else:
+                metadata["%s.%s" % (m.meta_tag, m.meta_name)] = m.value
+        return metadata
 
 class BiosampleArtifactSerializer(ArtifactSerializer):
     central_sample_id = serpy.StrField()
