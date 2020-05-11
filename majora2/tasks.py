@@ -34,12 +34,13 @@ def task_get_pag_by_qc(request, api_o, json_data, user=None):
 
     reports = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, pag__is_suppressed=False)
 
-    try:
-        gt_date = datetime.datetime.strptime(json_data.get("published_after", ""), "%Y-%m-%d")
-        reports = reports.filter(pag__published_date__gt=gt_date)
-    except:
-        api_o["errors"] += 1
-        api_o["messages"].append(str(e))
+    if json_data.get("published_date"):
+        try:
+            gt_date = datetime.datetime.strptime(json_data.get("published_after", ""), "%Y-%m-%d")
+            reports = reports.filter(pag__published_date__gt=gt_date)
+        except Exception as e:
+            api_o["errors"] += 1
+            api_o["messages"].append(str(e))
 
     if json_data.get("pass") and json_data.get("fail"):
         pass
