@@ -19,7 +19,7 @@ from . import form_handlers
 import json
 import datetime
 
-MINIMUM_CLIENT_VERSION = "0.12.1"
+MINIMUM_CLIENT_VERSION = "0.13.0"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
@@ -284,70 +284,6 @@ def get_sequencing(request):
 
     return wrap_api_v2(request, f)
 
-def get_pag_by_qc(request):
-    def f(request, api_o, json_data, user=None):
-        test_name = json_data.get("test_name")
-        dra_current_kind = json_data.get("dra_current_kind")
-
-        if not test_name or len(test_name) == 0:
-            api_o["messages"].append("'test_name', key missing or empty")
-            api_o["errors"] += 1
-            return
-        t_group = models.PAGQualityTestEquivalenceGroup.objects.filter(slug=test_name).first()
-        if not t_group:
-            api_o["messages"].append("Invalid 'test_name'")
-            api_o["ignored"].append(test_name)
-            api_o["errors"] += 1
-            return
-
-        reports = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_suppressed=False)
-
-        if json_data.get("pass") and json_data.get("fail"):
-            pass
-        elif json_data.get("pass"):
-            reports = reports.filter(is_pass=True)
-        elif json_data.get("fail"):
-            reports = reports.filter(is_pass=False)
-        else:
-            pass
-
-        if json_data.get("public") and json_data.get("private"):
-            pass
-        elif json_data.get("public"):
-            reports = reports.filter(pag__is_public=True)
-        elif json_data.get("private"):
-            reports = reports.filter(pag__is_public=False)
-        else:
-            pass
-
-        pass_pags = reports.select_related('pag').prefetch_related('pag__tagged_artifacts')
-
-        if dra_current_kind:
-            pags = {}
-            for test_report in pass_pags:
-                pags[test_report.pag.published_name] = {}
-                pags[test_report.pag.published_name]["artifacts"] = {}
-                try:
-                    pags[test_report.pag.published_name]["artifacts"]["Digital Resource"] = [a.as_struct() for a in test_report.pag.tagged_artifacts.filter(DigitalResourceArtifact___current_kind=dra_current_kind)]
-                    pags[test_report.pag.published_name]["status"] = "PASS" if test_report.is_pass else "FAIL"
-                except Exception as e:
-                    api_o["errors"] += 1
-                    api_o["messages"].append(str(e))
-                    continue
-        else:
-            # Return everything?
-            pags = {}
-            for test_report in pass_pags:
-                try:
-                    pags[test_report.pag.published_name] = test_report.pag.as_struct()
-                    pags[test_report.pag.published_name]["status"] = "PASS" if test_report.is_pass else "FAIL"
-                except Exception as e:
-                    api_o["errors"] += 1
-                    api_o["messages"].append(str(e))
-                    continue
-        api_o["get"] = pags
-
-    return wrap_api_v2(request, f)
 
 def add_qc(request):
     def f(request, api_o, json_data, user=None):
@@ -993,34 +929,14 @@ def get_pag_by_qc_celery(request):
             api_o["errors"] += 1
             return
 
-        if json_data.get("pass_only"):
-            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_pass=True, pag__is_suppressed=False)
+        from . import tasks
+        celery_task = tasks.task_get_pag_by_qc.delay(None, api_o, json_data, user=None)
+        if celery_task:
+            api_o["tasks"].append(celery_task.id)
+            api_o["messages"].append("Call api.majora.task.get with the appropriate task ID later...")
         else:
-            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, pag__is_suppressed=False)
-
-        pags = {}
-        if dra_current_kind:
-            for test_report in pass_pags:
-                pags[test_report.pag.published_name] = {}
-                pags[test_report.pag.published_name]["artifacts"] = {}
-                try:
-                    pags[test_report.pag.published_name]["artifacts"]["Digital Resource"] = [a.as_struct() for a in test_report.pag.tagged_artifacts.filter(DigitalResourceArtifact___current_kind=dra_current_kind)]
-                    pags[test_report.pag.published_name]["status"] = "PASS" if test_report.is_pass else "FAIL"
-                except Exception as e:
-                    api_o["errors"] += 1
-                    api_o["messages"].append(str(e))
-                    continue
-        else:
-            from . import tasks
-            celery_task = tasks.structify_pags.delay(api_o)
-            if celery_task:
-                api_o["tasks"].append(celery_task.id)
-                api_o["messages"].append("Call api.majora.task.get with the appropriate task ID later...")
-            else:
-                api_o["errors"] += 1
-                api_o["messages"].append("Could not add `structify_pags` task to Celery...")
-
-        api_o["get"] = pags
+            api_o["errors"] += 1
+            api_o["messages"].append("Could not add requested task to Celery...")
 
     return wrap_api_v2(request, f)
 

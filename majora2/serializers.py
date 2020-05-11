@@ -39,10 +39,12 @@ class PAGSerializer(serpy.Serializer):
     owner_org_gisaid_lab_list = serpy.StrField(attr='owner.profile.institute.gisaid_list')
 
     def serialize_tagged_artifacts(self, pag):
-        a = []
+        a = {}
         for artifact in pag.tagged_artifacts.all():
+            if artifact.artifact_kind not in a:
+                a[artifact.artifact_kind] = []
             s = artifact.get_serializer()
-            a.append(s(artifact).data)
+            a[artifact.artifact_kind].append( s(artifact).data )
         return a
 
     def serialize_published_date(self, pag):
