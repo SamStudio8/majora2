@@ -4,6 +4,7 @@ from __future__ import absolute_import, unicode_literals
 from celery import shared_task, current_task
 from . import models
 from . import signals
+from . import serializers
 
 
 @shared_task
@@ -28,16 +29,17 @@ def count_widgets():
 @shared_task
 def structify_pags(api_o):
     # Return everything?
-    pags = {}
-    for test_report in models.PAGQualityReportEquivalenceGroup.objects.all():
-        try:
-            pags[test_report.pag.published_name] = test_report.pag.as_struct()
-            pags[test_report.pag.published_name]["status"] = "PASS" if test_report.is_pass else "FAIL"
-        except Exception as e:
-            api_o["errors"] += 1
-            api_o["messages"].append(str(e))
-            continue
-    api_o["get"] = pags
+    #pags = {}
+    #for test_report in models.PAGQualityReportEquivalenceGroup.objects.select_related('pag').prefetch_related('pag__tagged_artifacts').all():
+    #    try:
+    #        pags[test_report.pag.published_name] = test_report.pag.as_struct()
+    #        pags[test_report.pag.published_name]["status"] = "PASS" if test_report.is_pass else "FAIL"
+    #    except Exception as e:
+    #        api_o["errors"] += 1
+    #        api_o["messages"].append(str(e))
+    #        continue
+    #api_o["get"] = pags
+    api_o["get"] = serializers.PAGQCSerializer(models.PAGQualityReportEquivalenceGroup.objects.select_related('pag').prefetch_related('pag__tagged_artifacts').all(), many=True).data
 
     signals.task_end.send(sender=current_task.request, task="structify_pags", task_id=current_task.request.id)
     return api_o
