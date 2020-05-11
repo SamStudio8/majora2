@@ -37,7 +37,7 @@ class BiosampleArtifactSerializer(ArtifactSerializer):
              "UK-ENG": "England",
              "UK-WLS": "Wales",
              "UK-SCT": "Scotland",
-             "UK-NIR": "Northern Ireland",
+             "UK-NIR": "Northern_Ireland",
          }
          if value in countries:
              return countries[value]
