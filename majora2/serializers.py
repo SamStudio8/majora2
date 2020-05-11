@@ -25,7 +25,7 @@ class PAGSerializer(serpy.Serializer):
     published_name = serpy.StrField()
     published_version = serpy.IntField()
     published_date = serpy.MethodField('serialize_published_date')
-    tagged_artifacts = serpy.MethodField('serialize_tagged_artifacts')
+    artifacts = serpy.MethodField('serialize_tagged_artifacts')
 
     accessions = PAGAccessionSerializer(attr='accessions.all', many=True, call=True)
     qc_reports = QCGroupSerializer(attr='quality_groups.all', many=True, call=True)
