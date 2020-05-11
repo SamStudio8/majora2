@@ -32,6 +32,7 @@ class PAGSerializer(serpy.Serializer):
 
     owner = serpy.StrField(attr='owner.username')
     owner_org_code = serpy.StrField(attr='owner.profile.institute.code')
+    owner_org_gisaid_opted = serpy.StrField(attr='owner.profile.institute.gisaid_opted')
     owner_org_gisaid_user = serpy.StrField(attr='owner.profile.institute.gisaid_user')
     owner_org_gisaid_mail = serpy.StrField(attr='owner.profile.institute.gisaid_mail')
     owner_org_gisaid_lab_name = serpy.StrField(attr='owner.profile.institute.gisaid_lab_name')
