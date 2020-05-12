@@ -146,6 +146,10 @@ def list_user_names(request):
 
 @login_required
 def api_keys(request):
+    otp = django_2fa_mixin_hack(request)
+    if otp:
+        return otp
+
     generated = models.ProfileAPIKey.objects.filter(profile=request.user.profile)
     return render(request, 'api_keys.html', {
         'user': request.user,
@@ -155,6 +159,10 @@ def api_keys(request):
 
 @login_required
 def api_keys_activate(request, key_name):
+    otp = django_2fa_mixin_hack(request)
+    if otp:
+        return otp
+
     key_def = get_object_or_404(models.ProfileAPIKeyDefinition, key_name=key_name)
     k, key_is_new = models.ProfileAPIKey.objects.get_or_create(profile=request.user.profile, key_definition=key_def)
 
