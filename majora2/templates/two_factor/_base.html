@@ -1,8 +1,27 @@
 {% load instance %}
-{% include "two_factor/_header.html" %}
+{% include "header.html" %}
+<div class="mast" style="margin-bottom:0">
+    <div class="container">
+        <div class="row">
+        <div class="col-md-6">
+            <span class="badge badge-warning">User</span>
+            <span class="uuid-mast" style="margin-top:0; padding-top:0;">{{ user.id }}</span>
+        </div>
+        <div class="col-md-6 text-right">
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-md-12">
+            <h1>{{ user.username }}</h1>
+        </div>
+        </div>
+    </div>
+</div>
+<div class="mast2">
+</div>
 
   {% block content_wrapper %}
-      <div class="container">
+      <div class="container" style="margin-top: 30px;">
       {% block content %}{% endblock %}
       </div>
   {% endblock %}
