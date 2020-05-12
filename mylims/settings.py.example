@@ -29,6 +29,7 @@ SESSION_COOKIE_SECURE = True
 X_FRAME_OPTIONS = 'DENY'
 CSRF_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_AGE = 259200 # Lower session length to 72 hours from 2 week default
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
