@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.contrib.auth.decorators import login_required
 
+from django.db.models import Q
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.utils import timezone
@@ -145,10 +146,11 @@ def list_user_names(request):
 
 @login_required
 def api_keys(request):
+    generated = models.ProfileAPIKey.objects.filter(profile=request.user.profile)
     return render(request, 'api_keys.html', {
         'user': request.user,
-        'available': models.ProfileAPIKeyDefinition.objects.all(),
-        'generated': models.ProfileAPIKey.objects.filter(profile=request.user.profile),
+        'available': models.ProfileAPIKeyDefinition.objects.filter(~Q(id__in=generated.values('id'))),
+        'generated': generated,
     })
 
 @login_required

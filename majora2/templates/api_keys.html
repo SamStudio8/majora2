@@ -21,54 +21,56 @@
 </div>
 
 <div class="container">
-
-<h1>Available Keys</h1>
-<br>
-<table class="table">
-    <thead class="table-dark">
-    <tr>
-        <th>Key Name</th>
-        <th>Can read</th>
-        <th>Can write</th>
-        <th>Activate</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for key in available %}
-    <tr>
-        <td>{{ key.key_name }}</td>
-        <td>{{ key.is_read_key }}</td>
-        <td>{{ key.is_write_key }}</td>
-        <td><a href="{% url 'api_keys_activate' key.key_name %}">ACTIVATE</a>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
-
-<hr>
-
-<h1>Generated Keys</h1>
-<br>
-<table class="table">
-    <thead class="table-dark">
-    <tr>
-        <th>Key Name</th>
-        <th>Key</th>
-        <th>Expiry</th>
-        <th>Renew</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for key in generated %}
-    <tr>
-        <td>{{ key.key_definition.key_name }}</td>
-        <td><code>{{ key.key }}</code></td>
-        <td>{{ key.validity_end | naturaltime }}</td>
-        <td><a href="{% url 'api_keys_activate' key.key_definition.key_name %}">RENEW</a>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="row">
+    <div class="col-md-8">
+        <h1>Generated Keys</h1>
+        <br>
+        <table class="table table-borderless">
+            <thead class="table-dark">
+            <tr>
+                <th>Key Name</th>
+                <th>Key</th>
+                <th>Expiry</th>
+                <th class="text-right">Renew</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for key in generated %}
+            <tr class="table-success">
+                <td>{{ key.key_definition.key_name }}</td>
+                <td><code>{{ key.key }}</code></td>
+                <td>{{ key.validity_end | naturaltime }}</td>
+                <td class="text-right"><span class="badge badge-warning"><a href="{% url 'api_keys_activate' key.key_definition.key_name %}">RENEW</a></span>
+            </tr>
+            {% empty %}
+            <tr><td>No keys to list...</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-4">
+        <h1>Available Keys</h1>
+        <br>
+        <table class="table">
+            <thead class="table-dark">
+            <tr>
+                <th>Key Name</th>
+                <th class="text-right">Activate</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for key in available %}
+            <tr>
+                <td>{{ key.key_name }}</td>
+                <td class="text-right"><span class="badge badge-success"><a href="{% url 'api_keys_activate' key.key_name %}">ACTIVATE</a></span>
+            </tr>
+            {% empty %}
+            <tr><td>No keys to list...</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
 </div>
 </div>
