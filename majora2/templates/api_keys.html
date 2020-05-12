@@ -40,7 +40,7 @@
                 <td>{{ key.key_definition.key_name }}</td>
                 <td><code>{{ key.key }}</code></td>
                 <td>{{ key.validity_end | naturaltime }}</td>
-                <td class="text-right"><span class="badge badge-warning"><a href="{% url 'api_keys_activate' key.key_definition.key_name %}">RENEW</a></span>
+                <td class="text-right"><a class="badge badge-warning" href="{% url 'api_keys_activate' key.key_definition.key_name %}">RENEW</a>
             </tr>
             {% empty %}
             <tr><td>No keys to list...</td></tr>
@@ -62,7 +62,7 @@
             {% for key in available %}
             <tr>
                 <td>{{ key.key_name }}</td>
-                <td class="text-right"><span class="badge badge-success"><a href="{% url 'api_keys_activate' key.key_name %}">ACTIVATE</a></span>
+                <td class="text-right"><a class="badge badge-success" href="{% url 'api_keys_activate' key.key_name %}">ACTIVATE</a>
             </tr>
             {% empty %}
             <tr><td>No keys to list...</td></tr>
