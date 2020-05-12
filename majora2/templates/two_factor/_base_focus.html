@@ -1,0 +1,13 @@
+{% extends "two_factor/_base.html" %}
+
+{% block content_wrapper %}
+  <div class="container">
+    <div class="row">
+      <div class="col-md-3"></div>
+      <div class="col-md-6">
+        {% block content %}{% endblock %}
+      </div>
+      <div class="col-md-3"></div>
+    </div>
+  </div>
+{% endblock %}

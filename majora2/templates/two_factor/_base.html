@@ -1,28 +1,5 @@
 {% load instance %}
-{% include 'header.html' %}
-<div class="mast" style="margin-bottom:0">
-    <div class="container">
-        <div class="row">
-        <div class="col-md-6">
-            {% if request.user.is_authenticated %}
-            <span class="badge badge-warning">User</span>
-            <span class="uuid-mast" style="margin-top:0; padding-top:0;">{{ user.id }}</span>
-            {% endif %}
-        </div>
-        <div class="col-md-6 text-right">
-        </div>
-        </div>
-        <div class="row">
-        <div class="col-md-12">
-            {% if request.user.is_authenticated %}
-            <h1>{{ user.username }}</h1>
-            {% endif %}
-        </div>
-        </div>
-    </div>
-</div>
-<div class="mast2">
-</div>
+{% include "two_factor/_header.html" %}
 
   {% block content_wrapper %}
       <div class="container">
