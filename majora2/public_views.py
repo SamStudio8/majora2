@@ -34,5 +34,7 @@ def sample_sequence_count_dashboard(request):
         "adm2": [],
         "n_regions": len(adm2),
 
+        "authors": models.Institute.objects.filter(gisaid_list__isnull=False).values("name", "code", "gisaid_lab_name", "gisaid_list").order_by("code"),
+
         "consensus_spark": consensus_spark,
     })
