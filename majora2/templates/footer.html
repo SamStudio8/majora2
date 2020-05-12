@@ -5,7 +5,7 @@
         {% if user.is_authenticated %}
             <p>You are authenticated as <b><a href="{% url 'profile' %}">{{ request.user.username }}<a/></b> | <a href="{% url 'logout' %}">Log Out</a>
         {% else %}
-             You are not authenticated. | <a href="{% url 'form_register' %}">Register</a> or <a href="{% url 'login' %}">Log in</a>
+             You are not authenticated. | <a href="{% url 'form_register' %}">Register</a> or <a href="{% url 'two_factor:login' %}">Log in</a>
         {% endif %}
         <br/>{% footer %}</p>
     </span>
