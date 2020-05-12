@@ -185,6 +185,8 @@ def handle_testlibraryrecord(form, user=None, api_o=None):
     pool_rec.library_source = form.cleaned_data.get("library_source")
     pool_rec.library_selection = form.cleaned_data.get("library_selection")
     pool_rec.library_strategy = form.cleaned_data.get("library_strategy")
+    pool_rec.library_protocol = form.cleaned_data.get("library_protocol")
+    pool_rec.library_primers = form.cleaned_data.get("library_primers")
     pool_rec.save()
     if api_o and created:
         api_o["updated"].append(_format_tuple(biosample))

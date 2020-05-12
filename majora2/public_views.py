@@ -19,8 +19,8 @@ def sample_sequence_count_dashboard(request):
 
     consensus_spark = util.make_spark(models.DigitalResourceArtifact.objects.filter(current_kind="consensus", created__when__isnull=False, created__when__gte=timezone.now().date()-datetime.timedelta(days=30)).annotate(date=TruncDay('created__when')).values("date").annotate(count=Count('id')).order_by("date"), days=30)
 
-    pags_by_site = models.PublishedArtifactGroup.objects.values(site=F('owner__profile__institute__name')).annotate(count=Count('pk'), public=Count('pk', filter=Q(is_public=True)), private=Count('pk', filter=Q(is_public=False))).order_by('-count')
-    good_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc", is_pass=True)
+    pags_by_site = models.PublishedArtifactGroup.objects.filter(is_latest=True, is_suppressed=False).values(site=F('owner__profile__institute__name')).annotate(count=Count('pk'), public=Count('pk', filter=Q(is_public=True)), private=Count('pk', filter=Q(is_public=False))).order_by('-count')
+    good_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc", is_pass=True, pag__is_latest=True, pag__is_suppressed=False)
     qc_by_site = {x['site']: x for x in good_pags.values(site=F('pag__owner__profile__institute__name')).annotate(is_pass=Count('site'))}
     for site_i, site in enumerate(pags_by_site):
         if site['site'] in qc_by_site:
@@ -31,8 +31,10 @@ def sample_sequence_count_dashboard(request):
         "total_collections": total_collections,
         "total_sequences": total_pags,
         "site_pags": pags_by_site,
-        "adm2": adm2,
+        "adm2": [],
         "n_regions": len(adm2),
+
+        "authors": models.Institute.objects.filter(gisaid_list__isnull=False).values("name", "code", "gisaid_lab_name", "gisaid_list").order_by("code"),
 
         "consensus_spark": consensus_spark,
     })

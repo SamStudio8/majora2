@@ -179,18 +179,21 @@ class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a mode
                 (None, ""),
                 ("TEST", "TEST"),
             ],
+            required=False,
     )
     test_platform = forms.ChoiceField(
             choices=[
                 (None, ""),
                 ("TEST", "TEST"),
             ],
+            required=False,
     )
     test_target = forms.ChoiceField(
             choices=[
                 (None, ""),
                 ("TEST", "TEST"),
             ],
+            required=False,
     )
 
 class TestMetadataForm(forms.Form):
@@ -265,6 +268,8 @@ class TestLibraryBiosampleForm(forms.Form):
                 ("OTHER", "?: Other library enrichment, screening, or selection process"),
             ],
     )
+    library_primers = forms.CharField(max_length=48, required=False)
+    library_protocol = forms.CharField(max_length=48, required=False)
 
 
 class TestSequencingForm(forms.Form):
@@ -366,6 +371,7 @@ class TestSampleForm(forms.Form):
             (None, ""),
             ("HOSPITAL", "HOSPITAL"),
             ("CAREHOME", "CAREHOME"),
+            ("COMMUNITY", "COMMUNITY"),
         ], required=False)
     sampling_strategy = forms.ChoiceField(choices=fixed_data.sampling_strategy_choices(), required=False)
 

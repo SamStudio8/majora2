@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.db.models import Q
 
 from . import receivers
+from . import serializers
 
 from polymorphic.models import PolymorphicModel
 
@@ -246,10 +247,12 @@ class MajoraArtifact(PolymorphicModel):
         return metadata
 
     def get_pags(self):
-        return self.groups.filter(Q(PublishedArtifactGroup___is_latest=True))
+        return self.groups.filter(Q(PublishedArtifactGroup___is_latest=True, PublishedArtifactGroup___is_suppressed=False))
 
     def as_struct(self):
         return {}
+    def get_serializer(self):
+        return serializers.ArtifactSerializer
 
 # TODO This will become the MajoraGroup
 class MajoraArtifactGroup(PolymorphicModel):
@@ -417,12 +420,24 @@ class PublishedArtifactGroup(MajoraArtifactGroup):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     #TODO owner_org?
 
+    is_suppressed = models.BooleanField(default=False)
+    suppressed_date = models.DateTimeField(blank=True, null=True)
+    suppressed_reason = models.CharField(max_length=128, blank=True, null=True)
+
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["published_name", "is_latest"], name="is_only_published"),
         ]
 
     def as_struct(self):
+        if self.is_suppressed:
+            return {
+                "published_name": self.published_name,
+                "is_suppressed": self.is_suppressed,
+                "suppressed_date": self.suppressed_date.strftime("%Y-%m-%d") if self.suppressed_date else None,
+                "suppressed_reason": self.suppressed_reason,
+            }
+
 
         artifacts = {}
         for artifact in self.tagged_artifacts.all():
@@ -625,7 +640,7 @@ class TemporaryMajoraArtifactMetric_ThresholdCycle(TemporaryMajoraArtifactMetric
             "num_tests": self.num_tests,
             "min_ct": self.min_ct,
             "max_ct": self.max_ct,
-            "records": [record.as_struct() for record in self.metric_records.all()],
+            #"records": [record.as_struct() for record in self.metric_records.all()],
         }
 
 class TemporaryMajoraArtifactMetricRecord_ThresholdCycle(TemporaryMajoraArtifactMetricRecord):
@@ -794,6 +809,9 @@ class DigitalResourceArtifact(MajoraArtifact):
 
     current_extension = models.CharField(max_length=48, default="")
     current_kind = models.CharField(max_length=48, default="File")
+
+    def get_serializer(self):
+        return serializers.DigitalResourceArtifactSerializer
 
     def as_struct(self):
         return {
@@ -1021,6 +1039,8 @@ class BiosampleArtifact(MajoraArtifact):
     @property
     def artifact_kind(self):
         return 'Biosample'
+    def get_serializer(self):
+        return serializers.BiosampleArtifactSerializer
     @property
     def name(self):
         if self.dice_name:
@@ -1135,7 +1155,7 @@ class MajoraArtifactProcess(PolymorphicModel):
     @property
     def ordered_artifacts(self):
         ret = {}
-        for record in self.records.all():
+        for record in self.records.all().prefetch_related('in_artifact'):
             if record.in_group:
                 if record.in_group.kind not in ret:
                     ret[record.in_group.kind] = set([])
@@ -1553,7 +1573,7 @@ class LibraryArtifact(MajoraArtifact):
         biosamples = []
 
         if self.created:
-            for record in self.created.records.all():
+            for record in self.created.records.all().prefetch_related('in_artifact'):
                 if record.in_artifact and record.in_artifact.kind == "Biosample":
                     rec = record.in_artifact.as_struct()
                     rec.update({
@@ -1561,6 +1581,8 @@ class LibraryArtifact(MajoraArtifact):
                         "library_source": record.library_source,
                         "library_selection": record.library_selection,
                         "library_adaptor_barcode": record.barcode,
+                        "library_protocol": record.library_protocol,
+                        "library_primers": record.library_primers,
                     })
                     biosamples.append(rec)
         ret = {
@@ -1588,6 +1610,10 @@ class LibraryPoolingProcessRecord(MajoraArtifactProcessRecord):
     library_source = models.CharField(max_length=24, blank=True, null=True)
     library_selection = models.CharField(max_length=24, blank=True, null=True)
 
+    #TODO These belong in a proper process before pooling but we don't have time
+    library_primers = models.CharField(max_length=48, blank=True, null=True)
+    library_protocol = models.CharField(max_length=48, blank=True, null=True)
+
 
 class DNASequencingProcessGroup(MajoraArtifactProcessGroup):
     experiment_name = models.CharField(max_length=128)
@@ -1612,7 +1638,7 @@ class DNASequencingProcess(MajoraArtifactProcess):
     def as_struct(self):
 
         libraries = []
-        for record in self.records.all():
+        for record in self.records.all().prefetch_related('in_artifact'):
             if record.in_artifact and record.in_artifact.kind == "Library":
                 libraries.append(record.in_artifact.as_struct())
 

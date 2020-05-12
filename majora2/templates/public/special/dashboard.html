@@ -79,8 +79,8 @@
         <table class="table">
             <thead class="table-dark">
                 <tr>
-                    <th>Location</th>
-                    <th class="text-right">Samples</th>
+                    <th></th>
+                    <th class="text-right"></th>
                 </tr>
             </thead>
             <tbody>
@@ -97,7 +97,23 @@
     </div>
     <div class="col-md-2"></div>
 </div>
+<hr/>
+<div class="row">
+<div class="col-md-2"></div>
+<div class="col-md-8">
+<h2 style="font-size:3em">Authors</h2>
+
+{% for site in authors %}
+<h3 style="margin-top:20px"><code>{{ site.code }}</code> {{ site.name }}</h3>
+<b>{{ site.gisaid_lab_name }}</b></br>
+
+{{ site.gisaid_list }}
+{% endfor %}
 </div>
+
+</div>
+</div>
+<div class="col-md-2"></div>
 </div>
 {% include 'public/footer.html' %}
 

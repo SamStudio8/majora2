@@ -19,7 +19,7 @@ from . import form_handlers
 import json
 import datetime
 
-MINIMUM_CLIENT_VERSION = "0.12.1"
+MINIMUM_CLIENT_VERSION = "0.14.0"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
@@ -134,6 +134,18 @@ def handle_metrics(metrics, tag_type, tag_to, user, api_o):
             metrics[metric]["min_ct"] = 0
             metrics[metric]["max_ct"] = 0
             form = forms.M2Metric_ThresholdCycleForm(metrics[metric], instance=m)
+
+            # Catch null values gently on uploader
+            any_ct = False
+            for metric_rec_name in metrics[metric].get("records", {}):
+                metric_rec = metrics[metric]["records"][metric_rec_name]
+                if metric_rec.get("ct_value"):
+                    any_ct = True
+            if not any_ct:
+                api_o["ignored"].append("%s" % metric)
+                api_o["messages"].append("'%s' records look empty" % metric)
+                api_o["warnings"] += 1
+                continue
         else:
             api_o["ignored"].append(metric)
             api_o["messages"].append("'%s' does not describe a valid metric" % metric)
@@ -152,6 +164,11 @@ def handle_metrics(metrics, tag_type, tag_to, user, api_o):
                         if metric == "ct":
                             metric_rec["artifact_metric"] = metric_ob
                             form = forms.M2MetricRecord_ThresholdCycleForm(metric_rec)
+                            # Catch null values gently on uploader
+                            if not metric_rec.get("ct_value"):
+                                api_o["ignored"].append("%s:%s" % (metric, metric_rec_name))
+                                api_o["warnings"] += 1
+                                continue
                             if form.is_valid():
                                 try:
                                     artifact_metric = form.cleaned_data["artifact_metric"]
@@ -267,53 +284,6 @@ def get_sequencing(request):
 
     return wrap_api_v2(request, f)
 
-def get_pag_by_qc(request):
-    def f(request, api_o, json_data, user=None):
-        test_name = json_data.get("test_name")
-        dra_current_kind = json_data.get("dra_current_kind")
-
-        if not test_name or len(test_name) == 0:
-            api_o["messages"].append("'test_name', key missing or empty")
-            api_o["errors"] += 1
-            return
-        t_group = models.PAGQualityTestEquivalenceGroup.objects.filter(slug=test_name).first()
-        if not t_group:
-            api_o["messages"].append("Invalid 'test_name'")
-            api_o["ignored"].append(test_name)
-            api_o["errors"] += 1
-            return
-
-        if json_data.get("pass_only"):
-            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_pass=True)
-        else:
-            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True)
-
-        if dra_current_kind:
-            pags = {}
-            for test_report in pass_pags:
-                pags[test_report.pag.published_name] = {}
-                pags[test_report.pag.published_name]["artifacts"] = {}
-                try:
-                    pags[test_report.pag.published_name]["artifacts"]["Digital Resource"] = [a.as_struct() for a in test_report.pag.tagged_artifacts.filter(DigitalResourceArtifact___current_kind=dra_current_kind)]
-                    pags[test_report.pag.published_name]["status"] = "PASS" if test_report.is_pass else "FAIL"
-                except Exception as e:
-                    api_o["errors"] += 1
-                    api_o["messages"].append(str(e))
-                    continue
-        else:
-            # Return everything?
-            pags = {}
-            for test_report in pass_pags:
-                try:
-                    pags[test_report.pag.published_name] = test_report.pag.as_struct()
-                    pags[test_report.pag.published_name]["status"] = "PASS" if test_report.is_pass else "FAIL"
-                except Exception as e:
-                    api_o["errors"] += 1
-                    api_o["messages"].append(str(e))
-                    continue
-        api_o["get"] = pags
-
-    return wrap_api_v2(request, f)
 
 def add_qc(request):
     def f(request, api_o, json_data, user=None):
@@ -884,14 +854,14 @@ def add_pag_accession(request):
             return
 
         if pag_contains:
-            qs = models.PublishedArtifactGroup.objects.filter(published_name__contains=pag_name, is_latest=True)
+            qs = models.PublishedArtifactGroup.objects.filter(published_name__contains=pag_name, is_latest=True, is_suppressed=False)
             if qs.count() > 1:
                 api_o["messages"].append("%s does not uniquely identify a PAG in Majora" % pag_name)
                 api_o["errors"] += 1
                 return
             pag = qs.first()
         else:
-            pag = models.PublishedArtifactGroup.objects.get(published_name=pag_name, is_latest=True)
+            pag = models.PublishedArtifactGroup.objects.get(published_name=pag_name, is_latest=True, is_suppressed=False)
 
         if not pag:
             api_o["messages"].append("PAG %s not known to Majora" % pag_name)
@@ -959,34 +929,14 @@ def get_pag_by_qc_celery(request):
             api_o["errors"] += 1
             return
 
-        if json_data.get("pass_only"):
-            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, is_pass=True)
+        from . import tasks
+        celery_task = tasks.task_get_pag_by_qc.delay(None, api_o, json_data, user=None)
+        if celery_task:
+            api_o["tasks"].append(celery_task.id)
+            api_o["messages"].append("Call api.majora.task.get with the appropriate task ID later...")
         else:
-            pass_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True)
-
-        pags = {}
-        if dra_current_kind:
-            for test_report in pass_pags:
-                pags[test_report.pag.published_name] = {}
-                pags[test_report.pag.published_name]["artifacts"] = {}
-                try:
-                    pags[test_report.pag.published_name]["artifacts"]["Digital Resource"] = [a.as_struct() for a in test_report.pag.tagged_artifacts.filter(DigitalResourceArtifact___current_kind=dra_current_kind)]
-                    pags[test_report.pag.published_name]["status"] = "PASS" if test_report.is_pass else "FAIL"
-                except Exception as e:
-                    api_o["errors"] += 1
-                    api_o["messages"].append(str(e))
-                    continue
-        else:
-            from . import tasks
-            celery_task = tasks.structify_pags.delay(api_o)
-            if celery_task:
-                api_o["tasks"].append(celery_task.id)
-                api_o["messages"].append("Call api.majora.task.get with the appropriate task ID later...")
-            else:
-                api_o["errors"] += 1
-                api_o["messages"].append("Could not add `structify_pags` task to Celery...")
-
-        api_o["get"] = pags
+            api_o["errors"] += 1
+            api_o["messages"].append("Could not add requested task to Celery...")
 
     return wrap_api_v2(request, f)
 
