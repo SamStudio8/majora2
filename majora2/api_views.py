@@ -23,6 +23,7 @@ MINIMUM_CLIENT_VERSION = "0.14.0"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
+    from tatl.models import TatlRequest
 
     api_o = {
         "errors": 0,
@@ -36,12 +37,20 @@ def wrap_api_v2(request, f):
         "ignored": [],
     }
 
+    json_data = json.loads(request.body)
+    treq = TatlRequest(
+        user = None,
+        route = request.path,
+        payload = json_data,
+        timestamp = timezone.now(),
+    )
+    treq.save()
+
     # Bounce non-POST
     if request.method != "POST":
         return HttpResponseBadRequest()
 
     # Bounce badly formatted requests
-    json_data = json.loads(request.body)
     if not json_data.get('token', None) or not json_data.get('username', None):
         return HttpResponseBadRequest()
 
@@ -52,6 +61,8 @@ def wrap_api_v2(request, f):
     except:
         return HttpResponseBadRequest()
     user = profile.user
+    treq.user = user
+    treq.save()
 
     # Bounce non-admin escalations to other users
     if json_data.get("sudo_as"):
