@@ -556,7 +556,7 @@ class PAGQualityBasicTestDecision(models.Model):
 # I'm gonna throw them on a PAG because for this project we need fast PAG access.
 # although actually, if you QC an artifact, it should be published, so this might be a good model
 class PAGQualityReportEquivalenceGroup(models.Model):
-    pag = models.ForeignKey('PublishedArtifactGroup', on_delete=models.PROTECT, related_name="quality_groups")
+    pag = models.ForeignKey('PublishedArtifactGroup', on_delete=models.CASCADE, related_name="quality_groups")
     test_group = models.ForeignKey('PAGQualityTestEquivalenceGroup', on_delete=models.PROTECT, related_name="report_groups", blank=True, null=True)
     is_pass = models.BooleanField(default=False) # we'll bubble passes up to the top group
 
@@ -569,7 +569,7 @@ class PAGQualityReportEquivalenceGroup(models.Model):
 
 class PAGQualityReportGroup(models.Model):
     pag = models.ForeignKey('PublishedArtifactGroup', on_delete=models.PROTECT, related_name="quality_tests", blank=True, null=True)
-    group = models.ForeignKey('PAGQualityReportEquivalenceGroup', on_delete=models.PROTECT, related_name="quality_tests", blank=True, null=True)
+    group = models.ForeignKey('PAGQualityReportEquivalenceGroup', on_delete=models.CASCADE, related_name="quality_tests", blank=True, null=True)
 
     test_set = models.ForeignKey('PAGQualityTest', on_delete=models.PROTECT, related_name="report_groups", blank=True, null=True)
 
