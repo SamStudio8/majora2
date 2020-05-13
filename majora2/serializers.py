@@ -75,7 +75,7 @@ class DigitalResourceArtifactSerializer(ArtifactSerializer):
 class PAGAccessionSerializer(serpy.Serializer):
     service = serpy.StrField()
     primary_accession = serpy.StrField()
-    secondary_accesison = serpy.StrField()
+    secondary_accession = serpy.StrField()
     tertiary_accession = serpy.StrField()
 
 class QCGroupSerializer(serpy.Serializer):
