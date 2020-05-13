@@ -6,6 +6,8 @@ from . import models
 from . import signals
 from . import serializers
 
+from django.db.models import Q
+
 import datetime
 
 @shared_task
@@ -51,14 +53,26 @@ def task_get_pag_by_qc(request, api_o, json_data, user=None):
     else:
         pass
 
+    # Return only PAGs with the service name, otherwise use the is_pbulic shortcut
     if json_data.get("public") and json_data.get("private"):
+        if json_data.get("service_name"):
+            api_o["messages"].append("service_name is ignored with both public and private")
         pass
     elif json_data.get("public"):
-        reports = reports.filter(pag__is_public=True)
+        if json_data.get("service_name"):
+            reports = reports.filter(pag__accessions__service=json_data.get("service_name"))
+        else:
+            reports = reports.filter(pag__is_public=True)
     elif json_data.get("private"):
-        reports = reports.filter(pag__is_public=False)
+        if json_data.get("service_name"):
+            reports = reports.filter(~Q(pag__accessions__service=json_data.get("service_name")))
+        else:
+            reports = reports.filter(pag__is_public=False)
     else:
+        if json_data.get("service_name"):
+            api_o["messages"].append("service_name is ignored without public or private")
         pass
+
 
     try:
         api_o["get"] = {}
