@@ -482,7 +482,7 @@ class TemporaryAccessionRecord(models.Model):
     #artifact = models.ForeignKey('MajoraArtifact', blank=True, null=True, on_delete=models.PROTECT)
     service = models.CharField(max_length=64)
     primary_accession = models.CharField(max_length=64)
-    secondary_accesison = models.CharField(max_length=64, blank=True, null=True)
+    secondary_accession = models.CharField(max_length=64, blank=True, null=True)
     tertiary_accession = models.CharField(max_length=64, blank=True, null=True)
 
     def as_struct(self):
