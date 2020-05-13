@@ -40,6 +40,7 @@ def wrap_api_v2(request, f):
     json_data = json.loads(request.body)
     treq = TatlRequest(
         user = None,
+        substitute_user = None,
         route = request.path,
         payload = json_data,
         timestamp = timezone.now(),
@@ -69,6 +70,8 @@ def wrap_api_v2(request, f):
         if user.is_staff:
             try:
                 user = models.Profile.objects.get(user__username=json_data["sudo_as"]).user
+                treq.substitute_user = user
+                treq.save()
             except:
                 return HttpResponseBadRequest()
         else:
