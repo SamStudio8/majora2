@@ -19,6 +19,45 @@ def structify_pags(api_o):
     return api_o
 
 @shared_task
+def task_get_sequencing(request, api_o, json_data, user=None):
+    run_names = json_data.get("run_name")
+    if not run_names:
+        api_o["messages"].append("'run_name' key missing or empty")
+        api_o["errors"] += 1
+        return
+
+    if len(run_names) == 1 and run_names[0] == "*":
+        #TODO Cannot check staff status here, relies on checking in the calling view.
+        run_names = [run["run_name"] for run in models.DNASequencingProcess.objects.all().values("run_name")]
+
+    runs = {}
+    for run_name in run_names:
+        try:
+            process = models.DNASequencingProcess.objects.get(run_name=run_name)
+        except Exception as e:
+            api_o["warnings"] += 1
+            api_o["ignored"].append(run_name)
+            continue
+
+        try:
+            runs[process.run_name] = process.as_struct()
+        except Exception as e:
+            api_o["errors"] += 1
+            api_o["messages"].append(str(e))
+            continue
+
+    try:
+        api_o["get"] = {}
+        api_o["get"]["result"] = runs
+        api_o["get"]["count"] = len(runs)
+    except Exception as e:
+        api_o["errors"] += 1
+        api_o["messages"].append(str(e))
+    signals.task_end.send(sender=current_task.request, task="structify_runs", task_id=current_task.request.id)
+    return api_o
+
+
+@shared_task
 def task_get_pag_by_qc(request, api_o, json_data, user=None):
     test_name = json_data.get("test_name")
     dra_current_kind = json_data.get("dra_current_kind")

@@ -19,7 +19,7 @@ from . import form_handlers
 import json
 import datetime
 
-MINIMUM_CLIENT_VERSION = "0.14.0"
+MINIMUM_CLIENT_VERSION = "0.15.0"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
@@ -284,7 +284,14 @@ def get_sequencing(request):
 
         if len(run_names) == 1 and run_names[0] == "*":
             if user.is_staff:
-                run_names = [run["run_name"] for run in models.DNASequencingProcess.objects.all().values("run_name")]
+                from . import tasks
+                celery_task = tasks.task_get_sequencing.delay(None, api_o, json_data, user=None)
+                if celery_task:
+                    api_o["tasks"].append(celery_task.id)
+                    api_o["messages"].append("Call api.majora.task.get with the appropriate task ID later...")
+                else:
+                    api_o["errors"] += 1
+                    api_o["messages"].append("Could not add requested task to Celery...")
             else:
                 return HttpResponseBadRequest()
 
