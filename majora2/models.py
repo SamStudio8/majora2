@@ -246,8 +246,11 @@ class MajoraArtifact(PolymorphicModel):
                 metadata["%s.%s" % (m.meta_tag, m.meta_name)] = m.value
         return metadata
 
-    def get_pags(self):
-        return self.groups.filter(Q(PublishedArtifactGroup___is_latest=True, PublishedArtifactGroup___is_suppressed=False))
+    def get_pags(self, include_suppressed=False):
+        if not include_suppressed:
+            return self.groups.filter(Q(PublishedArtifactGroup___is_latest=True, PublishedArtifactGroup___is_suppressed=False))
+        else:
+            return self.groups.filter(Q(PublishedArtifactGroup___is_latest=True))
 
     def as_struct(self):
         return {}
@@ -1063,7 +1066,7 @@ class BiosampleArtifact(MajoraArtifact):
             "swab_site": self.sample_site,
             "secondary_accession": self.secondary_accession,
 
-            "published_as": ",".join([pag.published_name for pag in self.get_pags()]),
+            "published_as": ",".join([pag.published_name for pag in self.get_pags(include_suppressed=True)]),
             "metadata": self.get_metadata_as_struct(),
         }
         collection = {}
