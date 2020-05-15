@@ -408,7 +408,7 @@ class PublishedArtifactGroup(MajoraArtifactGroup):
                                                       # and each version is just a new PAG named with its version
                                                       # then reconstruct path as:  <NAME> / <VERSION>
     #pag_kind = models.CharField()
-    published_date = models.DateField()
+    published_date = models.DateField(blank=True, null=True)
 
     is_draft = models.BooleanField(default=False) # ?
     is_latest = models.BooleanField(default=False)
