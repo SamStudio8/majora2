@@ -69,6 +69,7 @@ class BiosampleArtifactSerializer(ArtifactSerializer):
     
 class DigitalResourceArtifactSerializer(ArtifactSerializer):
     current_path = serpy.StrField()
+    current_hash = serpy.StrField()
     current_name = serpy.StrField()
     current_kind = serpy.StrField()
 
