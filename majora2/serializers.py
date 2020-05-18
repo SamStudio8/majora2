@@ -102,7 +102,7 @@ class PAGSerializer(serpy.Serializer):
     owner_org_gisaid_mail = serpy.StrField(attr='owner.profile.institute.gisaid_mail')
     owner_org_gisaid_lab_name = serpy.StrField(attr='owner.profile.institute.gisaid_lab_name')
     owner_org_gisaid_lab_addr = serpy.StrField(attr='owner.profile.institute.gisaid_lab_addr')
-    owner_org_gisaid_lab_list = serpy.StrField(attr='owner.profile.institute.gisaid_list')
+    owner_org_gisaid_lab_list = serpy.MethodField('serialize_owner_org_gisaid_lab_list')
 
     def serialize_tagged_artifacts(self, pag):
         a = {}
@@ -115,6 +115,9 @@ class PAGSerializer(serpy.Serializer):
 
     def serialize_published_date(self, pag):
         return pag.published_date.isoformat()
+
+    def serialize_owner_org_gisaid_lab_list(self, pag):
+        return pag.owner.profile.institute.gisaid_list.replace('\n', ',').replace(",,", ',') # sigh
 
 class PAGQCSerializer(serpy.Serializer):
     id = serpy.StrField()
