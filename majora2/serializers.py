@@ -1,6 +1,5 @@
 import serpy
 
-
 class ArtifactSerializer(serpy.Serializer):
     id = serpy.StrField()
     dice_name = serpy.StrField()
@@ -117,7 +116,9 @@ class PAGSerializer(serpy.Serializer):
         return pag.published_date.isoformat()
 
     def serialize_owner_org_gisaid_lab_list(self, pag):
-        return pag.owner.profile.institute.gisaid_list.replace('\n', ',').replace(",,", ',') # sigh
+        if pag.owner.profile.institute.gisaid_list: 
+            return pag.owner.profile.institute.gisaid_list.replace('\n', ',').replace(",,", ',') # sigh
+        return ""
 
 class PAGQCSerializer(serpy.Serializer):
     id = serpy.StrField()
