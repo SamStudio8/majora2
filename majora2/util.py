@@ -31,28 +31,47 @@ def try_date(str_):
             pass
     return dt
 
-def make_spark(queryset, days=30):
-    counts = []
-    i = 0
-    n = 0
-    try:
-        cursor = queryset[i]
-        for dt in rrule(DAILY, dtstart=timezone.now().date()-datetime.timedelta(days=days), until=timezone.now().date()):
-            dt = dt.date()
-            cdt = cursor["date"].date()
-            if dt < cdt:
-                counts.append({"date": dt.strftime("%Y-%m-%d"), "count": n})
-                continue
-            elif dt == cdt:
-                n += cursor["count"]
-                i += 1
-                counts.append({"date": dt.strftime("%Y-%m-%d"), "count": n})
-                try:
-                    cursor = queryset[i]
-                except IndexError:
-                    pass
-            elif dt > cdt:
-                counts.append({"date": dt.strftime("%Y-%m-%d"), "count": n})
-    except:
-        pass
-    return counts
+def make_spark(queryset, days=30, many=None):
+    counts = {}
+    querysets = {}
+    if not many:
+        querysets = {"default": queryset}
+    else:
+        for obj in queryset:
+            curr_qs = obj[many].replace("/", "_")
+            if curr_qs not in querysets:
+                querysets[curr_qs] = []
+            querysets[curr_qs].append(obj)
+    
+    for qs in querysets:
+        i = 0
+        try:
+            cursor = querysets[qs][i]
+            if qs not in counts:
+                counts[qs] = {
+                    "n": 0,
+                    "a": [],
+                }
+            for dt in rrule(DAILY, dtstart=timezone.now().date()-datetime.timedelta(days=days), until=timezone.now().date()):
+                dt = dt.date()
+                cdt = cursor["date"].date()
+                if dt < cdt:
+                    counts[qs]["a"].append({"date": dt.strftime("%Y-%m-%d"), "count": counts[qs]["n"]})
+                    continue
+                elif dt == cdt:
+                    counts[qs]["n"] += cursor["count"]
+                    i += 1
+                    counts[qs]["a"].append({"date": dt.strftime("%Y-%m-%d"), "count": counts[qs]["n"]})
+                    try:
+                        cursor = querysets[qs][i]
+                    except IndexError:
+                        pass
+                elif dt > cdt:
+                    counts[qs]["a"].append({"date": dt.strftime("%Y-%m-%d"), "count": counts[qs]["n"]})
+        except:
+            pass
+
+    if not many:
+        return counts["default"]["a"]
+    else:
+        return {k: v["a"] for k, v in counts.items()}
