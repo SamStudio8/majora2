@@ -17,17 +17,3 @@ def fill_fixed_data(k, user=None):
     else:
         return {}
 
-def sampling_strategy_choices(convert_choice=False, choice=None):
-    lookup = {
-        "S": "SURVEILLANCE",
-        "C": "CLUSTER",
-        None: None,
-        "": None,
-    }
-    if convert_choice:
-        if choice in lookup:
-            return lookup[choice]
-        else:
-            return None
-    else:
-        return [(k, v) for k, v in lookup.items()]

@@ -366,19 +366,6 @@ class TestSampleForm(forms.Form):
             ("Other", "Other"),
         ], required=False, help_text="Reported sex")
 
-    source_category = forms.ChoiceField(choices=[
-            (None, ""),
-            ("HCW", "HCW"),
-        ], required=False)
-    source_setting = forms.ChoiceField(choices=[
-            (None, ""),
-            ("HOSPITAL", "HOSPITAL"),
-            ("CAREHOME", "CAREHOME"),
-            ("COMMUNITY", "COMMUNITY"),
-        ], required=False)
-    sampling_strategy = forms.ChoiceField(choices=fixed_data.sampling_strategy_choices(), required=False)
-
-
     adm2 = forms.CharField(
             label="County",
             max_length=100,
@@ -567,9 +554,6 @@ class TestSampleForm(forms.Form):
             "sample_type_received",
         ]
         UPPERCASE_FIELDS = [
-            "source_category",
-            "source_setting",
-            "sampling_strategy",
         ]
         COERCE_BOOLEAN = [
             "is_surveillance",
