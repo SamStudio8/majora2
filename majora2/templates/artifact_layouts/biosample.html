@@ -18,8 +18,8 @@
             {% endif %}
         </tr>
         <tr>
-            <th></th>
-            <td></td>
+            <th>-</th>
+            <td>-</td>
         </tr>
         <tr>
             <th>Participant</th>
@@ -65,3 +65,11 @@
 </div>
 <hr/>
 
+{% if artifact.created.coguk_supp %}
+<div class="row">
+<div class="col-md-12">
+    {% include 'artifact_layouts/supplements/coguk_collection.html' %}
+</div>
+</div>
+{% else %}
+{% endif %}
