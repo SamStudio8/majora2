@@ -451,16 +451,16 @@ class TestSampleForm(forms.Form):
     #        label="Override Heron validator",
     #        help_text="Enable this checkbox if your sample has not been assigned a Heron identifier. <i>e.g.</i> The sample has already been submitted to GISAID",
     #        required=False)
-    secondary_identifier = forms.CharField(
-            max_length=256,
-            label="GISAID identifier string",
-            help_text="New COG-UK samples will have GISAID strings automatically composed. If this sample has already been submitted to GISAID, provide the identifier here.",
-            required=False)
-    secondary_accession = forms.CharField(
-            max_length=256,
-            label="GISAID accession",
-            help_text="If this sample has already been submitted to GISAID, provide the accession here.",
-            required=False)
+    #secondary_identifier = forms.CharField(
+    #        max_length=256,
+    #        label="GISAID identifier string",
+    #        help_text="New COG-UK samples will have GISAID strings automatically composed. If this sample has already been submitted to GISAID, provide the identifier here.",
+    #        required=False)
+    #secondary_accession = forms.CharField(
+    #        max_length=256,
+    #        label="GISAID accession",
+    #        help_text="If this sample has already been submitted to GISAID, provide the accession here.",
+    #        required=False)
 
 
     #tube_dice = forms.CharField()
