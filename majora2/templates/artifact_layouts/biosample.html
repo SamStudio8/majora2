@@ -26,7 +26,7 @@
         </tr>
         <tr>
             <th>Type</th>
-            <td>{{ sample.sample_type_collected }} {% if sample.sample_type_collected == "swab" %}({{ sample.sample_site }}){% endif %}</td>
+            <td>{{ sample.sample_type_collected }} {% if sample.sample_type_collected == "swab" %}({{ sample.sample_site }}){% endif %} {% if sample.sample_type_current %}- {{ sample.sample_type_current }}{% endif %}</td>
         </tr>
         {% endwith %}
         </tbody>
