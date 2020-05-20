@@ -40,6 +40,13 @@
             <td>{{ user.profile.institute }} <a class="badge badge-info" style="text-decoration: underline;" href="{% url 'form_institute' %}">Update</a></td>
         </tr>
         <tr>
+            <th>Default API Key</th>
+            <td>
+                {{ user.profile.api_key }}</br>
+                <b>These keys will be replaced soon. Enable 2FA to access the new Key Manager.</b>
+            </td>
+        </tr>
+        <tr>
             <th>API Key</th>
             <td>
                 {% if not request.user.is_verified %}
