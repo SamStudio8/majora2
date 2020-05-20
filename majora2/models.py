@@ -12,6 +12,7 @@ from . import receivers
 from . import serializers
 
 from polymorphic.models import PolymorphicModel
+from .submodels import *
 
 class MajoraArtifact(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # 
