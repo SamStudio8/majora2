@@ -1,4 +1,3 @@
-{% load humanize %}
 <div class="row">
 <div class="col-md-6">
     <h2>Biosample Source</h2>
@@ -68,7 +67,9 @@
 {% if artifact.created.coguk_supp %}
 <div class="row">
 <div class="col-md-12">
+    {% with sample=artifact %}
     {% include 'artifact_layouts/supplements/coguk_collection.html' %}
+    {% endwith %}
 </div>
 </div>
 {% else %}

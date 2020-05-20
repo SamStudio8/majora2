@@ -306,11 +306,12 @@ def handle_testsample(form, user=None, api_o=None):
     sample_p.sampling_strategy = fixed_data.sampling_strategy_choices(choice=form.cleaned_data.get("sampling_strategy"), convert_choice=True)
 
     #TODO Again, there should be a shim that catches all the applicable supplements but we dont have time
-    if not hasattr(sample_p, "coguk_supp"):
+    if hasattr(sample_p, "coguk_supp"):
+        supp = sample_p.coguk_supp
+    else:
         supp = models.COGUK_BiosourceSamplingProcessSupplement(sampling=sample_p)
         supp.save()
-    else:
-        supp = sample_p.coguk_supp
+
     supp.is_surveillance = form.cleaned_data.get("is_surveillance")
     supp.is_hcw = form.cleaned_data.get("is_hcw")
     supp.employing_hospital_name = form.cleaned_data.get("employing_hospital_name")

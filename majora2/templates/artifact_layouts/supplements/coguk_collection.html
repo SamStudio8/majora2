@@ -1,13 +1,14 @@
+{% load humanize %}
 <h3 class="text-right">COG-UK Supplemental Sample Information</h3>
-<table class="table table-active text-center">
-    <thead>
+<table class="table table-sm table-active text-center">
+    <thead class="table-active">
     <tr>
-        <th>Surveillance</th>
-        <th>Hospital Worker</th>
-        <th>Hospital Patient</th>
-        <th>Carehome Worker</th>
-        <th>Carehome Resident</th>
-        <th>Admitted with COVID</th>
+        <th width="10%">Surveillance</th>
+        <th width="18%">Hospital Worker</th>
+        <th width="18%">Hospital Patient</th>
+        <th width="18%">Carehome Worker</th>
+        <th width="18%">Carehome Resident</th>
+        <th width="18%">Admitted with COVID</th>
     </tr>
     </thead><tbody style="font-size:1.2em;">
     <tr>
@@ -68,15 +69,25 @@
     </tr>
     <tr>
         <td></td>
-        <td style="font-size: 0.6em">
-            {{ sample.created.coguk_supp.employing_hospital_name }} ({{ sample.created.coguk_supp.employing_hospital_trust_or_board }})
+        <td style="font-size: 0.7em">
+            {{ sample.created.coguk_supp.employing_hospital_name }}
+            {% if sample.created.coguk_supp.employing_hospital_trust_or_board %}
+            ({{ sample.created.coguk_supp.employing_hospital_trust_or_board }})
+            {% endif %}
         </td>
-        <td style="font-size: 0.6em">
-            {{ sample.created.coguk_supp.admitted_hospital_name }} ({{ sample.created.coguk_supp.admitted_hospital_trust_or_board }})
-            <br> {{ sample.created.coguk_supp.admitted_date }}
+        <td style="font-size: 0.7em">
+            {{ sample.created.coguk_supp.admitted_hospital_name }} 
+            {% if sample.created.coguk_supp.admitted_hospital_trust_or_board %}
+            ({{ sample.created.coguk_supp.admitted_hospital_trust_or_board }})
+            {% endif %}
+            {% if sample.created.coguk_supp.admission_date %}
+            <br> {{ sample.created.coguk_supp.admission_date }}
+            {% endif %}
         </td>
-        <td colspan=2>
-            {{ sample.created.coguk_supp.anonymised_care_home_code }}
+        <td colspan=2 style="font-size: 0.7em">
+            {% if sample.created.coguk_supp.anonymised_care_home_code %}
+            Carehome Code <code>{{ sample.created.coguk_supp.anonymised_care_home_code }}</code>
+            {% endif %}
         </td>
         <td></td>
     </tr>
