@@ -13,6 +13,7 @@ from crispy_forms.bootstrap import FormActions
 from .account_views import generate_username
 from . import models
 from . import fixed_data
+from . import util
 
 from sshpubkeys import SSHKey
 
@@ -471,6 +472,26 @@ class TestSampleForm(forms.Form):
     #accepted = forms.BooleanField()
     #quarantine_reason = forms.ChoiceField()
     #received_date =
+
+    #TODO Extra COGUK supplemental fields
+    # In an ideal world where we have more time, we'd pin a bunch of supplemental modelforms but we need this asappppp
+    is_surveillance = forms.ChoiceField(choices=util.boolean_choice_converter(null=False), required=True)
+    is_hcw = forms.ChoiceField(choices=util.boolean_choice_converter(), required=False)
+    employing_hospital_name = forms.CharField(max_length=100, required=False)
+    employing_hospital_trust_or_board = forms.CharField(max_length=100, required=False)
+    is_hospital_patient = forms.ChoiceField(choices=util.boolean_choice_converter(), required=False)
+    admission_date = forms.DateField(
+            label="Received date",
+            help_text="YYYY-MM-DD",
+            required=False,
+    )
+    admitted_hospital_name = forms.CharField(max_length=100, required=False)
+    admitted_hospital_trust_or_board = forms.CharField(max_length=100, required=False)
+    is_care_home_worker = forms.ChoiceField(choices=util.boolean_choice_converter(), required=False)
+    is_care_home_resident = forms.ChoiceField(choices=util.boolean_choice_converter(), required=False)
+    anonymised_care_home_code = forms.CharField(max_length=3, required=False)
+    admitted_with_covid_diagnosis = forms.ChoiceField(choices=util.boolean_choice_converter(), required=False)
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
