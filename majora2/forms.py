@@ -474,7 +474,7 @@ class TestSampleForm(forms.Form):
 
     #TODO Extra COGUK supplemental fields
     # In an ideal world where we have more time, we'd pin a bunch of supplemental modelforms but we need this asappppp
-    is_surveillance = forms.BooleanField(required=False)
+    is_surveillance = forms.NullBooleanField()
     is_hcw = forms.NullBooleanField()
     employing_hospital_name = forms.CharField(max_length=100, required=False)
     employing_hospital_trust_or_board = forms.CharField(max_length=100, required=False)
@@ -645,6 +645,10 @@ class TestSampleForm(forms.Form):
             self.add_error("sample_type_collected", "Swab site specified but the sample type is not 'swab'")
         #if sample_type == "swab" and not swab_site:
         #    self.add_error("sample_type_collected", "Sample was a swab but you did not specify the swab site")
+
+        # Force is_surveillance
+        if cleaned_data.get("is_surveillance") is None:
+            self.add_error("is_surveillance", "You must set is_surveillance to Y or N")
 
 
 class TestFileForm(forms.Form):
