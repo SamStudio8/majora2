@@ -309,6 +309,8 @@ def handle_testsample(form, user=None, api_o=None):
     if not hasattr(sample_p, "coguk_supp"):
         supp = models.COGUK_BiosourceSamplingProcessSupplement(sampling=sample_p)
         supp.save()
+    else:
+        supp = sample_p.coguk_supp
     supp.is_surveillance = form.cleaned_data.get("is_surveillance")
     supp.is_hcw = form.cleaned_data.get("is_hcw")
     supp.employing_hospital_name = form.cleaned_data.get("employing_hospital_name")
