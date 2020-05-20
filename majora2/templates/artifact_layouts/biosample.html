@@ -18,16 +18,16 @@
             {% endif %}
         </tr>
         <tr>
-            <th>Identifier</th>
-            <td>{{ sample.secondary_identifier }} <code>{{ sample.secondary_accession }}</code></td>
+            <th></th>
+            <td></td>
         </tr>
         <tr>
             <th>Participant</th>
-            <td>{{ sample.created.source_age }}{{ sample.created.source_sex }} {{ sample.created.source_category }} {{ sample.created.source_setting }}</td>
+            <td>{{ sample.created.source_age }}{{ sample.created.source_sex }}</td>
         </tr>
         <tr>
             <th>Type</th>
-            <td>{{ sample.sample_type_collected }} {% if sample.sample_type_collected == "swab" %}({{ sample.sample_site }}){% endif %} {{ sample.created.sampling_strategy }}</td>
+            <td>{{ sample.sample_type_collected }} {% if sample.sample_type_collected == "swab" %}({{ sample.sample_site }}){% endif %}</td>
         </tr>
         {% endwith %}
         </tbody>
