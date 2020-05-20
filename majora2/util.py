@@ -16,22 +16,6 @@ def quarantine_artifact(process, artifact):
     qr.save()
     artifact.save()
 
-def boolean_choice_converter(convert_choice=False, choice=None, null=True):
-    lookup = {
-        "Y": True,
-        "N": False,
-    }
-    if null:
-        lookup[""] = None
-        lookup[None] = None
-    if convert_choice:
-        if choice in lookup:
-            return lookup[choice]
-        else:
-            return None
-    else:
-        return [(k, v) for k, v in lookup.items()]
-
 def try_date(str_):
     dt = None
     for s_ in re.split('[^0-9-]', str_):

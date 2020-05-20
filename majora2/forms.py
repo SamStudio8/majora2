@@ -13,7 +13,6 @@ from crispy_forms.bootstrap import FormActions
 from .account_views import generate_username
 from . import models
 from . import fixed_data
-from . import util
 
 from sshpubkeys import SSHKey
 
@@ -475,11 +474,11 @@ class TestSampleForm(forms.Form):
 
     #TODO Extra COGUK supplemental fields
     # In an ideal world where we have more time, we'd pin a bunch of supplemental modelforms but we need this asappppp
-    is_surveillance = forms.ChoiceField(choices=util.boolean_choice_converter(null=False), required=True)
-    is_hcw = forms.ChoiceField(choices=util.boolean_choice_converter(), required=False)
+    is_surveillance = forms.BooleanField(required=False)
+    is_hcw = forms.NullBooleanField()
     employing_hospital_name = forms.CharField(max_length=100, required=False)
     employing_hospital_trust_or_board = forms.CharField(max_length=100, required=False)
-    is_hospital_patient = forms.ChoiceField(choices=util.boolean_choice_converter(), required=False)
+    is_hospital_patient = forms.NullBooleanField()
     admission_date = forms.DateField(
             label="Received date",
             help_text="YYYY-MM-DD",
@@ -487,10 +486,10 @@ class TestSampleForm(forms.Form):
     )
     admitted_hospital_name = forms.CharField(max_length=100, required=False)
     admitted_hospital_trust_or_board = forms.CharField(max_length=100, required=False)
-    is_care_home_worker = forms.ChoiceField(choices=util.boolean_choice_converter(), required=False)
-    is_care_home_resident = forms.ChoiceField(choices=util.boolean_choice_converter(), required=False)
+    is_care_home_worker = forms.NullBooleanField()
+    is_care_home_resident = forms.NullBooleanField()
     anonymised_care_home_code = forms.CharField(max_length=3, required=False)
-    admitted_with_covid_diagnosis = forms.ChoiceField(choices=util.boolean_choice_converter(), required=False)
+    admitted_with_covid_diagnosis = forms.NullBooleanField()
 
 
     def __init__(self, *args, **kwargs):
@@ -572,6 +571,14 @@ class TestSampleForm(forms.Form):
             "source_setting",
             "sampling_strategy",
         ]
+        COERCE_BOOLEAN = [
+            "is_surveillance",
+            "is_hcw",
+            "is_hospital_patient",
+            "is_care_home_worker",
+            "is_care_home_resident",
+            "admitted_with_covid_diagnosis",
+        ]
         for field in LOWERCASE_FIELDS:
             if data.get(field):
                 data[field] = data[field].strip()
@@ -580,6 +587,13 @@ class TestSampleForm(forms.Form):
         for field in UPPERCASE_FIELDS:
             if data.get(field):
                 data[field] = data[field].strip().upper()
+        for field in COERCE_BOOLEAN:
+            if data.get(field):
+                b = data[field].strip().upper()
+                if b == "Y" or b == "YES":
+                    data[field] = True
+                if b == "N" or b == "NO":
+                    data[field] = False
 
         #if data.get("swab_site", "").upper() == "NSTS" or data.get("swab_site", "").lower() == "nose and throat":
         #    data["swab_site"] = "nose-throat"
