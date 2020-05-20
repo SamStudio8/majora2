@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from django.contrib.auth import views as auth_views
+
 from two_factor.urls import urlpatterns as tf_urls
 
 urlpatterns = [
@@ -36,7 +37,8 @@ urlpatterns = [
         next_page='/',
     ), name="logout"),
 
-    #path('accounts/', include('django.contrib.auth.urls')),
     path('', include('majora2.urls')),
     path('', include(tf_urls)),
+    #path('account/', include('django.contrib.auth.urls')), # tf login will supercede this
+
 ]
