@@ -6,6 +6,8 @@ from django.conf import settings
 from django.urls import reverse
 from django.db.models import Q
 
+from django.utils import timezone
+
 from . import receivers
 from . import serializers
 
@@ -1483,6 +1485,13 @@ class ProfileAPIKey(models.Model):
 
     was_revoked = models.BooleanField(default=False)
     revoked_reason = models.CharField(max_length=24, blank=True, null=True)
+
+    @property
+    def is_expired(self):
+        now = timezone.now()
+        if now < self.validity_start or now > self.validity_end:
+            return True
+        return False
 
 #TODO How to properly link models?
 #TODO MajoraCoreObject could be inherited by artifact, group etc.

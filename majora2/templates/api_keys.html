@@ -36,7 +36,7 @@
             </thead>
             <tbody>
             {% for key in generated %}
-            <tr class="table-success">
+            <tr class="table-{% if key.is_expired or key.was_revoked %}danger{%else%}success{% endif %}">
                 <td>{{ key.key_definition.key_name }}</td>
                 <td><code>{{ key.key }}</code></td>
                 <td>{{ key.validity_end | naturaltime }}</td>
