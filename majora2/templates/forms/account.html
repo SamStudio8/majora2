@@ -1,0 +1,19 @@
+{% load instance %}
+{% load crispy_forms_tags %}
+{% include 'header.html' with title="Update Account" %}
+<div class="mast2">
+    <div class="container">
+    </div>
+</div>
+<div class="container">
+
+<h1>Update your {% instance_name %} unified account</h2>
+<hr>
+
+<form action="{% url 'form_account' %}" method="post">
+    {% csrf_token %}
+    {% crispy form %}
+</form>
+</div>
+{% include 'footer.html' %}
+

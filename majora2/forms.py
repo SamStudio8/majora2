@@ -78,6 +78,64 @@ class InstituteForm(forms.Form):
             if not cleaned_data.get("gisaid_opted"):
                 self.add_error("gisaid_opted", "Check this box to opt-in to GISAID submissions")
 
+class AccountForm(forms.Form):
+    username = forms.CharField(max_length=150, disabled=True, required=False, help_text="You cannot change your username")
+    first_name = forms.CharField(max_length=30)
+    last_name = forms.CharField(max_length=150)
+    email = forms.EmailField()
+
+    organisation = forms.ModelChoiceField(queryset=models.Institute.objects.exclude(code__startswith="?").order_by("code"), disabled=True, required=False, help_text="You cannot change your organisation", to_field_name="code")
+    ssh_key = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}), label="SSH Public Key")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset("User",
+                Row(
+                    Column('username', css_class="form-group col-md-6 mb-0"),
+                    Column('email', css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                ),
+            ),
+            Fieldset("Name",
+                Row(
+                    Column('first_name', css_class="form-group col-md-6 mb-0"),
+                    Column('last_name', css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                )
+            ),
+            Fieldset("Organisation",
+                Row(
+                    Column('organisation', css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                )
+            ),
+            Fieldset("SSH Key",
+                'ssh_key'
+            ),
+            FormActions(
+                    Submit('save', 'Update'),
+                    css_class="text-right",
+            )
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+    def clean_ssh_key(self):
+        ssh_key = self.cleaned_data.get("ssh_key")
+        if ssh_key:
+            ssh_key = "".join(ssh_key.splitlines()).strip()
+
+            key = SSHKey(ssh_key)
+            try:
+                key.parse()
+            except Exception as e:
+                raise forms.ValidationError("Unable to decode your key. Please ensure this is your public key and has been entered correctly.")
+        return ssh_key
+
 class RegistrationForm(forms.Form):
     username = forms.CharField(max_length=150, disabled=True, required=False)
     first_name = forms.CharField(max_length=30)

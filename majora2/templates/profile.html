@@ -33,11 +33,11 @@
         </tr>
         <tr>
             <th>Name</th>
-            <td>{{ user.firstname }} {{ user.lastname }}</td>
+            <td>{{ user.first_name }} {{ user.last_name }} <a class="badge badge-info" style="text-decoration: underline;" href="{% url 'form_account' %}">Update name or SSH key</a></td>
         </tr>
         <tr>
             <th>Organisation</th>
-            <td>{{ user.profile.institute }} <a class="badge badge-info" style="text-decoration: underline;" href="{% url 'form_institute' %}">Update</a></td>
+            <td>{{ user.profile.institute }} <a class="badge badge-info" style="text-decoration: underline;" href="{% url 'form_institute' %}">Update institute author credits</a></td>
         </tr>
         <tr>
             <th>Default API Key</th>

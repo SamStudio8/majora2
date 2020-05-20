@@ -73,6 +73,40 @@ def form_register(request):
         form = forms.RegistrationForm()
     return render(request, 'forms/register.html', {'form': form})
 
+
+@login_required
+def form_account(request):
+    otp = django_2fa_mixin_hack(request)
+    if otp:
+        return otp
+
+    from django.forms.models import model_to_dict
+
+    if not hasattr(request.user, "profile"):
+        return HttpResponseBadRequest() # bye
+
+    init = model_to_dict(request.user)
+    init["organisation"] = request.user.profile.institute.code
+    init["ssh_key"] = request.user.profile.ssh_key
+
+    if request.method == "POST":
+        form = forms.AccountForm(request.POST, initial=init)
+        if form.is_valid():
+            u = request.user
+            u.first_name = form.cleaned_data['first_name']
+            u.last_name = form.cleaned_data['last_name']
+            u.email = form.cleaned_data['email']
+            u.save()
+
+            p = request.user.profile
+            p.ssh_key = form.cleaned_data['ssh_key']
+            p.save()
+
+            return render(request, 'accounts/institute_success.html')
+    else:
+        form = forms.AccountForm(initial=init)
+    return render(request, 'forms/account.html', {'form': form})
+
 @login_required
 def form_institute(request):
     otp = django_2fa_mixin_hack(request)
