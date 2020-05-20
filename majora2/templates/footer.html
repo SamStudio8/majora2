@@ -3,7 +3,7 @@
 <div class="container text-center">
     <span style="color:#999">
         {% if user.is_authenticated %}
-            <p>You are authenticated as <b><a href="{% url 'profile' %}">{{ request.user.username }}<a/></b> | <a href="{% url 'logout' %}">Log Out</a>
+            <p>You are authenticated {% if user.is_verified %}and 2FA verified{% endif %} as <b><a href="{% url 'profile' %}">{{ request.user.username }}<a/></b> | <a href="{% url 'logout' %}">Log Out</a>
         {% else %}
              You are not authenticated. | <a href="{% url 'form_register' %}">Register</a> or <a href="{% url 'two_factor:login' %}">Log in</a>
         {% endif %}
