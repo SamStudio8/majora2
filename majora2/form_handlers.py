@@ -400,11 +400,11 @@ def handle_testdigitalresource(form, user=None, api_o=None):
         pag, pag_created = models.PublishedArtifactGroup.objects.get_or_create(
                 published_name=form.cleaned_data.get("publish_group"),
                 published_version=1,
-                #published_date=res.created.when.date(),
-                published_date=timezone.now().date(),
                 is_latest=True,
                 owner=res.created.who,
         )
+        if pag_created:
+            pag.published_date = timezone.now().date()
         res.groups.add(pag)
         pag.save()
         if form.cleaned_data.get("bridge_artifact"):

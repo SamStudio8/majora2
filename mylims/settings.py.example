@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     #'lims',
     'majora2',
+    'tatl',
     'django_slack',
     'crispy_forms',
     'django_celery_results',

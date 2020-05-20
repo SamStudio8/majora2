@@ -1,6 +1,5 @@
 import serpy
 
-
 class ArtifactSerializer(serpy.Serializer):
     id = serpy.StrField()
     dice_name = serpy.StrField()
@@ -49,6 +48,7 @@ class BiosampleArtifactSerializer(ArtifactSerializer):
     submission_user = serpy.StrField(attr='created.submission_user.username')
     submission_org = serpy.StrField(attr='created.submission_org.name')
     submission_org_code = serpy.StrField(attr='created.submission_org.code')
+    submission_org_lab_or_name = serpy.MethodField('serialize_org_lab_or_name')
 
     source_sex = serpy.StrField(attr="created.source_sex", required=False)
     source_age = serpy.IntField(attr="created.source_age", required=False)
@@ -65,17 +65,24 @@ class BiosampleArtifactSerializer(ArtifactSerializer):
     adm2 = serpy.StrField(attr="created.collection_location_adm2")
     adm2_private = None
 
+    def serialize_org_lab_or_name(self, collection):
+        if collection.created.submission_org.gisaid_lab_name:
+            return collection.created.submission_org.gisaid_lab_name
+        else:
+            return collection.created.submission_org.name
 
     
 class DigitalResourceArtifactSerializer(ArtifactSerializer):
     current_path = serpy.StrField()
+    current_hash = serpy.StrField()
+    current_size = serpy.IntField()
     current_name = serpy.StrField()
     current_kind = serpy.StrField()
 
 class PAGAccessionSerializer(serpy.Serializer):
     service = serpy.StrField()
     primary_accession = serpy.StrField()
-    secondary_accesison = serpy.StrField()
+    secondary_accession = serpy.StrField()
     tertiary_accession = serpy.StrField()
 
 class QCGroupSerializer(serpy.Serializer):
@@ -95,12 +102,23 @@ class PAGSerializer(serpy.Serializer):
 
     owner = serpy.StrField(attr='owner.username')
     owner_org_code = serpy.StrField(attr='owner.profile.institute.code')
+    owner_org_name = serpy.StrField(attr='owner.profile.institute.name')
     owner_org_gisaid_opted = serpy.BoolField(attr='owner.profile.institute.gisaid_opted')
     owner_org_gisaid_user = serpy.StrField(attr='owner.profile.institute.gisaid_user')
     owner_org_gisaid_mail = serpy.StrField(attr='owner.profile.institute.gisaid_mail')
     owner_org_gisaid_lab_name = serpy.StrField(attr='owner.profile.institute.gisaid_lab_name')
     owner_org_gisaid_lab_addr = serpy.StrField(attr='owner.profile.institute.gisaid_lab_addr')
-    owner_org_gisaid_lab_list = serpy.StrField(attr='owner.profile.institute.gisaid_list')
+    owner_org_gisaid_lab_list = serpy.MethodField('serialize_owner_org_gisaid_lab_list')
+
+    owner_org_ena_opted = serpy.BoolField(attr='owner.profile.institute.ena_opted')
+
+    owner_org_lab_or_name = serpy.MethodField('serialize_owner_org_lab_or_name')
+
+    def serialize_owner_org_lab_or_name(self, pag):
+        if pag.owner.profile.institute.gisaid_lab_name:
+            return pag.owner.profile.institute.gisaid_lab_name
+        else:
+            return pag.owner.profile.institute.name
 
     def serialize_tagged_artifacts(self, pag):
         a = {}
@@ -113,6 +131,11 @@ class PAGSerializer(serpy.Serializer):
 
     def serialize_published_date(self, pag):
         return pag.published_date.isoformat()
+
+    def serialize_owner_org_gisaid_lab_list(self, pag):
+        if pag.owner.profile.institute.gisaid_list: 
+            return pag.owner.profile.institute.gisaid_list.replace('\n', ',').replace(",,", ',') # sigh
+        return ""
 
 class PAGQCSerializer(serpy.Serializer):
     id = serpy.StrField()

@@ -8,6 +8,7 @@ from django.db.models.functions import TruncDay
 import datetime
 
 from . import models
+from tatl import models as tmodels
 from . import util
 
 @cache_page(60 * 60)
@@ -18,6 +19,8 @@ def sample_sequence_count_dashboard(request):
     adm2 = models.BiosourceSamplingProcess.objects.all().values(adm2=F("collection_location_adm2")).annotate(count=Count("adm2")).order_by("adm2")
 
     consensus_spark = util.make_spark(models.DigitalResourceArtifact.objects.filter(current_kind="consensus", created__when__isnull=False, created__when__gte=timezone.now().date()-datetime.timedelta(days=30)).annotate(date=TruncDay('created__when')).values("date").annotate(count=Count('id')).order_by("date"), days=30)
+
+    request_sparks = util.make_spark(tmodels.TatlRequest.objects.filter(timestamp__gte=timezone.now().date()-datetime.timedelta(days=30)).annotate(date=TruncDay('timestamp')).values("route", "date").annotate(count=Count('id')).order_by("date"), days=30, many="route")
 
     pags_by_site = models.PublishedArtifactGroup.objects.filter(is_latest=True, is_suppressed=False).values(site=F('owner__profile__institute__name')).annotate(count=Count('pk'), public=Count('pk', filter=Q(is_public=True)), private=Count('pk', filter=Q(is_public=False))).order_by('-count')
     good_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc", is_pass=True, pag__is_latest=True, pag__is_suppressed=False)
@@ -37,4 +40,5 @@ def sample_sequence_count_dashboard(request):
         "authors": models.Institute.objects.filter(gisaid_list__isnull=False).values("name", "code", "gisaid_lab_name", "gisaid_list").order_by("code"),
 
         "consensus_spark": consensus_spark,
+        "request_sparks": request_sparks,
     })

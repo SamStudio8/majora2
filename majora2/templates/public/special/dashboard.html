@@ -99,10 +99,10 @@
 </div>
 <hr/>
 <div class="row">
-<div class="col-md-2"></div>
+<div class="col-md-2">
+<h2 style="font-size:2em">Authors</h2>
+</div>
 <div class="col-md-8">
-<h2 style="font-size:3em">Authors</h2>
-
 {% for site in authors %}
 <h3 style="margin-top:20px"><code>{{ site.code }}</code> {{ site.name }}</h3>
 <b>{{ site.gisaid_lab_name }}</b></br>
@@ -111,13 +111,34 @@
 {% endfor %}
 </div>
 
+<div class="col-md-2"></div>
 </div>
+
+<hr>
+<div class="row">
+<div class="col-md-2">
+<h2 style="font-size:2em">Requests</h2>
+</div>
+<div class="col-md-8">
+    {% for rs_name, rs_arr in request_sparks.items %}
+    <b>{{ rs_name }}</b>
+    <div style="width:100%" id="s-request-spark-{{rs_name}}"></div>
+    {% endfor %}
 </div>
 <div class="col-md-2"></div>
 </div>
+</div>
+</div>
+
+
+
 {% include 'public/footer.html' %}
 
 {{ consensus_spark|json_script:"consensus-spark-data" }}
+
+{% for rs_name, rs_arr in request_sparks.items %}
+{{ rs_arr|json_script:rs_name }}
+{% endfor %}
 
 <script>
 <!-- http://www.tnoda.com/blog/2013-12-19/ -->
@@ -162,6 +183,9 @@ var line = d3.svg.line()
 
 $( document ).ready(function() {
     sparkline('#consensus-spark', "consensus-spark-data");
+    {% for rs_name, rs_arr in request_sparks.items %}
+    sparkline('#s-request-spark-{{rs_name}}', "{{rs_name}}");
+    {% endfor %}
 });
 
 </script>

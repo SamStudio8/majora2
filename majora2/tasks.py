@@ -6,6 +6,8 @@ from . import models
 from . import signals
 from . import serializers
 
+from django.db.models import Q
+
 import datetime
 
 @shared_task
@@ -15,6 +17,45 @@ def structify_pags(api_o):
     api_o["get"]["result"] = serializers.PAGQCSerializer(models.PAGQualityReportEquivalenceGroup.objects.select_related('pag').prefetch_related('pag__tagged_artifacts').all(), many=True).data
     signals.task_end.send(sender=current_task.request, task="structify_pags", task_id=current_task.request.id)
     return api_o
+
+@shared_task
+def task_get_sequencing(request, api_o, json_data, user=None):
+    run_names = json_data.get("run_name")
+    if not run_names:
+        api_o["messages"].append("'run_name' key missing or empty")
+        api_o["errors"] += 1
+        return
+
+    if len(run_names) == 1 and run_names[0] == "*":
+        #TODO Cannot check staff status here, relies on checking in the calling view.
+        run_names = [run["run_name"] for run in models.DNASequencingProcess.objects.all().values("run_name")]
+
+    runs = {}
+    for run_name in run_names:
+        try:
+            process = models.DNASequencingProcess.objects.get(run_name=run_name)
+        except Exception as e:
+            api_o["warnings"] += 1
+            api_o["ignored"].append(run_name)
+            continue
+
+        try:
+            runs[process.run_name] = process.as_struct()
+        except Exception as e:
+            api_o["errors"] += 1
+            api_o["messages"].append(str(e))
+            continue
+
+    try:
+        api_o["get"] = {}
+        api_o["get"]["result"] = runs
+        api_o["get"]["count"] = len(runs)
+    except Exception as e:
+        api_o["errors"] += 1
+        api_o["messages"].append(str(e))
+    signals.task_end.send(sender=current_task.request, task="structify_runs", task_id=current_task.request.id)
+    return api_o
+
 
 @shared_task
 def task_get_pag_by_qc(request, api_o, json_data, user=None):
@@ -51,14 +92,26 @@ def task_get_pag_by_qc(request, api_o, json_data, user=None):
     else:
         pass
 
+    # Return only PAGs with the service name, otherwise use the is_pbulic shortcut
     if json_data.get("public") and json_data.get("private"):
+        if json_data.get("service_name"):
+            api_o["messages"].append("service_name is ignored with both public and private")
         pass
     elif json_data.get("public"):
-        reports = reports.filter(pag__is_public=True)
+        if json_data.get("service_name"):
+            reports = reports.filter(pag__accessions__service=json_data.get("service_name"))
+        else:
+            reports = reports.filter(pag__is_public=True)
     elif json_data.get("private"):
-        reports = reports.filter(pag__is_public=False)
+        if json_data.get("service_name"):
+            reports = reports.filter(~Q(pag__accessions__service=json_data.get("service_name")))
+        else:
+            reports = reports.filter(pag__is_public=False)
     else:
+        if json_data.get("service_name"):
+            api_o["messages"].append("service_name is ignored without public or private")
         pass
+
 
     try:
         api_o["get"] = {}

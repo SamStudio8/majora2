@@ -309,12 +309,15 @@ class TestSequencingForm(forms.Form):
         return data
 
     def clean(self):
+        run_name = self.cleaned_data.get("run_name")
         if not self.cleaned_data.get("sequencing_id"):
-            if not self.cleaned_data.get("run_name"):
+            if not run_name:
                 self.add_error("run_name", "If you don't provide a sequencing_id, you must provide a run_name")
-
-
-
+        reserved_ch = [".", "/", "\\"]
+        for ch in reserved_ch:
+            if ch in run_name:
+                self.add_error("run_name", "run_name cannot contain a reserved character: %s" % str(reserved_ch))
+                break
 
 
 class TestSampleForm(forms.Form):

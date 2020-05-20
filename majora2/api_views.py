@@ -19,10 +19,11 @@ from . import form_handlers
 import json
 import datetime
 
-MINIMUM_CLIENT_VERSION = "0.14.0"
+MINIMUM_CLIENT_VERSION = "0.15.0"
 
 @csrf_exempt
 def wrap_api_v2(request, f):
+    from tatl.models import TatlRequest
 
     api_o = {
         "errors": 0,
@@ -36,12 +37,30 @@ def wrap_api_v2(request, f):
         "ignored": [],
     }
 
+    # https://stackoverflow.com/questions/4581789/how-do-i-get-user-ip-address-in-django
+    remote_addr = None
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        remote_addr = x_forwarded_for.split(',')[0]
+    else:
+        remote_addr = request.META.get('REMOTE_ADDR')
+
+    json_data = json.loads(request.body)
+    treq = TatlRequest(
+        user = None,
+        substitute_user = None,
+        route = request.path,
+        payload = json_data,
+        timestamp = timezone.now(),
+        remote_addr = remote_addr,
+    )
+    treq.save()
+
     # Bounce non-POST
     if request.method != "POST":
         return HttpResponseBadRequest()
 
     # Bounce badly formatted requests
-    json_data = json.loads(request.body)
     if not json_data.get('token', None) or not json_data.get('username', None):
         return HttpResponseBadRequest()
 
@@ -50,18 +69,22 @@ def wrap_api_v2(request, f):
     try:
         key = models.ProfileAPIKey.objects.get(key=json_data["token"], profile__user__username=json_data["username"], was_revoked=False, validity_start__lt=timezone.now(), validity_end__gt=timezone.now())
         profile = key.profile
-        user = profile.user
     except:
         return HttpResponseBadRequest()
         #api_o["messages"].append("That key does not exist, has expired or was revoked")
         #api_o["errors"] += 1
         #bad = True
+    user = profile.user
+    treq.user = user
+    treq.save()
 
     # Bounce non-admin escalations to other users
     if json_data.get("sudo_as"):
         if user.is_staff:
             try:
                 user = models.Profile.objects.get(user__username=json_data["sudo_as"]).user
+                treq.substitute_user = user
+                treq.save()
             except:
                 return HttpResponseBadRequest()
         else:
@@ -265,7 +288,14 @@ def get_sequencing(request):
 
         if len(run_names) == 1 and run_names[0] == "*":
             if user.is_staff:
-                run_names = [run["run_name"] for run in models.DNASequencingProcess.objects.all().values("run_name")]
+                from . import tasks
+                celery_task = tasks.task_get_sequencing.delay(None, api_o, json_data, user=None)
+                if celery_task:
+                    api_o["tasks"].append(celery_task.id)
+                    api_o["messages"].append("Call api.majora.task.get with the appropriate task ID later...")
+                else:
+                    api_o["errors"] += 1
+                    api_o["messages"].append("Could not add requested task to Celery...")
             else:
                 return HttpResponseBadRequest()
 
