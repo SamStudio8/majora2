@@ -53,10 +53,6 @@ class BiosampleArtifactSerializer(ArtifactSerializer):
     source_sex = serpy.StrField(attr="created.source_sex", required=False)
     source_age = serpy.IntField(attr="created.source_age", required=False)
 
-    source_category = serpy.StrField(attr="created.source_category", required=False)
-    source_setting = serpy.StrField(attr="created.source_setting", required=False)
-    sampling_strategy = serpy.StrField(attr="created.sampling_strategy", required=False)
-
     collected_by = None
 
     adm0 = serpy.StrField(attr="created.collection_location_country")
