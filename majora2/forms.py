@@ -592,8 +592,10 @@ class TestSampleForm(forms.Form):
                 b = data[field].strip().upper()
                 if b == "Y" or b == "YES":
                     data[field] = True
-                if b == "N" or b == "NO":
+                elif b == "N" or b == "NO":
                     data[field] = False
+                else:
+                    data[field] = None
 
         #if data.get("swab_site", "").upper() == "NSTS" or data.get("swab_site", "").lower() == "nose and throat":
         #    data["swab_site"] = "nose-throat"
@@ -643,13 +645,6 @@ class TestSampleForm(forms.Form):
             self.add_error("sample_type_collected", "Swab site specified but the sample type is not 'swab'")
         #if sample_type == "swab" and not swab_site:
         #    self.add_error("sample_type_collected", "Sample was a swab but you did not specify the swab site")
-
-        # Validate accession
-        secondary_identifier = cleaned_data.get("secondary_identifier")
-        if secondary_identifier and secondary_identifier[0].lower() != 'h':
-            self.add_error("secondary_identifier", "Looks like your secondary_identifier does not begin with hCoV, have you got the identifier and accession the wrong way around?")
-        if secondary_identifier and not cleaned_data.get("secondary_accession"):
-            self.add_error("secondary_accession", "Accession for secondary identifier not provided. If you just want to get this over with, set the accession to 'PENDING'.")
 
 
 class TestFileForm(forms.Form):
