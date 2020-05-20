@@ -1308,8 +1308,6 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
 
     source_age = models.PositiveIntegerField(blank=True, null=True)
     source_sex = models.CharField(max_length=10, blank=True, null=True)
-    source_category = models.CharField(max_length=64, blank=True, null=True)
-    source_setting = models.CharField(max_length=64, blank=True, null=True)
 
     collected_by = models.CharField(max_length=100, blank=True, null=True)
     collection_org = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL, related_name="collected_sample_records")
@@ -1318,8 +1316,6 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
     collection_location_adm1 = models.CharField(max_length=100, blank=True, null=True)
     collection_location_adm2 = models.CharField(max_length=100, blank=True, null=True)
     private_collection_location_adm2 = models.CharField(max_length=100, blank=True, null=True)
-
-    sampling_strategy = models.CharField(max_length=64, blank=True, null=True)
 
     def as_struct(self):
         biosample_sources = []
@@ -1336,9 +1332,6 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
 
             "source_sex": self.source_sex,
             "source_age": self.source_age,
-            "source_category": self.source_category,
-            "source_setting": self.source_setting,
-            "sampling_strategy": self.sampling_strategy,
 
             "collected_by": "",
 
