@@ -1127,7 +1127,7 @@ class MajoraArtifactProcess(PolymorphicModel):
 
     hook_name = models.CharField(max_length=256, blank=True, null=True)
 
-    majora_timestamp = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    majora_timestamp = models.DateTimeField(blank=True, null=True, default=timezone.now)
 
     class Meta:
         ordering = ["-when"]
