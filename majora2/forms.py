@@ -14,9 +14,23 @@ from .account_views import generate_username
 from . import models
 from . import fixed_data
 
-from sshpubkeys import SSHKey
-
 import re
+
+from sshpubkeys import SSHKey
+def majora_clean_ssh_key(ssh_key):
+    if ssh_key:
+        ssh_key = "".join(ssh_key.splitlines()).strip()
+        key = SSHKey(ssh_key)
+        try:
+            key.parse()
+        except Exception as e:
+            raise forms.ValidationError("Unable to decode your key. Please ensure this is your public key and has been entered correctly.")
+
+        if key.key_type != b'ssh-ed25519':
+            raise forms.ValidationError("This system accepts ed25519 keys only.")
+
+    return ssh_key
+
 
 class InstituteForm(forms.Form):
     name = forms.CharField(max_length=100, disabled=True, required=False)
@@ -85,7 +99,7 @@ class AccountForm(forms.Form):
     email = forms.EmailField()
 
     organisation = forms.ModelChoiceField(queryset=models.Institute.objects.exclude(code__startswith="?").order_by("code"), disabled=True, required=False, help_text="You cannot change your organisation", to_field_name="code")
-    ssh_key = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}), label="SSH Public Key", help_text="If you do not need access to CLIMB servers to upload sequence data, you can leave this blank. You can always add an SSH key later.", required=False)
+    ssh_key = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}), label="SSH Public Key.</br>This system accepts ed25519 keys only. To generate one, run this command: <code>ssh-keygen -o -a 100 -t ed25519</code>", help_text="If you do not need access to CLIMB servers to upload sequence data, you can leave this blank. You can always add an SSH key later.", required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -125,16 +139,7 @@ class AccountForm(forms.Form):
         cleaned_data = super().clean()
 
     def clean_ssh_key(self):
-        ssh_key = self.cleaned_data.get("ssh_key")
-        if ssh_key:
-            ssh_key = "".join(ssh_key.splitlines()).strip()
-
-            key = SSHKey(ssh_key)
-            try:
-                key.parse()
-            except Exception as e:
-                raise forms.ValidationError("Unable to decode your key. Please ensure this is your public key and has been entered correctly.")
-        return ssh_key
+        return majora_clean_ssh_key(self.cleaned_data.get("ssh_key"))
 
 class RegistrationForm(forms.Form):
     username = forms.CharField(max_length=150, disabled=True, required=False)
@@ -145,7 +150,7 @@ class RegistrationForm(forms.Form):
     password2 = forms.CharField(widget=forms.PasswordInput(), label="Confirm password", min_length=8)
 
     organisation = forms.ModelChoiceField(queryset=models.Institute.objects.exclude(code__startswith="?").order_by("code"))
-    ssh_key = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}), label="SSH Public Key", help_text="If you do not need access to CLIMB servers to upload sequence data, you can leave this blank. You can always add an SSH key later.", required=False)
+    ssh_key = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}), label="SSH Public Key.</br>This system accepts ed25519 keys only. To generate one, run this command: <code>ssh-keygen -o -a 100 -t ed25519</code>", help_text="If you do not need access to CLIMB servers to upload sequence data, you can leave this blank. You can always add an SSH key later.", required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -197,16 +202,7 @@ class RegistrationForm(forms.Form):
             self.add_error("username", 'This username has already been registered. You may be in the approval queue.')
 
     def clean_ssh_key(self):
-        ssh_key = self.cleaned_data.get("ssh_key")
-        if ssh_key:
-            ssh_key = "".join(ssh_key.splitlines()).strip()
-
-            key = SSHKey(ssh_key)
-            try:
-                key.parse()
-            except Exception as e:
-                raise forms.ValidationError("Unable to decode your key. Please ensure this is your public key and has been entered correctly.")
-        return ssh_key
+        return majora_clean_ssh_key(self.cleaned_data.get("ssh_key"))
 
 
 class M2Metric_SequenceForm(forms.ModelForm):

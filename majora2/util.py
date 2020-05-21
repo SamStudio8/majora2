@@ -75,3 +75,4 @@ def make_spark(queryset, days=30, many=None):
         return counts["default"]["a"]
     else:
         return {k: v["a"] for k, v in counts.items()}
+
