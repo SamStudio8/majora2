@@ -85,7 +85,7 @@ class AccountForm(forms.Form):
     email = forms.EmailField()
 
     organisation = forms.ModelChoiceField(queryset=models.Institute.objects.exclude(code__startswith="?").order_by("code"), disabled=True, required=False, help_text="You cannot change your organisation", to_field_name="code")
-    ssh_key = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}), label="SSH Public Key")
+    ssh_key = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}), label="SSH Public Key", help_text="If you do not need access to CLIMB servers to upload sequence data, you can leave this blank. You can always add an SSH key later.", required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -145,7 +145,7 @@ class RegistrationForm(forms.Form):
     password2 = forms.CharField(widget=forms.PasswordInput(), label="Confirm password", min_length=8)
 
     organisation = forms.ModelChoiceField(queryset=models.Institute.objects.exclude(code__startswith="?").order_by("code"))
-    ssh_key = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}), label="SSH Public Key")
+    ssh_key = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}), label="SSH Public Key", help_text="If you do not need access to CLIMB servers to upload sequence data, you can leave this blank. You can always add an SSH key later.", required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
