@@ -249,6 +249,13 @@ class MajoraArtifact(PolymorphicModel):
                 metadata["%s.%s" % (m.meta_tag, m.meta_name)] = m.value
         return metadata
 
+    def get_metrics_as_struct(self, flat=False):
+        metrics = {}
+        for m in self.temporarymajoraartifactmetric_set.all():
+            if m.namespace not in metrics:
+                metrics[m.namespace] = m.as_struct() #TODO flat or not
+        return metrics
+
     def get_pags(self, include_suppressed=False):
         if not include_suppressed:
             return self.groups.filter(Q(PublishedArtifactGroup___is_latest=True, PublishedArtifactGroup___is_suppressed=False))
@@ -625,7 +632,6 @@ class TemporaryMajoraArtifactMetric(PolymorphicModel):
     def metric_kind(self):
         return 'Metric'
 
-    @property
     def as_struct(self):
         return {}
 
@@ -640,7 +646,6 @@ class TemporaryMajoraArtifactMetric_ThresholdCycle(TemporaryMajoraArtifactMetric
     @property
     def metric_kind(self):
         return 'Ct'
-    @property
     def as_struct(self):
         return {
             "num_tests": self.num_tests,
@@ -675,7 +680,6 @@ class TemporaryMajoraArtifactMetric_Sequence(TemporaryMajoraArtifactMetric):
     @property
     def metric_kind(self):
         return 'Sequence'
-    @property
     def as_struct(self):
         ret = {
             "num_seqs": self.num_seqs,
@@ -709,7 +713,6 @@ class TemporaryMajoraArtifactMetric_Mapping(TemporaryMajoraArtifactMetric):
     @property
     def metric_kind(self):
         return 'Mapping'
-    @property
     def as_struct(self):
         ret = {
             "num_pos": self.num_pos,
@@ -742,7 +745,6 @@ class TemporaryMajoraArtifactMetric_Mapping_Tiles(TemporaryMajoraArtifactMetric)
     def metric_kind(self):
         return 'Tile'
 
-    @property
     def as_struct(self):
         return {
             "pc_tiles_medcov_gte1": self.pc_tiles_medcov_gte1,
@@ -827,6 +829,7 @@ class DigitalResourceArtifact(MajoraArtifact):
             "current_size": self.current_size,
             "current_kind": self.current_kind,
             "metadata": self.get_metadata_as_struct(),
+            "metrics": self.get_metrics_as_struct(),
         }
 
     def make_path(self, no_node=False):
@@ -1071,6 +1074,7 @@ class BiosampleArtifact(MajoraArtifact):
 
             "published_as": ",".join([pag.published_name for pag in self.get_pags(include_suppressed=True)]),
             "metadata": self.get_metadata_as_struct(),
+            "metrics": self.get_metrics_as_struct(),
         }
         collection = {}
         if self.created:
