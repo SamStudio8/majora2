@@ -12,6 +12,6 @@ class COGUK_BiosourceSamplingProcessSupplement(models.Model):
     admitted_hospital_trust_or_board = models.CharField(max_length=100, blank=True, null=True)
     is_care_home_worker = models.BooleanField(null=True)
     is_care_home_resident = models.BooleanField(null=True)
-    anonymised_care_home_code = models.CharField(max_length=3, blank=True, null=True)
+    anonymised_care_home_code = models.CharField(max_length=10, blank=True, null=True)
     admitted_with_covid_diagnosis = models.BooleanField(null=True)
 

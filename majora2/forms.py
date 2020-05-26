@@ -529,7 +529,7 @@ class TestSampleForm(forms.Form):
     admitted_hospital_trust_or_board = forms.CharField(max_length=100, required=False)
     is_care_home_worker = forms.NullBooleanField()
     is_care_home_resident = forms.NullBooleanField()
-    anonymised_care_home_code = forms.CharField(max_length=3, required=False)
+    anonymised_care_home_code = forms.CharField(max_length=10, required=False)
     admitted_with_covid_diagnosis = forms.NullBooleanField()
 
 
