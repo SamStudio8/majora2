@@ -1480,6 +1480,9 @@ class Profile(models.Model):
             ("can_grant_profile_permissions", "Can grant other users permissions that change the Profile system"),
         ]
 
+    def __str__(self):
+        return self.user.username
+
     @property
     def last_action(self):
         action = self.user.actions.order_by("-timestamp").first()
