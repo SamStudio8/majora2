@@ -1543,6 +1543,11 @@ class Institute(models.Model):
     def __str__(self):
         return "%s: %s" % (self.code, self.name)
 
+    class Meta:
+        permissions = [
+            ("can_register_institute", "Can register a new institute in Majora"),
+        ]
+
 
 class County(models.Model):
     country_code = models.CharField(max_length=10)
