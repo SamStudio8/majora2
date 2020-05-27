@@ -46,7 +46,7 @@ def bot_approve_registration(request):
                 substitute_user = None,
                 used_permission = perm.codename,
                 timestamp = timezone.now(),
-                content_object = user,
+                content_object = user.profile,
             )
             treq.save()
             signals.activated_registration.send(sender=request, username=user.username, email=user.email)
