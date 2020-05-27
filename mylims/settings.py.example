@@ -152,7 +152,6 @@ SLACK_CHANNEL = '#majora'
 SLACK_CHANNEL_TATL = '#tatl'
 SLACK_AS_USER = True
 SLACK_BACKEND = 'django_slack.backends.UrllibBackend'
-SLACK_USERS = []
 
 LOGIN_URL = 'two_factor:login'
 LOGIN_REDIRECT_URL = '/accounts/profile/'
