@@ -30,6 +30,7 @@
             <tr>
                 <th>Username</th>
                 <th>Name</th>
+                <th>Active</th>
             </tr>
             </thead>
             <tbody>
@@ -37,6 +38,13 @@
             <tr class="table-success">
                 <td>{{ profile.user.username }}</td>
                 <td>{{ profile.user.first_name }} {{ profile.user.last_name }}</td>
+                <td>
+                {% if profile.user.is_active %}
+                    <span class="badge badge-success">ACTIVE</span>
+                {% else %}
+                    <span class="badge badge-warning">WAITING</span>
+                {% endif %}
+                </td>
             </tr>
             {% empty %}
             <tr><td>No users to list...</td></tr>
