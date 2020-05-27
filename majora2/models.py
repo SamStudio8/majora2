@@ -1472,6 +1472,7 @@ class Profile(models.Model):
     class Meta:
         permissions = [
             ("can_approve_profiles", "Can approve new user profiles for their organisation"),
+            ("can_grant_profile_permissions", "Can grant other users permissions that change the Profile system"),
         ]
 
 class ProfileAPIKeyDefinition(models.Model):
