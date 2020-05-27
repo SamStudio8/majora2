@@ -8,7 +8,6 @@ from django.db.models import Q
 
 from django.utils import timezone
 
-from . import receivers
 from . import serializers
 
 from polymorphic.models import PolymorphicModel
@@ -1697,3 +1696,4 @@ class AbstractBioinformaticsProcess(MajoraArtifactProcess):
         return 'Bioinformatics: %s' % self.pipe_kind
     pass
 
+from . import receivers

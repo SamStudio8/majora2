@@ -2,7 +2,9 @@ import time
 
 from django.dispatch import receiver
 from django.conf import settings
+from django.urls import reverse
 
+from . import models
 from . import signals
 
 from django_slack import slack_message
@@ -10,13 +12,48 @@ from django.core.mail import send_mail
 
 @receiver(signals.new_registration)
 def recv_new_registration(sender, username, first_name, last_name, organisation, **kwargs):
+    from django.contrib.auth.models import User, Permission
+    perm = Permission.objects.get(codename='can_approve_profiles')
+    site_admins = models.Profile.objects.filter(user__user_permissions=perm, institute__name=organisation) # TODO works for users specifically given this perm
+    send_mail(
+        '[majora@climb] A user has requested access to Majora for your organisation',
+        '''You're receiving this email because %s %s has requested a %s account and you are responsible for approving accounts for your organisation.
+        Please verify the user and if the request is valid, approve the request from Majora: %s
+        ''' % (first_name, last_name, settings.INSTANCE_NAME, reverse('list_site_profiles')),
+        None,
+        [p.user.email for p in site_admins],
+        fail_silently=False,
+    )
+
+@receiver(signals.new_sample)
+def recv_new_sample(sender, sample_id, submitter, **kwargs):
+    if settings.SLACK_CHANNEL:
+        slack_message('slack/blank', {
+        }, [{
+            "text": "Sample %s uploaded from %s" % (sample_id, submitter),
+            #"footer": "New sample spotted by Majora",
+            #"footer_icon": "https://avatars.slack-edge.com/2019-05-03/627972616934_a621b7d3a28c2b6a7bd1_512.jpg",
+            #"ts": int(time.time()),
+        }])
+
+@receiver(signals.site_approved_registration)
+def recv_site_approval(sender, approver, approved_profile, **kwargs):
+    from tatl.models import TatlPermFlex
+    treq = TatlPermFlex(
+        user = request.user,
+        substitute_user = None,
+        used_permission = "can_approve_profiles",
+        timestamp = timezone.now(),
+        content_object = profile_to_approve,
+    )
+    treq.save()
     if settings.SLACK_CHANNEL:
         slack_message('slack/blank', {
         }, [{
             "mrkdwn_in": ["text", "pretext", "fields"],
-            "title": "New user registration",
+            "title": "New user registration approved by site",
             "title_link": "",
-            "text": "%s %s (%s) requested account %s to be approved" % (first_name, last_name, organisation, username),
+            "text": "%s %s (%s) requested account %s to be added" % (approved_profile.user.first_name, approved_profile.user.last_name, approved_profile.institute.name, approved_profile.user.username),
             "footer": "New user spotted by Majora",
             "footer_icon": "https://avatars.slack-edge.com/2019-05-03/627972616934_a621b7d3a28c2b6a7bd1_512.jpg",
 
@@ -30,7 +67,7 @@ def recv_new_registration(sender, username, first_name, last_name, organisation,
                     "short": True
                 },
                 {
-                    "value": username,
+                    "value": approved_profile.user.username,
                     "short": True
                 },
                 {
@@ -38,7 +75,7 @@ def recv_new_registration(sender, username, first_name, last_name, organisation,
                     "short": True
                 },
                 {
-                    "value": "%s %s" % (first_name, last_name),
+                    "value": "%s %s" % (approved_profile.user.first_name, approved_profile.user.last_name),
                     "short": True
                 },
                 {
@@ -46,22 +83,11 @@ def recv_new_registration(sender, username, first_name, last_name, organisation,
                     "short": True
                 },
                 {
-                    "value": organisation,
+                    "value": approved_profile.institute.name,
                     "short": True
                 },
             ],
             "ts": int(time.time()),
-        }])
-
-@receiver(signals.new_sample)
-def recv_new_sample(sender, sample_id, submitter, **kwargs):
-    if settings.SLACK_CHANNEL:
-        slack_message('slack/blank', {
-        }, [{
-            "text": "Sample %s uploaded from %s" % (sample_id, submitter),
-            #"footer": "New sample spotted by Majora",
-            #"footer_icon": "https://avatars.slack-edge.com/2019-05-03/627972616934_a621b7d3a28c2b6a7bd1_512.jpg",
-            #"ts": int(time.time()),
         }])
 
 @receiver(signals.activated_registration)

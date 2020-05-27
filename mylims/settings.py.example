@@ -148,7 +148,8 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 SLACK_TOKEN = ''
-SLACK_CHANNEL = '#general'
+SLACK_CHANNEL = '#majora'
+SLACK_CHANNEL_TATL = '#tatl'
 SLACK_AS_USER = True
 SLACK_BACKEND = 'django_slack.backends.UrllibBackend'
 SLACK_USERS = []

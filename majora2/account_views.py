@@ -13,6 +13,7 @@ from . import models
 from . import util
 from . import forms
 from . import signals
+from tatl import signals as tsignals
 
 import json
 import uuid
@@ -231,17 +232,13 @@ def list_site_profiles(request):
                 if profile_to_approve.institute != request.user.profile.institute:
                     return HttpResponseBadRequest() # bye
 
-                from tatl.models import TatlPermFlex
-                treq = TatlPermFlex(
-                    user = request.user,
-                    substitute_user = None,
-                    used_permission = "can_approve_profiles",
-                    timestamp = timezone.now(),
-                    content_object = profile_to_approve,
-                )
                 profile_to_approve.is_site_approved = True
                 profile_to_approve.save()
-                treq.save()
+                signals.site_approved_registration.send(
+                        sender=request,
+                        approver=request.user,
+                        approved_profile=profile_to_approve
+                )
 
 
     # Render the list regardless of what the form did

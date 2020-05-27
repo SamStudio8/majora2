@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.conf import settings
 
+
 # Create your models here.
 class TatlRequest(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="requests")
@@ -26,3 +27,5 @@ class TatlPermFlex(models.Model):
     timestamp = models.DateTimeField()
 
     request = models.OneToOneField('TatlRequest', on_delete=models.PROTECT, related_name="action", blank=True, null=True)
+
+from . import receivers
