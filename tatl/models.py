@@ -22,7 +22,7 @@ class TatlPermFlex(models.Model):
     object_id = models.CharField(max_length=64) # ffs you really cooked this one (needs to support positive int and uuid)
     content_object = GenericForeignKey('content_type', 'object_id')
 
-    extra_context = models.TextField()
+    extra_context = models.TextField(blank=True, null=True)
     timestamp = models.DateTimeField()
 
     request = models.OneToOneField('TatlRequest', on_delete=models.PROTECT, related_name="action", blank=True, null=True)
