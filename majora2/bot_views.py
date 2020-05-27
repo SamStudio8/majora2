@@ -34,7 +34,7 @@ def bot_approve_registration(request):
                 "text": "Invalid username.",
             }), content_type="application/json")
 
-        if profile:
+        if profile and not user.is_active:
             user.is_active = True
             user.save()
             user.profile.is_site_approved = True # force local site approval if its approved by sysadm
