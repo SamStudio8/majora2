@@ -1468,11 +1468,15 @@ class Profile(models.Model):
     ssh_key = models.TextField(blank=True, null=True)
     api_key = models.CharField(max_length=128, default=uuid.uuid4)
 
+    slack_id = models.CharField(max_length=24, blank=True, null=True)
+    slack_verified = models.BooleanField(default=False)
+
     is_site_approved = models.BooleanField(default=False)
 
     class Meta:
         permissions = [
             ("can_approve_profiles", "Can approve new user profiles for their organisation"),
+            ("can_approve_profiles_via_bot", "Can approve new user profiles for any organisation via the bot system"),
             ("can_grant_profile_permissions", "Can grant other users permissions that change the Profile system"),
         ]
 

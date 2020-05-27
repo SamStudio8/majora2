@@ -1,13 +1,18 @@
-from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 
 import json
 from . import signals
+from . import models
+
+#TODO should probably have a common entry system like the api_view
 
 def bot_approve_registration(request):
     if request.method == "POST":
-        if request.POST.get('user_id', None) not in settings.SLACK_USERS:
+        try:
+            perm = Permission.objects.get(codename='can_approve_profiles_via_bot')
+            profile = models.Profile.objects.get(user__user_permissions=perm, slack_id=request.POST.get('user_id'))
+        except Exception as e:
             return HttpResponse(json.dumps({
                 "response_type": "ephemeral",
                 "text": "I'm sorry %s. I'm afraid I can't do that." % request.POST.get('user_name', "User"),
@@ -26,12 +31,24 @@ def bot_approve_registration(request):
                 "response_type": "ephemeral",
                 "text": "Invalid username.",
             }), content_type="application/json")
-        else:
+
+        if profile:
             user.is_active = True
             user.save()
-            user.profile.is_site_approved = True
+            user.profile.is_site_approved = True # force local site approval if its approved by sysadm
             user.profile.save()
+
+            from tatl.models import TatlPermFlex
+            treq = TatlPermFlex(
+                user = profile.user,
+                substitute_user = None,
+                used_permission = perm.codename,
+                timestamp = timezone.now(),
+                content_object = user,
+            )
+            treq.save()
             signals.activated_registration.send(sender=request, username=user.username, email=user.email)
+
             return HttpResponse(json.dumps({
                 "response_type": "in_channel",
                 "text": "User %s is now active and able to authenticate." % user.username,
