@@ -34,6 +34,12 @@ def bot_approve_registration(request):
                 "text": "Invalid username.",
             }), content_type="application/json")
 
+        if user.is_active:
+            return HttpResponse(json.dumps({
+                "response_type": "ephemeral",
+                "text": "Cowardly refusing to email an already active user...",
+            }), content_type="application/json")
+
         if profile and not user.is_active:
             user.is_active = True
             user.save()
