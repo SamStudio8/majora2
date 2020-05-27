@@ -23,13 +23,15 @@
 <div class="container">
 <div class="row">
     <div class="col-md-8">
-        <h1>Profiles</h1>
+        <h1>Active <code>{{ org.code }}</code> profiles</h1>
         <br>
         <table class="table table-borderless">
             <thead class="table-dark">
             <tr>
                 <th>Username</th>
                 <th>Name</th>
+                <th>Last login</th>
+                <th>Last action</th>
                 <th>Active</th>
             </tr>
             </thead>
@@ -38,6 +40,8 @@
             <tr class="table-success">
                 <td>{{ profile.user.username }}</td>
                 <td>{{ profile.user.first_name }} {{ profile.user.last_name }}</td>
+                <td>{{ profile.user.last_login | naturaltime }}</td>
+                <td>{{ profile.last_action | naturaltime }}</td>
                 <td>
                 {% if profile.user.is_active %}
                     <span class="badge badge-success">ACTIVE</span>
@@ -53,9 +57,8 @@
         </table>
     </div>
     <div class="col-md-4">
-        <h1>Inactive profiles</h1>
+        <h1>Approval queue</h1>
         <p>These profiles require your attention. Approve a profile only if you know this user should have access to CLIMB systems.</p>
-        <br>
         <table class="table table-borderless">
             <thead class="table-dark">
             <tr>

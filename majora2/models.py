@@ -1476,6 +1476,12 @@ class Profile(models.Model):
             ("can_grant_profile_permissions", "Can grant other users permissions that change the Profile system"),
         ]
 
+    @property
+    def last_action(self):
+        action = self.user.actions.order_by("-timestamp").first()
+        if action:
+            return action.timestamp
+
 class ProfileAPIKeyDefinition(models.Model):
     key_name = models.CharField(max_length=48, unique=True)
     is_service_key = models.BooleanField()
