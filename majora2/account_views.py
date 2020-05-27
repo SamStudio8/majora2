@@ -207,3 +207,50 @@ def api_keys_activate(request, key_name):
     k.save()
 
     return redirect(reverse('api_keys'))
+
+@login_required
+def list_site_profiles(request):
+    otp = django_2fa_mixin_hack(request)
+    if otp:
+        return otp
+
+    if not hasattr(request.user, "profile"):
+        return HttpResponseBadRequest() # bye
+    if not request.user.has_perm("can_approve_profiles"):
+        return HttpResponseBadRequest() # bye
+
+    if request.method == 'POST':
+        profile_id_to_approve = request.POST.get("profile")
+        if profile_id_to_approve:
+            try:
+                profile_to_approve = models.Profile.objects.get(pk=profile_id_to_approve)
+            except:
+                return HttpResponseBadRequest() # bye
+
+            if profile_to_approve:
+                if profile_to_approve.institute != request.user.profile.institute:
+                    return HttpResponseBadRequest() # bye
+
+                from tatl.models import TatlPermFlex
+                treq = TatlPermFlex(
+                    user = request.user,
+                    substitute_user = None,
+                    used_permission = "can_approve_profiles",
+                    timestamp = timezone.now(),
+                    content_object = profile_to_approve,
+                )
+                profile_to_approve.is_site_approved = True
+                profile_to_approve.save()
+                treq.save()
+
+
+    # Render the list regardless of what the form did
+    active_site_profiles = models.Profile.objects.filter(institute=request.user.profile.institute, is_site_approved=True)
+    inactive_site_profiles = models.Profile.objects.filter(institute=request.user.profile.institute, is_site_approved=False)
+    return render(request, 'site_profiles.html', {
+        'user': request.user,
+        'org': request.user.profile.institute,
+        'active_profiles': active_site_profiles,
+        'inactive_profiles': inactive_site_profiles,
+    })
+

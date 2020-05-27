@@ -27,6 +27,7 @@ urlpatterns = [
     path('accounts/profile/', views.profile, name='profile'),
     path('keys/list/', account_views.api_keys, name='api_keys'),
     path('keys/activate/<str:key_name>', account_views.api_keys_activate, name='api_keys_activate'),
+    path('institute/profiles/', account_views.list_site_profiles, name='list_site_profiles'),
 
     # DATAMATRIX ###############################################################
     path('dm/<uuid:uuid>/', views.barcode, name="barcode"),
