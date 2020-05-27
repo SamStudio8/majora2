@@ -1469,6 +1469,11 @@ class Profile(models.Model):
     ssh_key = models.TextField(blank=True, null=True)
     api_key = models.CharField(max_length=128, default=uuid.uuid4)
 
+    class Meta:
+        permissions = [
+            ("can_approve_profiles", "Can approve new user profiles for their organisation"),
+        ]
+
 class ProfileAPIKeyDefinition(models.Model):
     key_name = models.CharField(max_length=48, unique=True)
     is_service_key = models.BooleanField()
