@@ -138,10 +138,14 @@
             <a class="dropdown-item" href="{% url 'profile' %}">Profile</a>
             <a class="dropdown-item" href="{% url 'two_factor:profile' %}">Profile Security</a>
             <a class="dropdown-item" href="{% url 'api_keys' %}">API Keys</a>
-          <div class="dropdown-divider"></div>
+            <hr>
             <a class="dropdown-item" href="{% url 'form_account' %}">Update account</a>
             <a class="dropdown-item" href="{% url 'form_institute' %}">Update institute</a>
-          <div class="dropdown-divider"></div>
+          {% if perms.majora2.can_approve_profiles %}
+            <hr>
+            <a class="dropdown-item" href="{% url 'list_site_profiles' %}">Manage users</a>
+          {% endif %}
+            <hr>
           <a class="dropdown-item" href="{% url 'logout' %}">Log Out</a>
         </div>
       </li>

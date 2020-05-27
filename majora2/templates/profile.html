@@ -37,7 +37,8 @@
         </tr>
         <tr>
             <th>Organisation</th>
-            <td>{{ user.profile.institute }} <a class="badge badge-info" style="text-decoration: underline;" href="{% url 'form_institute' %}">Update institute author credits</a></td>
+            <td>{{ user.profile.institute }} <a class="badge badge-info" style="text-decoration: underline;" href="{% url 'form_institute' %}">Update institute author credits</a>
+            {% if perms.majora2.can_approve_profiles %}<a class="badge badge-info" style="text-decoration: underline;" href="{% url 'list_site_profiles' %}">Manage users</a>{% endif %}</td>
         </tr>
         <tr>
             <th>Default API Key</th>
