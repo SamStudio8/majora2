@@ -3,6 +3,7 @@ import time
 from django.dispatch import receiver
 from django.conf import settings
 from django.urls import reverse
+from django.utils import timezone
 
 from . import models
 from . import signals
@@ -22,7 +23,7 @@ def recv_new_registration(sender, username, first_name, last_name, organisation,
         ''' % (first_name, last_name, settings.INSTANCE_NAME, reverse('list_site_profiles')),
         None,
         [p.user.email for p in site_admins],
-        fail_silently=False,
+        fail_silently=True,
     )
 
 @receiver(signals.new_sample)
@@ -40,11 +41,11 @@ def recv_new_sample(sender, sample_id, submitter, **kwargs):
 def recv_site_approval(sender, approver, approved_profile, **kwargs):
     from tatl.models import TatlPermFlex
     treq = TatlPermFlex(
-        user = request.user,
+        user = sender.user,
         substitute_user = None,
         used_permission = "can_approve_profiles",
         timestamp = timezone.now(),
-        content_object = profile_to_approve,
+        content_object = approved_profile,
     )
     treq.save()
     if settings.SLACK_CHANNEL:
@@ -84,6 +85,14 @@ def recv_site_approval(sender, approver, approved_profile, **kwargs):
                 },
                 {
                     "value": approved_profile.institute.name,
+                    "short": True
+                },
+                {
+                    "title": "Approver",
+                    "short": True
+                },
+                {
+                    "value": "%s %s" % (approver.first_name, approver.last_name),
                     "short": True
                 },
             ],
