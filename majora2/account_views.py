@@ -217,7 +217,7 @@ def list_site_profiles(request):
 
     if not hasattr(request.user, "profile"):
         return HttpResponseBadRequest() # bye
-    if not request.user.has_perm("can_approve_profiles"):
+    if not request.user.has_perm("majora2.can_approve_profiles"):
         return HttpResponseBadRequest() # bye
 
     if request.method == 'POST':
