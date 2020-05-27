@@ -29,6 +29,8 @@ def bot_approve_registration(request):
         else:
             user.is_active = True
             user.save()
+            user.profile.is_site_approved = True
+            user.profile.save()
             signals.activated_registration.send(sender=request, username=user.username, email=user.email)
             return HttpResponse(json.dumps({
                 "response_type": "in_channel",
