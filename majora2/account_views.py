@@ -169,6 +169,7 @@ def list_user_names(request):
             for user in User.objects.all():
                 if hasattr(user, "profile"):
                     keys.append("\t".join([
+                        '1' if user.profile.is_site_approved else '0',
                         '1' if user.is_active else '0',
                         user.username,
                         user.first_name,
