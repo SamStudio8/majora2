@@ -130,7 +130,7 @@ class PAGSerializer(serpy.Serializer):
 
     def serialize_owner_org_gisaid_lab_list(self, pag):
         if pag.owner.profile.institute.gisaid_list: 
-            return pag.owner.profile.institute.gisaid_list.replace('\n', ',').replace(",,", ',') # sigh
+            return pag.owner.profile.institute.gisaid_list.replace('\t', ' ').replace('\r', '').replace('\n', ',').replace(",,", ',').replace(' ,', ',') # sigh
         return ""
 
 class PAGQCSerializer(serpy.Serializer):
