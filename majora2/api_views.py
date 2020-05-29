@@ -360,7 +360,7 @@ def add_qc(request):
             for metric in artifact.temporarymajoraartifactmetric_set.all():
                 if metric.namespace:
                     if metric.namespace not in metrics:
-                        metrics[metric.namespace] = metric.as_struct
+                        metrics[metric.namespace] = metric.as_struct()
                     else:
                         api_o["messages"].append("Cannot automatically QC a PAG with multiple objects containing the same metric type...")
                         api_o["errors"] += 1
