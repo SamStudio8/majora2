@@ -28,8 +28,7 @@
         <table class="table table-borderless">
             <thead class="table-dark">
             <tr>
-                <th>Key Name</th>
-                <th>Key</th>
+                <th>Key Name and Key</th>
                 <th>Expiry</th>
                 <th class="text-right">Renew</th>
             </tr>
@@ -37,8 +36,8 @@
             <tbody>
             {% for key in generated %}
             <tr class="table-{% if key.is_expired or key.was_revoked %}danger{%else%}success{% endif %}">
-                <td>{{ key.key_definition.key_name }}</td>
-                <td><code>{{ key.key }}</code></td>
+                <td>{{ key.key_definition.key_name }}
+                </br><code>{{ key.key }}</code></td>
                 <td>{{ key.validity_end | naturaltime }}</td>
                 <td class="text-right"><a class="badge badge-warning" href="{% url 'api_keys_activate' key.key_definition.key_name %}">RENEW</a>
             </tr>
