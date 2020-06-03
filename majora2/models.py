@@ -633,6 +633,8 @@ class TemporaryMajoraArtifactMetric(PolymorphicModel):
 
     def as_struct(self):
         return {}
+    def get_serializer(self):
+        return serializers.MetricSerializer
 
 class TemporaryMajoraArtifactMetricRecord(PolymorphicModel):
     artifact_metric = models.ForeignKey('TemporaryMajoraArtifactMetric', on_delete=models.CASCADE, related_name="metric_records")
@@ -652,6 +654,8 @@ class TemporaryMajoraArtifactMetric_ThresholdCycle(TemporaryMajoraArtifactMetric
             "max_ct": self.max_ct,
             #"records": [record.as_struct() for record in self.metric_records.all()],
         }
+    def get_serializer(self):
+        return serializers.MetricSerializer_ThresholdCycle
 
 class TemporaryMajoraArtifactMetricRecord_ThresholdCycle(TemporaryMajoraArtifactMetricRecord):
     ct_value = models.FloatField(blank=True, null=True)
