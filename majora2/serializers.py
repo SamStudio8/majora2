@@ -26,8 +26,8 @@ class ArtifactSerializer(serpy.Serializer):
 class MetricSerializer(serpy.Serializer):
     namespace = serpy.StrField() 
 class MetricSerializer_ThresholdCycle(MetricSerializer):
-    min_ct = serpy.FloatField()
-    max_ct = serpy.FloatField()
+    min_ct = serpy.FloatField(required=False)
+    max_ct = serpy.FloatField(required=False)
 
 class BiosampleArtifactSerializer(ArtifactSerializer):
     central_sample_id = serpy.StrField()
@@ -91,8 +91,8 @@ class DigitalResourceArtifactSerializer(ArtifactSerializer):
 class PAGAccessionSerializer(serpy.Serializer):
     service = serpy.StrField()
     primary_accession = serpy.StrField()
-    secondary_accession = serpy.StrField()
-    tertiary_accession = serpy.StrField()
+    secondary_accession = serpy.StrField(required=False)
+    tertiary_accession = serpy.StrField(required=False)
 
 class QCGroupSerializer(serpy.Serializer):
     id = serpy.StrField()
