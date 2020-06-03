@@ -314,6 +314,7 @@ def handle_testsample(form, user=None, api_o=None):
     supp.employing_hospital_name = form.cleaned_data.get("employing_hospital_name")
     supp.employing_hospital_trust_or_board = form.cleaned_data.get("employing_hospital_trust_or_board")
     supp.is_hospital_patient = form.cleaned_data.get("is_hospital_patient")
+    supp.is_icu_patient = form.cleaned_data.get("is_icu_patient")
     supp.admission_date = form.cleaned_data.get("admission_date")
     supp.admitted_hospital_name = form.cleaned_data.get("admitted_hospital_name")
     supp.admitted_hospital_trust_or_board = form.cleaned_data.get("admitted_hospital_trust_or_board")

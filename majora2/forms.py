@@ -520,6 +520,7 @@ class TestSampleForm(forms.Form):
     employing_hospital_name = forms.CharField(max_length=100, required=False)
     employing_hospital_trust_or_board = forms.CharField(max_length=100, required=False)
     is_hospital_patient = forms.NullBooleanField()
+    is_icu_patient = forms.NullBooleanField()
     admission_date = forms.DateField(
             label="Received date",
             help_text="YYYY-MM-DD",

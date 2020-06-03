@@ -7,6 +7,7 @@ class COGUK_BiosourceSamplingProcessSupplement(models.Model):
     employing_hospital_name = models.CharField(max_length=100, blank=True, null=True)
     employing_hospital_trust_or_board = models.CharField(max_length=100, blank=True, null=True)
     is_hospital_patient = models.BooleanField(null=True)
+    is_icu_patient = models.BooleanField(null=True)
     admission_date = models.DateField(blank=True, null=True)
     admitted_hospital_name = models.CharField(max_length=100, blank=True, null=True)
     admitted_hospital_trust_or_board = models.CharField(max_length=100, blank=True, null=True)
