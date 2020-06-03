@@ -1482,6 +1482,8 @@ class Profile(models.Model):
             ("can_approve_profiles", "Can approve new user profiles for their organisation"),
             ("can_approve_profiles_via_bot", "Can approve new user profiles for any organisation via the bot system"),
             ("can_grant_profile_permissions", "Can grant other users permissions that change the Profile system"),
+            #("can_get_sshkey_via_token", "Can get SSH keys for users via the token system"),
+            #("can_get_profiles_via_token", "Can get basic Profile information via the token system"),
         ]
 
     def __str__(self):
