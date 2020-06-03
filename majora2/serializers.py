@@ -93,7 +93,8 @@ class PAGSerializer(serpy.Serializer):
     published_date = serpy.MethodField('serialize_published_date')
     artifacts = serpy.MethodField('serialize_tagged_artifacts')
 
-    accessions = PAGAccessionSerializer(attr='accessions.all', many=True, call=True)
+    #accessions = PAGAccessionSerializer(attr='accessions.all', many=True, call=True)
+    accessions = serpy.MethodField('serialize_accessions')
     qc_reports = QCGroupSerializer(attr='quality_groups.all', many=True, call=True)
 
     owner = serpy.StrField(attr='owner.username')
@@ -123,6 +124,12 @@ class PAGSerializer(serpy.Serializer):
                 a[artifact.artifact_kind] = []
             s = artifact.get_serializer()
             a[artifact.artifact_kind].append( s(artifact).data )
+        return a
+
+    def serialize_accessions(self, pag):
+        a = {}
+        for accession in pag.accessions.all():
+            a[accession.service] = PAGAccessionSerializer(accession).data
         return a
 
     def serialize_published_date(self, pag):
