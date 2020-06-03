@@ -5,6 +5,7 @@ class ArtifactSerializer(serpy.Serializer):
     dice_name = serpy.StrField()
     artifact_kind = serpy.StrField()
     metadata = serpy.MethodField('get_metadata_as_struct')
+    metrics = serpy.MethodField('get_metrics_as_struct')
     def get_metadata_as_struct(self, artifact, flat=False):
         metadata = {}
         for m in artifact.metadata.all():
@@ -15,6 +16,18 @@ class ArtifactSerializer(serpy.Serializer):
             else:
                 metadata["%s.%s" % (m.meta_tag, m.meta_name)] = m.value
         return metadata
+    def get_metrics_as_struct(self, artifact, flat=False):
+        metrics = {}
+        for metric in artifact.temporarymajoraartifactmetric_set.all():
+            s = metric.get_serializer()
+            metrics[metric.metric_kind.lower()] = s(metric).data
+        return metrics
+
+class MetricSerializer(serpy.Serializer):
+    namespace = serpy.StrField() 
+class MetricSerializer_ThresholdCycle(MetricSerializer):
+    min_ct = serpy.FloatField()
+    max_ct = serpy.FloatField()
 
 class BiosampleArtifactSerializer(ArtifactSerializer):
     central_sample_id = serpy.StrField()
