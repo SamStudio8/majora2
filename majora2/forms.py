@@ -227,25 +227,22 @@ class M2Metric_ThresholdCycleForm(forms.ModelForm):
 
 class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a modelform, but w/e
     artifact_metric = forms.ModelChoiceField(queryset=models.TemporaryMajoraArtifactMetric_ThresholdCycle.objects.all(), required=True)
-    ct_value = forms.FloatField(required=True)
+    ct_value = forms.FloatField(required=True, min_value=0.0)
     test_kit = forms.ChoiceField(
             choices=[
                 (None, ""),
-                ("TEST", "TEST"),
             ],
             required=False,
     )
     test_platform = forms.ChoiceField(
             choices=[
                 (None, ""),
-                ("TEST", "TEST"),
             ],
             required=False,
     )
     test_target = forms.ChoiceField(
             choices=[
                 (None, ""),
-                ("TEST", "TEST"),
             ],
             required=False,
     )
