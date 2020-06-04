@@ -243,6 +243,7 @@ class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a mode
     test_target = forms.ChoiceField(
             choices=[
                 (None, ""),
+                ("TEST", "TEST"),
             ],
             required=False,
     )
@@ -614,6 +615,7 @@ class TestSampleForm(forms.Form):
             "is_care_home_worker",
             "is_care_home_resident",
             "admitted_with_covid_diagnosis",
+            "is_icu_patient",
         ]
         for field in LOWERCASE_FIELDS:
             if data.get(field):
