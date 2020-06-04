@@ -38,6 +38,13 @@
             {% else %}
             <span class="badge badge-dark">?</span>
             {% endif %}
+            {% if sample.created.coguk_supp.is_icu_patient %}
+            <span class="badge badge-info badge-left">ICU</span><span class="badge badge-success badge-right">Y</span>
+            {% elif sample.created.coguk_supp.is_icu_patient == False %}
+            <span class="badge badge-info badge-left">ICU</span><span class="badge badge-danger badge-right">N</span>
+            {% else %}
+            <span class="badge badge-info badge-left">ICU</span><span class="badge badge-dark badge-right">?</span>
+            {% endif %}
         </td>
         <td>
             {% if sample.created.coguk_supp.is_care_home_worker %}

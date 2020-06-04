@@ -227,25 +227,49 @@ class M2Metric_ThresholdCycleForm(forms.ModelForm):
 
 class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a modelform, but w/e
     artifact_metric = forms.ModelChoiceField(queryset=models.TemporaryMajoraArtifactMetric_ThresholdCycle.objects.all(), required=True)
-    ct_value = forms.FloatField(required=True)
+    ct_value = forms.FloatField(required=True, min_value=0.0)
     test_kit = forms.ChoiceField(
             choices=[
                 (None, ""),
-                ("TEST", "TEST"),
+                ("ALTONA", "ALTONA"),
+                ("ABBOTT", "ABBOTT"),
+                ("ROCHE", "ROCHE"),
+                ("AUSDIAGNOSTICS", "AUSDIAGNOSTICS"),
+                ("BOSPHORE", "BOSPHORE"),
+                ("INHOUSE", "INHOUSE"),
+                ("SEEGENE", "SEEGENE"),
             ],
             required=False,
     )
     test_platform = forms.ChoiceField(
             choices=[
                 (None, ""),
-                ("TEST", "TEST"),
+                ("ALTOSTAR_AM16", "ALTOSTAR_AM16"),
+                ("ABBOTT_M2000", "ABBOTT_M2000"),
+                ("ROCHE_FLOW", "ROCHE_FLOW"),
+                ("ROCHE_COBAS", "ROCHE_COBAS"),
+                ("ELITE_INGENIUS", "ELITE_INGENIUS"),
+                ("CEPHEID_XPERT", "CEPHEID_XPERT"),
+                ("QIASTAT_DX", "QIASTAT_DX"),
+                ("AUSDIAGNOSTICS", "AUSDIAGNOSTICS"),
+                ("ROCHE_LIGHTCYCLER", "ROCHE_LIGHTCYCLER"),
+                ("INHOUSE", "INHOUSE"),
+                ("ALTONA", "ALTONA"),
+                ("PANTHER", "PANTHER"),
+                ("SEEGENE_NIMBUS", "SEEGENE_NIMBUS"),
             ],
             required=False,
     )
     test_target = forms.ChoiceField(
             choices=[
                 (None, ""),
-                ("TEST", "TEST"),
+                ("S", "S"),
+                ("E", "E"),
+                ("N", "N"),
+                ("RDRP","RDRP"),
+                ("ORF1AB", "ORF1AB"),
+                ("ORF8", "ORF8"),
+                ("RDRP+N", "RDRP+N"),
             ],
             required=False,
     )
@@ -520,6 +544,7 @@ class TestSampleForm(forms.Form):
     employing_hospital_name = forms.CharField(max_length=100, required=False)
     employing_hospital_trust_or_board = forms.CharField(max_length=100, required=False)
     is_hospital_patient = forms.NullBooleanField()
+    is_icu_patient = forms.NullBooleanField()
     admission_date = forms.DateField(
             label="Received date",
             help_text="YYYY-MM-DD",
@@ -616,6 +641,7 @@ class TestSampleForm(forms.Form):
             "is_care_home_worker",
             "is_care_home_resident",
             "admitted_with_covid_diagnosis",
+            "is_icu_patient",
         ]
         for field in LOWERCASE_FIELDS:
             if data.get(field):
