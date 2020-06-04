@@ -190,6 +190,7 @@ def handle_metrics(metrics, tag_type, tag_to, user, api_o):
                     api_o["updated"].append(form_handlers._format_tuple(tag_to))
 
                     # Handle optional records
+                    first_valid = True
                     for metric_rec_name in metrics[metric].get("records", {}):
                         metric_rec = metrics[metric]["records"][metric_rec_name]
                         if metric == "ct":
@@ -201,6 +202,11 @@ def handle_metrics(metrics, tag_type, tag_to, user, api_o):
                                 api_o["warnings"] += 1
                                 continue
                             if form.is_valid():
+                                if first_valid:
+                                    # Destroy existing records
+                                    dc = metric_ob.metric_records.all().delete()[0] # bye
+                                    api_o["messages"].append("%d existing Ct value records deleted and replaced with new values" % int(dc/2))
+                                    first_valid = False
                                 try:
                                     artifact_metric = form.cleaned_data["artifact_metric"]
                                     rec_obj, rec_obj_created = models.TemporaryMajoraArtifactMetricRecord_ThresholdCycle.objects.get_or_create(
