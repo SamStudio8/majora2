@@ -231,19 +231,45 @@ class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a mode
     test_kit = forms.ChoiceField(
             choices=[
                 (None, ""),
+                ("ALTONA", "ALTONA"),
+                ("ABBOTT", "ABBOTT"),
+                ("ROCHE", "ROCHE"),
+                ("AUSDIAGNOSTICS", "AUSDIAGNOSTICS"),
+                ("BOSPHORE", "BOSPHORE"),
+                ("INHOUSE", "INHOUSE"),
+                ("SEEGENE", "SEEGENE"),
             ],
             required=False,
     )
     test_platform = forms.ChoiceField(
             choices=[
                 (None, ""),
+                ("ALTOSTAR_AM16", "ALTOSTAR_AM16"),
+                ("ABBOTT_M2000", "ABBOTT_M2000"),
+                ("ROCHE_FLOW", "ROCHE_FLOW"),
+                ("ROCHE_COBAS", "ROCHE_COBAS"),
+                ("ELITE_INGENIUS", "ELITE_INGENIUS"),
+                ("CEPHEID_XPERT", "CEPHEID_XPERT"),
+                ("QIASTAT_DX", "QIASTAT_DX"),
+                ("AUSDIAGNOSTICS", "AUSDIAGNOSTICS"),
+                ("ROCHE_LIGHTCYCLER", "ROCHE_LIGHTCYCLER"),
+                ("INHOUSE", "INHOUSE"),
+                ("ALTONA", "ALTONA"),
+                ("PANTHER", "PANTHER"),
+                ("SEEGENE_NIMBUS", "SEEGENE_NIMBUS"),
             ],
             required=False,
     )
     test_target = forms.ChoiceField(
             choices=[
                 (None, ""),
-                ("TEST", "TEST"),
+                ("S", "S"),
+                ("E", "E"),
+                ("N", "N"),
+                ("RDRP","RDRP"),
+                ("ORF1AB", "ORF1AB"),
+                ("ORF8", "ORF8"),
+                ("RDRP+N", "RDRP+N"),
             ],
             required=False,
     )
