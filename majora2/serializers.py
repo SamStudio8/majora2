@@ -5,6 +5,7 @@ class ArtifactSerializer(serpy.Serializer):
     dice_name = serpy.StrField()
     artifact_kind = serpy.StrField()
     metadata = serpy.MethodField('get_metadata_as_struct')
+    metrics = serpy.MethodField('get_metrics_as_struct')
     def get_metadata_as_struct(self, artifact, flat=False):
         metadata = {}
         for m in artifact.metadata.all():
@@ -15,6 +16,18 @@ class ArtifactSerializer(serpy.Serializer):
             else:
                 metadata["%s.%s" % (m.meta_tag, m.meta_name)] = m.value
         return metadata
+    def get_metrics_as_struct(self, artifact, flat=False):
+        metrics = {}
+        for metric in artifact.temporarymajoraartifactmetric_set.all():
+            s = metric.get_serializer()
+            metrics[metric.metric_kind.lower()] = s(metric).data
+        return metrics
+
+class MetricSerializer(serpy.Serializer):
+    namespace = serpy.StrField() 
+class MetricSerializer_ThresholdCycle(MetricSerializer):
+    min_ct = serpy.FloatField(required=False)
+    max_ct = serpy.FloatField(required=False)
 
 class BiosampleArtifactSerializer(ArtifactSerializer):
     central_sample_id = serpy.StrField()
@@ -78,8 +91,8 @@ class DigitalResourceArtifactSerializer(ArtifactSerializer):
 class PAGAccessionSerializer(serpy.Serializer):
     service = serpy.StrField()
     primary_accession = serpy.StrField()
-    secondary_accession = serpy.StrField()
-    tertiary_accession = serpy.StrField()
+    secondary_accession = serpy.StrField(required=False)
+    tertiary_accession = serpy.StrField(required=False)
 
 class QCGroupSerializer(serpy.Serializer):
     id = serpy.StrField()
@@ -93,7 +106,8 @@ class PAGSerializer(serpy.Serializer):
     published_date = serpy.MethodField('serialize_published_date')
     artifacts = serpy.MethodField('serialize_tagged_artifacts')
 
-    accessions = PAGAccessionSerializer(attr='accessions.all', many=True, call=True)
+    #accessions = PAGAccessionSerializer(attr='accessions.all', many=True, call=True)
+    accessions = serpy.MethodField('serialize_accessions')
     qc_reports = QCGroupSerializer(attr='quality_groups.all', many=True, call=True)
 
     owner = serpy.StrField(attr='owner.username')
@@ -123,6 +137,12 @@ class PAGSerializer(serpy.Serializer):
                 a[artifact.artifact_kind] = []
             s = artifact.get_serializer()
             a[artifact.artifact_kind].append( s(artifact).data )
+        return a
+
+    def serialize_accessions(self, pag):
+        a = {}
+        for accession in pag.accessions.all():
+            a[accession.service] = PAGAccessionSerializer(accession).data
         return a
 
     def serialize_published_date(self, pag):
