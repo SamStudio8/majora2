@@ -16,3 +16,4 @@ celery[s3]
 phonenumberslite
 django-two-factor-auth
 serpy
+git+https://github.com/eru/django-swagger-ui.git
