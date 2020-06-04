@@ -40,7 +40,7 @@ info:
     * If metadata is missing, send a blank field or do not submit the field at all. Do not submit 'unknown' or 'null' or any other text that attempts to explain that the field is missing.
     <hr>
 
-  version: 2.0.1
+  version: 2.0.2
 externalDocs:
   description: Majora on github
   url: 'https://github.com/SamStudio8/majora'
@@ -378,6 +378,12 @@ components:
             "TARGETED_CAPTURE",
             "OTHER"
           ]
+        library_primers:
+          type: string
+          example: "3"
+        library_protocol:
+          type: string
+          example: "ARTIC-v2"
         barcode:
           type: string
           example: "02"
