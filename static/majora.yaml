@@ -32,8 +32,15 @@ info:
     Existing users can check their key by logging in and [viewing their profile](https://majora.covid19.climb.ac.uk/accounts/profile).
     **Treat your key as securely as your password. Anyone with your key can perform API actions, as you**.
     <hr>
+    
+    # Important notes
+    
+    * Submitting a request for an artifact that already exists will allow you to change some properties of that object. The messages response will let you know if this is not the case.
+    * Sending a request to update an artifact that already exists is an overwriting operation. If you submit blank fields, those fields will be irreversibly deleted from the model.
+    * If metadata is missing, send a blank field or do not submit the field at all. Do not submit 'unknown' or 'null' or any other text that attempts to explain that the field is missing.
+    <hr>
 
-  version: 2.0.0
+  version: 2.0.1
 externalDocs:
   description: Majora on github
   url: 'https://github.com/SamStudio8/majora'
