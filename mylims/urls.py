@@ -39,5 +39,5 @@ urlpatterns = [
 
     path('', include('majora2.urls')),
     path('', include(tf_urls)),
-    #path('account/', include('django.contrib.auth.urls')), # tf login will supercede this
+    path('account/', include('django.contrib.auth.urls')), # tf login will supercede this
 ]
