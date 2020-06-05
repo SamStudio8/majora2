@@ -99,7 +99,7 @@ class AccountForm(forms.Form):
     email = forms.EmailField()
 
     organisation = forms.ModelChoiceField(queryset=models.Institute.objects.exclude(code__startswith="?").order_by("code"), disabled=True, required=False, help_text="You cannot change your organisation", to_field_name="code")
-    ssh_key = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}), label="SSH Public Key.</br>This system accepts ed25519 keys only. To generate one, run this command: <code>ssh-keygen -o -a 100 -t ed25519</code>", help_text="If you do not need access to CLIMB servers to upload sequence data, you can leave this blank. You can always add an SSH key later.", required=False)
+    ssh_key = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}), label="SSH Public Key.</br>This system accepts ed25519 keys only. To generate one, run this command: <code>ssh-keygen -o -a 100 -t ed25519</code>", help_text="If you do not need access to CLIMB servers over SSH to upload sequence data or access resources, you can leave this blank. You can add an SSH key later but will need to notify us.", required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -150,7 +150,7 @@ class RegistrationForm(forms.Form):
     password2 = forms.CharField(widget=forms.PasswordInput(), label="Confirm password", min_length=8)
 
     organisation = forms.ModelChoiceField(queryset=models.Institute.objects.exclude(code__startswith="?").order_by("code"))
-    ssh_key = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}), label="SSH Public Key.</br>This system accepts ed25519 keys only. To generate one, run this command: <code>ssh-keygen -o -a 100 -t ed25519</code>", help_text="If you do not need access to CLIMB servers to upload sequence data, you can leave this blank. You can always add an SSH key later.", required=False)
+    ssh_key = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}), label="SSH Public Key.</br>This system accepts ed25519 keys only. To generate one, run this command: <code>ssh-keygen -o -a 100 -t ed25519</code>", help_text="If you do not need access to CLIMB servers over SSH to upload sequence data or access resources, you can leave this blank. You can add an SSH key later but will need to notify us.", required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
