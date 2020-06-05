@@ -652,7 +652,7 @@ class TemporaryMajoraArtifactMetric_ThresholdCycle(TemporaryMajoraArtifactMetric
             "num_tests": self.num_tests,
             "min_ct": self.min_ct,
             "max_ct": self.max_ct,
-            #"records": [record.as_struct() for record in self.metric_records.all()],
+            "records": [record.as_struct() for record in self.metric_records.all()],
         }
     def get_serializer(self):
         return serializers.MetricSerializer_ThresholdCycle
