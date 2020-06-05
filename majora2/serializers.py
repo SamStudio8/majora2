@@ -29,6 +29,25 @@ class MetricSerializer_ThresholdCycle(MetricSerializer):
     min_ct = serpy.FloatField(required=False)
     max_ct = serpy.FloatField(required=False)
 
+class COGUK_BiosourceSamplingProcessSupplementSerializer(serpy.Serializer):
+    is_surveillance = serpy.BoolField()
+    is_hcw = serpy.BoolField(required=False)
+    employing_hospital_name = serpy.StrField(required=False)
+    employing_hospital_trust_or_board = serpy.StrField(required=False)
+    is_hospital_patient = serpy.BoolField(required=False)
+    is_icu_patient = serpy.BoolField(required=False)
+    admission_date = serpy.MethodField('serialize_admission_date')
+    admitted_hospital_name = serpy.StrField(required=False)
+    admitted_hospital_trust_or_board = serpy.StrField(required=False)
+    is_care_home_worker = serpy.BoolField(required=False)
+    is_care_home_resident = serpy.BoolField(required=False)
+    anonymised_care_home_code = serpy.StrField(required=False)
+    admitted_with_covid_diagnosis = serpy.BoolField(required=False)
+
+    def serialize_admission_date(self, supp):
+        if supp.admission_date:
+            return supp.admission_date.isoformat()
+
 class BiosampleArtifactSerializer(ArtifactSerializer):
     central_sample_id = serpy.StrField()
     sample_type_collected = serpy.StrField()
@@ -74,11 +93,16 @@ class BiosampleArtifactSerializer(ArtifactSerializer):
     adm2 = serpy.StrField(attr="created.collection_location_adm2")
     adm2_private = None
 
+    supplement_coguk = serpy.MethodField('serialize_coguk_supp')
+
     def serialize_org_lab_or_name(self, collection):
         if collection.created.submission_org.gisaid_lab_name:
             return collection.created.submission_org.gisaid_lab_name
         else:
             return collection.created.submission_org.name
+    def serialize_coguk_supp(self, biosample):
+        if hasattr(biosample.created, "coguk_supp"):
+            return COGUK_BiosourceSamplingProcessSupplementSerializer(biosample.created.coguk_supp).data
 
     
 class DigitalResourceArtifactSerializer(ArtifactSerializer):
