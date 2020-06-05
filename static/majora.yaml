@@ -40,7 +40,7 @@ info:
     * If metadata is missing, send a blank field or do not submit the field at all. Do not submit 'unknown' or 'null' or any other text that attempts to explain that the field is missing.
     <hr>
 
-  version: 2.0.2
+  version: 2.0.3
 externalDocs:
   description: Majora on github
   url: 'https://github.com/SamStudio8/majora'
@@ -232,6 +232,8 @@ components:
           type: string
           format: date
           example: "2020-06-03"
+          nullable: true
+          description: "Provide where possible. When collection_date cannot be provided, you must provide received_date instead."
         received_date:
           type: string
           format: date
