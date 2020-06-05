@@ -65,19 +65,15 @@ def wrap_api_v2(request, f):
         return HttpResponseBadRequest()
 
     profile = None
-    #TODO Permit use of old key system until we're ready to go full-2FA
     try:
-        profile = models.Profile.objects.get(api_key=json_data["token"], user__username=json_data["username"])
+        # Check new key validity
+        key = models.ProfileAPIKey.objects.get(key=json_data["token"], profile__user__username=json_data["username"], was_revoked=False, validity_start__lt=timezone.now(), validity_end__gt=timezone.now())
+        profile = key.profile
     except:
-        try:
-            # Check new key validity
-            key = models.ProfileAPIKey.objects.get(key=json_data["token"], profile__user__username=json_data["username"], was_revoked=False, validity_start__lt=timezone.now(), validity_end__gt=timezone.now())
-            profile = key.profile
-        except:
-            return HttpResponseBadRequest()
-            #api_o["messages"].append("That key does not exist, has expired or was revoked")
-            #api_o["errors"] += 1
-            #bad = True
+        return HttpResponseBadRequest()
+        #api_o["messages"].append("That key does not exist, has expired or was revoked")
+        #api_o["errors"] += 1
+        #bad = True
     user = profile.user
     treq.user = user
     treq.save()

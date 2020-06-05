@@ -39,6 +39,9 @@ def barcode(request, uuid):
 
 @login_required
 def detail_artifact(request, artifact_uuid):
+    otp = django_2fa_mixin_hack(request)
+    if otp:
+        return otp
     return render(request, 'detail_artifact.html', {
         "artifact": get_object_or_404(models.MajoraArtifact, id=artifact_uuid)
     })
