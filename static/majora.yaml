@@ -484,6 +484,7 @@ components:
             "ALTONA",
             "PANTHER",
             "SEEGENE_NIMBUS",
+            "QIAGEN_ROTORGENE",
             null
           ]
         test_target:

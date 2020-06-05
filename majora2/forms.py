@@ -257,6 +257,7 @@ class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a mode
                 ("ALTONA", "ALTONA"),
                 ("PANTHER", "PANTHER"),
                 ("SEEGENE_NIMBUS", "SEEGENE_NIMBUS"),
+                ("QIAGEN_ROTORGENE", "QIAGEN_ROTORGENE"),
             ],
             required=False,
     )
