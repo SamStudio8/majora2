@@ -215,7 +215,7 @@ def api_keys_activate(request, key_name):
     key_def = get_object_or_404(models.ProfileAPIKeyDefinition, key_name=key_name)
 
     # Check user has permission to activate the key
-    if request.user.has_perm('majora2.' % key_def.permission.codename):
+    if request.user.has_perm('majora2.%s' % key_def.permission.codename):
         k, key_is_new = models.ProfileAPIKey.objects.get_or_create(profile=request.user.profile, key_definition=key_def)
         k.key = uuid.uuid4()
         now = timezone.now()
