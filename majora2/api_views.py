@@ -22,7 +22,7 @@ import datetime
 MINIMUM_CLIENT_VERSION = "0.19.0"
 
 @csrf_exempt
-def wrap_api_v2(request, f):
+def wrap_api_v2(request, f, permission=None):
     from tatl.models import TatlRequest
 
     api_o = {
@@ -75,6 +75,18 @@ def wrap_api_v2(request, f):
         #api_o["errors"] += 1
         #bad = True
     user = profile.user
+
+    if permission:
+        # Check permission has been granted to user
+        if not user.has_perm(permission):
+            return HttpResponseBadRequest()
+
+        # Check permission has been granted to key
+        if not key.key_definition.permission:
+            return HttpResponseBadRequest()
+        if key.key_definition.permission.codename != permission.split('.')[1]:
+            return HttpResponseBadRequest()
+
     treq.user = user
     treq.save()
 
@@ -978,7 +990,7 @@ def get_pag_by_qc_celery(request):
             api_o["errors"] += 1
             api_o["messages"].append("Could not add requested task to Celery...")
 
-    return wrap_api_v2(request, f)
+    return wrap_api_v2(request, f, permission="majora2.temp_can_read_pags_via_api")
 
 def get_task_result(request):
     def f(request, api_o, json_data, user=None):
