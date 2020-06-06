@@ -946,7 +946,7 @@ def get_dashboard_metrics(request):
 
 
         api_o["get"] = {
-            "total_sequences": models.PublishedArtifactGroup.objects.count(),
+            "total_sequences": models.PublishedArtifactGroup.objects.filter(is_latest=True, is_suppressed=False).count(),
             "site_qc": all_pags,
         }
     return wrap_api_v2(request, f)
