@@ -198,9 +198,11 @@ def api_keys(request):
         return otp
 
     generated = models.ProfileAPIKey.objects.filter(profile=request.user.profile)
+    available = models.ProfileAPIKeyDefinition.objects.filter(Q(permission__isnull=True) | Q(permission__in=request.user.user_permissions.all())).exclude(id__in=generated.values('key_definition__id'))
+
     return render(request, 'api_keys.html', {
         'user': request.user,
-        'available': models.ProfileAPIKeyDefinition.objects.filter(permission__in=request.user.user_permissions.all()).filter(~Q(id__in=generated.values('id'))),
+        'available': available,
         'generated': generated,
     })
 

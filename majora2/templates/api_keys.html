@@ -60,7 +60,7 @@
             <tbody>
             {% for key in available %}
             <tr>
-                <td>{{ key.key_name }}</td>
+                <td>{{ key.key_name }}{% if key.permission %} ({{ key.permission.codename }}){% endif %}
                 <td class="text-right"><a class="badge badge-success" href="{% url 'api_keys_activate' key.key_name %}">ACTIVATE</a>
             </tr>
             {% empty %}
