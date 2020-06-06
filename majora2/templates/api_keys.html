@@ -36,7 +36,7 @@
             <tbody>
             {% for key in generated %}
             <tr class="table-{% if key.is_expired or key.was_revoked %}danger{%else%}success{% endif %}">
-                <td>{{ key.key_definition.key_name }}
+                <td>{{ key.key_definition.key_name }}{% if key.key_definition.permission %} ({{ key.key_definition.permission.codename }}){% endif %}
                 </br><code>{{ key.key }}</code></td>
                 <td>{{ key.validity_end | naturaltime }}</td>
                 <td class="text-right"><a class="badge badge-warning" href="{% url 'api_keys_activate' key.key_definition.key_name %}">RENEW</a>

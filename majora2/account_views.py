@@ -200,7 +200,7 @@ def api_keys(request):
     generated = models.ProfileAPIKey.objects.filter(profile=request.user.profile)
     return render(request, 'api_keys.html', {
         'user': request.user,
-        'available': models.ProfileAPIKeyDefinition.objects.filter(~Q(id__in=generated.values('id'))),
+        'available': models.ProfileAPIKeyDefinition.objects.filter(permission__in=request.user.user_permissions.all()).filter(~Q(id__in=generated.values('id'))),
         'generated': generated,
     })
 
@@ -211,13 +211,18 @@ def api_keys_activate(request, key_name):
         return otp
 
     key_def = get_object_or_404(models.ProfileAPIKeyDefinition, key_name=key_name)
-    k, key_is_new = models.ProfileAPIKey.objects.get_or_create(profile=request.user.profile, key_definition=key_def)
 
-    k.key = uuid.uuid4()
-    now = timezone.now()
-    k.validity_start = now
-    k.validity_end = now + key_def.lifespan
-    k.save()
+    # Check user has permission to activate the key
+    if request.user.has_perm(key_def.permission):
+        k, key_is_new = models.ProfileAPIKey.objects.get_or_create(profile=request.user.profile, key_definition=key_def)
+        k.key = uuid.uuid4()
+        now = timezone.now()
+        k.validity_start = now
+        k.validity_end = now + key_def.lifespan
+        k.save()
+    else:
+        #TODO should probably report this to tatl
+        pass
 
     return redirect(reverse('api_keys'))
 
