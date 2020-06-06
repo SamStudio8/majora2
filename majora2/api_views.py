@@ -23,7 +23,7 @@ MINIMUM_CLIENT_VERSION = "0.19.0"
 
 @csrf_exempt
 def wrap_api_v2(request, f, permission=None):
-    from tatl.models import TatlRequest
+    from tatl.models import TatlRequest, TatlPermFlex
 
     api_o = {
         "errors": 0,
@@ -90,6 +90,17 @@ def wrap_api_v2(request, f, permission=None):
     treq.user = user
     treq.save()
 
+    if permission:
+        tflex = TatlPermFlex(
+            user = user,
+            substitute_user = None,
+            used_permission = permission,
+            timestamp = timezone.now(),
+            request=treq,
+            content_object = treq, #TODO just use the request for now
+        )
+        tflex.save()
+
     # Bounce non-admin escalations to other users
     if json_data.get("sudo_as"):
         if user.is_staff:
@@ -97,10 +108,15 @@ def wrap_api_v2(request, f, permission=None):
                 user = models.Profile.objects.get(user__username=json_data["sudo_as"]).user
                 treq.substitute_user = user
                 treq.save()
+
+                if permission:
+                    tflex.substitute_user = user
+                    tflex.save()
             except:
                 return HttpResponseBadRequest()
         else:
             return HttpResponseBadRequest()
+
 
     bad = False
     # Bounce out of data clients
