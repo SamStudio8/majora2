@@ -21,7 +21,18 @@ import uuid
 from two_factor.utils import default_device
 
 def generate_username(cleaned_data):
-    return "%s%s%s" % (settings.USER_PREFIX, cleaned_data["last_name"].replace(' ', '').lower(), cleaned_data["first_name"][0].lower())
+    proposed_username = "%s%s%s" % (settings.USER_PREFIX, cleaned_data["last_name"].replace(' ', '').lower(), cleaned_data["first_name"][0].lower())
+
+    potentially_existing_profiles = models.Profile.objects.filter(user__username__startswith=proposed_username)
+    if potentially_existing_profiles.count() > 0:
+        for existing_profile in potentially_existing_profiles:
+            if existing_profile.user.email == cleaned_data.get("email"):
+                return proposed_username # return this username and cause the form to error out on duplicate
+
+        # this person is probably a different person with the same name as someone else
+        #  or someone who cannot keep track of their email addresses, create a new incremented username anyway
+        proposed_username = "%s%d" % (proposed_username, potentially_existing_profiles.count()+1)
+    return proposed_username
 
 def django_2fa_mixin_hack(request):
     raise_anonymous = False
