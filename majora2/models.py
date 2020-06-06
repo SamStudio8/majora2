@@ -440,6 +440,9 @@ class PublishedArtifactGroup(MajoraArtifactGroup):
         constraints = [
             models.UniqueConstraint(fields=["published_name", "is_latest"], name="is_only_published"),
         ]
+        permissions = [
+            ("temp_can_read_pags_via_api", "Can read published artifact groups via the API"),
+        ]
 
     def as_struct(self):
         if self.is_suppressed:
