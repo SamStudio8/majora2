@@ -10,6 +10,8 @@ from django.utils import timezone
 
 from . import serializers
 
+from django.contrib.auth.models import Permission
+
 from polymorphic.models import PolymorphicModel
 from .submodels import *
 
@@ -1500,6 +1502,7 @@ class Profile(models.Model):
 
 class ProfileAPIKeyDefinition(models.Model):
     key_name = models.CharField(max_length=48, unique=True)
+    permission = models.ForeignKey(Permission, blank=True, null=True, on_delete=models.PROTECT)
     is_service_key = models.BooleanField()
     is_read_key = models.BooleanField()
     is_write_key = models.BooleanField()
