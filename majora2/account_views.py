@@ -215,16 +215,17 @@ def api_keys_activate(request, key_name):
     key_def = get_object_or_404(models.ProfileAPIKeyDefinition, key_name=key_name)
 
     # Check user has permission to activate the key
-    if request.user.has_perm('majora2.%s' % key_def.permission.codename):
-        k, key_is_new = models.ProfileAPIKey.objects.get_or_create(profile=request.user.profile, key_definition=key_def)
-        k.key = uuid.uuid4()
-        now = timezone.now()
-        k.validity_start = now
-        k.validity_end = now + key_def.lifespan
-        k.save()
-    else:
-        #TODO should probably report this to tatl
-        pass
+    if key_def.permission:
+        if not request.user.has_perm('majora2.%s' % key_def.permission.codename):
+            #TODO should probably report this to tatl
+            return HttpResponseBadRequest() # bye
+
+    k, key_is_new = models.ProfileAPIKey.objects.get_or_create(profile=request.user.profile, key_definition=key_def)
+    k.key = uuid.uuid4()
+    now = timezone.now()
+    k.validity_start = now
+    k.validity_end = now + key_def.lifespan
+    k.save()
 
     return redirect(reverse('api_keys'))
 
