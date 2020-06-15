@@ -475,6 +475,7 @@ components:
           enum: [
             "ALTOSTAR_AM16",
             "ABBOTT_M2000",
+            "APPLIED_BIO_7500",
             "ROCHE_COBAS",
             "ROCHE_FLOW",
             "ROCHE_LIGHTCYCLER",

@@ -246,6 +246,7 @@ class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a mode
                 (None, ""),
                 ("ALTOSTAR_AM16", "ALTOSTAR_AM16"),
                 ("ABBOTT_M2000", "ABBOTT_M2000"),
+                ("APPLIED_BIO_7500", "APPLIED_BIO_7500"),
                 ("ROCHE_FLOW", "ROCHE_FLOW"),
                 ("ROCHE_COBAS", "ROCHE_COBAS"),
                 ("ELITE_INGENIUS", "ELITE_INGENIUS"),
