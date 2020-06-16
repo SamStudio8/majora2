@@ -14,6 +14,7 @@ class RestyBiosampleArtifactSerializer(RestyArtifactSerializer):
         fields = RestyArtifactSerializer.Meta.fields + ('central_sample_id',)
 
 class RestyArtifactSerializer(PolymorphicSerializer):
+    resource_type_field_name = 'artifact_model'
     model_serializer_mapping = {
         models.MajoraArtifact: RestyArtifactSerializer,
         models.BiosampleArtifact: RestyBiosampleArtifactSerializer,
