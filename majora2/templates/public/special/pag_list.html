@@ -11,45 +11,30 @@
 <div class="row">
 <div class="col-md-12">
 
-<table class="table">
+<table class="table datatable">
     <thead class="table-dark">
         <tr>
             <th>Published Name</th>
             <th></th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
-    {% for pag in page_pags %}
-        <tr>
-            <td>{{ pag.published_name }}</td>
-            <td>
-                {% for accession in pag.accessions.all %}
-                    <span style="font-size: 1.2em"><span class="badge badge-left badge-dark">{{ accession.service }}</span><span class="badge badge-right badge-info">{{ accession.primary_accession }}</span></span>
-                {% endfor %}
-            </td>
-        </tr>
-    {% endfor %}
     </tbody>
 </table>
 
-<div class="pagination">
-    <span class="step-links">
-        {% if page_pags.has_previous %}
-            <a href="?page=1">&laquo; first</a>
-            <a href="?page={{ page_pags.previous_page_number }}">previous</a>
-        {% endif %}
-
-        <span class="current">
-            Page {{ page_pags.number }} of {{ page_pags.paginator.num_pages }}.
-        </span>
-
-        {% if page_pags.has_next %}
-            <a href="?page={{ page_pags.next_page_number }}">next</a>
-            <a href="?page={{ page_pags.paginator.num_pages }}">last &raquo;</a>
-        {% endif %}
-    </span>
-</div>
 
 </div>
 </div>
 {% include 'public/footer.html' %}
+
+<script>
+$(document).ready(function() {
+    var oTable = $('.datatable').dataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{% url 'api.datatable.pag.get' %}"
+    });
+});
+</script>
+

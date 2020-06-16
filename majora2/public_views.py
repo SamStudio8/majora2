@@ -12,15 +12,27 @@ from . import models
 from tatl import models as tmodels
 from . import util
 
+from django_datatables_view.base_datatable_view import BaseDatatableView
+
+class OrderListJson(BaseDatatableView):
+    model = models.PublishedArtifactGroup
+
+    columns = ["published_name", "published_date", "is_public"]
+    order_columns = ["published_name", "published_date", "-"]
+    max_display_length = 100
+
+    def render_column(self, row, column):
+        return super(OrderListJson, self).render_column(row, column)
+
+    def filter_queryset(self, qs):
+        search = self.request.GET.get('search[value]', None)
+        if search:
+            qs = qs.filter(published_name__contains=search)
+        return qs
+
 @cache_page(60 * 60)
 def list_accessions(request):
-    pags = models.PublishedArtifactGroup.objects.filter(is_latest=True, is_suppressed=False).order_by('-published_date') #TODO prefetch accessions
-    paginator = Paginator(pags, 100)
-
-    page = request.GET.get('page')
-    page_pags = paginator.get_page(page)
-
-    return render(request, 'public/special/pag_list.html', {'page_pags': page_pags})
+    return render(request, 'public/special/pag_list.html', {})
 
 
 @cache_page(60 * 60)
