@@ -29,7 +29,7 @@ class OrderListJson(BaseDatatableView):
             else:
                 return "-"
         elif column == "ENA":
-            ass = row.accessions.filter(service="ENA").first()
+            ass = row.accessions.filter(service="ENA-RUN").first()
             if ass:
                 return ass.primary_accession
             else:
