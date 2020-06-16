@@ -77,8 +77,8 @@ urlpatterns = [
 
     path('api/datatable/pag/', public_views.OrderListJson.as_view(), name='api.datatable.pag.get'),
 
-
-    path('api/v3/artifact/get/<uuid:pk>', resty_views.artifact_detail, name="api.v3.artifact.get"),
+    # Exciting new v3 API
+    path('api/v3/artifact/get/<uuid:pk>', resty_views.ArtifactDetail.as_view(), name="api.v3.artifact.get"),
 
     # Home
     path('', views.home, name='home'),
