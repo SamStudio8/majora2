@@ -1058,6 +1058,9 @@ class BiosampleArtifact(MajoraArtifact):
         return 'Biosample'
     def get_serializer(self):
         return serializers.BiosampleArtifactSerializer
+    def get_resty_serializer(self):
+        from . import resty_serializers
+        return resty_serializers.RestyBiosampleArtifactSerializer
     @property
     def name(self):
         if self.dice_name:

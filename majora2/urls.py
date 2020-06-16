@@ -2,11 +2,14 @@ from django.urls import path,re_path
 
 from django.views.decorators.csrf import csrf_exempt
 
+from rest_framework.urlpatterns import format_suffix_patterns
+
 from . import views
 from . import account_views
 from . import bot_views
 from . import public_views
 from . import api_views
+from . import resty_views
 
 urlpatterns = [
     #search
@@ -74,6 +77,11 @@ urlpatterns = [
 
     path('api/datatable/pag/', public_views.OrderListJson.as_view(), name='api.datatable.pag.get'),
 
+
+    path('api/v3/artifact/get/<uuid:pk>', resty_views.artifact_detail, name="api.v3.artifact.get"),
+
     # Home
     path('', views.home, name='home'),
 ]
+
+urlpatterns = format_suffix_patterns(urlpatterns)

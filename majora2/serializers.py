@@ -1,5 +1,7 @@
 import serpy
 
+### SERPY
+
 class ArtifactSerializer(serpy.Serializer):
     id = serpy.StrField()
     dice_name = serpy.StrField()

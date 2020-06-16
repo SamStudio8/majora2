@@ -17,3 +17,5 @@ phonenumberslite
 django-two-factor-auth
 serpy
 django-datatables-view
+djangorestframework
+django-rest-polymorphic
