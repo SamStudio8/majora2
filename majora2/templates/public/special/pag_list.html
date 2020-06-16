@@ -38,9 +38,19 @@ $(document).ready(function() {
         ajax: "{% url 'api.datatable.pag.get' %}",
         pageLength: 100,
 
-        dom: 'Bfrtip',
+        dom: 'frtipB',
         buttons: [
-            'csv'
+            {
+                extend: 'csv',
+                filename: "majora.accessions",
+                text: "Download table as CSV",
+                exportOptions: {
+                    columns: ':visible',
+                    modifier: {
+                        page: 'all',
+                    }
+                },
+            }
         ],
 
         columnDefs: [
