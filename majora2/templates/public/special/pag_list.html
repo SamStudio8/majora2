@@ -15,14 +15,25 @@
     <thead class="table-dark">
         <tr>
             <th></th>
-            <th>Published Name</th>
-            <th>Published Date</th>
+            <th>Published name</th>
+            <th>Published date</th>
+            <th>Sequencing site</th>
             <th>GISAID</th>
             <th>ENA</th>
         </tr>
     </thead>
     <tbody>
     </tbody>
+    <tfoot class="table-dark">
+        <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+    </tfoot>
 </table>
 
 
@@ -68,7 +79,28 @@ $(document).ready(function() {
                 "targets": 1
             },
             { "visible": false,  "targets": [ 0 ] }
-        ]
+        ],
+
+        initComplete: function () {
+            this.api().columns(  function ( idx, data, node ){ if(idx == 3){ return true }; return false;}  ).every( function () {
+                var column = this;
+                var select = $('<select><option value=""></option></select>')
+                    .appendTo( $(column.footer()).empty() )
+                    .on( 'change', function () {
+                        var val = $.fn.dataTable.util.escapeRegex(
+                            $(this).val()
+                        );
+ 
+                        column
+                            .search( val ? '^'+val+'$' : '', true, false )
+                            .draw();
+                    } );
+ 
+                column.data().unique().sort().each( function ( d, j ) {
+                    select.append( '<option value="'+d+'">'+d+'</option>' )
+                } );
+            } );
+        }
 
     });
 });

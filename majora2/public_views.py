@@ -17,9 +17,9 @@ from django_datatables_view.base_datatable_view import BaseDatatableView
 class OrderListJson(BaseDatatableView):
     model = models.PublishedArtifactGroup
 
-    columns = ["id", "published_name", "published_date", "GISAID", "ENA"]
-    order_columns = ["id", "published_name", "published_date", "-", "-"]
-    max_display_length = 100
+    columns = ["id", "published_name", "published_date", "seqsite", "GISAID", "ENA"]
+    order_columns = ["id", "published_name", "published_date", "seqsite", "-", "-"]
+    max_display_length = 25
 
     def render_column(self, row, column):
         if column == "GISAID":
@@ -34,13 +34,23 @@ class OrderListJson(BaseDatatableView):
                 return ass.primary_accession
             else:
                 return "-"
+        elif column == "seqsite":
+            try:
+                return row.owner.profile.institute.code
+            except:
+                return "????"
         else:
             return super(OrderListJson, self).render_column(row, column)
 
     def filter_queryset(self, qs):
         search = self.request.GET.get('search[value]', None)
         if search:
-            qs = qs.filter(published_name__contains=search)
+            qs = qs.filter(published_name__icontains=search)
+
+        seqsite = self.request.GET.get('columns[3][search][value]', None)
+        if seqsite:
+            qs = qs.filter(owner__profile__institute__code=seqsite[1:-1])
+
         return qs
 
 @cache_page(60 * 60)
