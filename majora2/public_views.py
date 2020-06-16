@@ -55,7 +55,9 @@ class OrderListJson(BaseDatatableView):
 
 @cache_page(60 * 60)
 def list_accessions(request):
-    return render(request, 'public/special/pag_list.html', {})
+    return render(request, 'public/special/pag_list.html', {
+        "site_codes": sorted(models.Institute.objects.all().values_list('code', flat=True)),
+    })
 
 
 @cache_page(60 * 60)
