@@ -8,10 +8,10 @@ class RestyArtifactSerializer(serializers.ModelSerializer):
         model = models.MajoraArtifact
         fields = ('id', 'dice_name', 'artifact_kind',)
 
-class RestyBiosampleArtifactSerializer(serializers.ModelSerializer):
+class RestyBiosampleArtifactSerializer(RestyArtifactSerializer):
     class Meta:
         model = models.BiosampleArtifact
-        fields = ('central_sample_id',)
+        fields = RestyArtifactSerializer.Meta.fields + ('central_sample_id',)
 
 class RestyArtifactSerializer(PolymorphicSerializer):
     model_serializer_mapping = {
