@@ -38,6 +38,11 @@ $(document).ready(function() {
         ajax: "{% url 'api.datatable.pag.get' %}",
         pageLength: 100,
 
+        dom: 'Bfrtip',
+        buttons: [
+            'csv'
+        ],
+
         columnDefs: [
             { 
                 "render": function(data, type, row){
