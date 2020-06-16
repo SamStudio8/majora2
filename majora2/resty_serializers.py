@@ -20,5 +20,8 @@ class RestyArtifactSerializer(PolymorphicSerializer):
         models.BiosampleArtifact: RestyBiosampleArtifactSerializer,
     }
 
-
+class RestyPublishedArtifactGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PublishedArtifactGroup
+        fields = ('id', 'published_name', 'published_date',)
 

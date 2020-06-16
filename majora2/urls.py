@@ -2,15 +2,11 @@ from django.urls import path,re_path
 from django.views.generic import TemplateView
 from django.views.decorators.csrf import csrf_exempt
 
-from rest_framework.schemas import get_schema_view
-from rest_framework.urlpatterns import format_suffix_patterns
-
 from . import views
 from . import account_views
 from . import bot_views
 from . import public_views
 from . import api_views
-from . import resty_views
 
 urlpatterns = [
     #search
@@ -78,8 +74,30 @@ urlpatterns = [
 
     path('api/datatable/pag/', public_views.OrderListJson.as_view(), name='api.datatable.pag.get'),
 
+    # Home
+    path('', views.home, name='home'),
+
+]
+
+
+from rest_framework.schemas import get_schema_view
+from rest_framework.urlpatterns import format_suffix_patterns
+from . import resty_views
+
+biosample_list = resty_views.BiosampleView.as_view({'get': 'list'})
+biosample_retrieve = resty_views.BiosampleView.as_view({'get': 'retrieve'})
+
+pag_list = resty_views.PAGView.as_view({'get': 'list'})
+pag_retrieve = resty_views.PAGView.as_view({'get': 'retrieve'})
+
+urlpatterns += [
     # Exciting new v3 API
     path('api/v3/artifact/get/<uuid:pk>', resty_views.ArtifactDetail.as_view(), name="api.v3.artifact.get"),
+
+    path('api/v3/biosample/', biosample_list, name="api.v3.biosample.list"),
+    path('api/v3/biosample/<uuid:pk>', biosample_retrieve, name="api.v3.biosample.retrieve"),
+    path('api/v3/pag/', pag_list, name="api.v3.pag.list"),
+    path('api/v3/pag/<uuid:pk>', pag_retrieve, name="api.v3.pag.retrieve"),
 
     # Exciting new v3 docs
     path('api/v3/docs/openapi/', get_schema_view(
@@ -91,10 +109,6 @@ urlpatterns = [
         template_name='redoc.html',
         extra_context={'schema_url':'openapi-schema'}
     ), name='redoc'),
-
-    # Home
-    path('', views.home, name='home'),
-
 ]
 
 #urlpatterns = format_suffix_patterns(urlpatterns)
