@@ -43,6 +43,7 @@ urlpatterns = [
 
     # PUBLIC
     path('public/dashboard', public_views.sample_sequence_count_dashboard),
+    path('public/accessions', public_views.list_accessions),
 
     # PRIV MAJORA-TOKEN
     path('accounts/keys/', account_views.list_ssh_keys, name='list_ssh_keys'),

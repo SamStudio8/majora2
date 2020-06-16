@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.db.models import Count, F, Q
 from django.views.decorators.cache import cache_page
+from django.core.paginator import Paginator
 
 from django.utils import timezone
 from django.db.models.functions import TruncDay
@@ -10,6 +11,17 @@ import datetime
 from . import models
 from tatl import models as tmodels
 from . import util
+
+@cache_page(60 * 60)
+def list_accessions(request):
+    pags = models.PublishedArtifactGroup.objects.filter(is_latest=True, is_suppressed=False).order_by('-published_date') #TODO prefetch accessions
+    paginator = Paginator(pags, 100)
+
+    page = request.GET.get('page')
+    page_pags = paginator.get_page(page)
+
+    return render(request, 'public/special/pag_list.html', {'page_pags': page_pags})
+
 
 @cache_page(60 * 60)
 def sample_sequence_count_dashboard(request):
