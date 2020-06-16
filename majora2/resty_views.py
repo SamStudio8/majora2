@@ -27,7 +27,7 @@ class BiosampleView(viewsets.ReadOnlyModelViewSet):
     queryset = models.BiosampleArtifact.objects.all()
     serializer_class = serializers.RestyBiosampleArtifactSerializer
 
-class PAGView(viewsets.ReadOnlyModelViewSet):
+class PublishedArtifactGroupView(viewsets.ReadOnlyModelViewSet):
     authentication_classes = [TatlTokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 

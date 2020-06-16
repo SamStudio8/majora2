@@ -1,4 +1,4 @@
-from django.urls import path,re_path
+from django.urls import path, re_path, include
 from django.views.generic import TemplateView
 from django.views.decorators.csrf import csrf_exempt
 
@@ -82,22 +82,19 @@ urlpatterns = [
 
 from rest_framework.schemas import get_schema_view
 from rest_framework.urlpatterns import format_suffix_patterns
+from rest_framework.routers import DefaultRouter
 from . import resty_views
 
-biosample_list = resty_views.BiosampleView.as_view({'get': 'list'})
-biosample_retrieve = resty_views.BiosampleView.as_view({'get': 'retrieve'})
+router = DefaultRouter()
+router.register(r'biosample', resty_views.BiosampleView)
+router.register(r'pag', resty_views.PublishedArtifactGroupView)
 
-pag_list = resty_views.PAGView.as_view({'get': 'list'})
-pag_retrieve = resty_views.PAGView.as_view({'get': 'retrieve'})
 
 urlpatterns += [
     # Exciting new v3 API
     path('api/v3/artifact/get/<uuid:pk>', resty_views.ArtifactDetail.as_view(), name="api.v3.artifact.get"),
 
-    path('api/v3/biosample/', biosample_list, name="api.v3.biosample.list"),
-    path('api/v3/biosample/<uuid:pk>', biosample_retrieve, name="api.v3.biosample.retrieve"),
-    path('api/v3/pag/', pag_list, name="api.v3.pag.list"),
-    path('api/v3/pag/<uuid:pk>', pag_retrieve, name="api.v3.pag.retrieve"),
+    path('api/v3/', include(router.urls)),
 
     # Exciting new v3 docs
     path('api/v3/docs/openapi/', get_schema_view(
