@@ -14,9 +14,11 @@
 <table class="table datatable">
     <thead class="table-dark">
         <tr>
+            <th></th>
             <th>Published Name</th>
-            <th></th>
-            <th></th>
+            <th>Published Date</th>
+            <th>GISAID</th>
+            <th>ENA</th>
         </tr>
     </thead>
     <tbody>
@@ -33,7 +35,26 @@ $(document).ready(function() {
     var oTable = $('.datatable').dataTable({
         processing: true,
         serverSide: true,
-        ajax: "{% url 'api.datatable.pag.get' %}"
+        ajax: "{% url 'api.datatable.pag.get' %}",
+        pageLength: 100,
+
+        columnDefs: [
+            { 
+                "render": function(data, type, row){
+                    return '<a href="https://ebi.ac.uk/ena/data/view/' + data + '">' + data + '</a>';
+                },
+                "targets": 4
+            },
+            { 
+                "render": function(data, type, row){
+                    var url_mask = "{% url 'group_artifact' '00000000-0000-0000-0000-000000000000' %}".replace(/00000000-0000-0000-0000-000000000000/, row[0].toString());
+                    return '<a href="' + url_mask + '">' + data + '</a>';
+                },
+                "targets": 1
+            },
+            { "visible": false,  "targets": [ 0 ] }
+        ]
+
     });
 });
 </script>

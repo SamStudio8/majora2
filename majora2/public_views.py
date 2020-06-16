@@ -17,12 +17,25 @@ from django_datatables_view.base_datatable_view import BaseDatatableView
 class OrderListJson(BaseDatatableView):
     model = models.PublishedArtifactGroup
 
-    columns = ["published_name", "published_date", "is_public"]
-    order_columns = ["published_name", "published_date", "-"]
+    columns = ["id", "published_name", "published_date", "GISAID", "ENA"]
+    order_columns = ["id", "published_name", "published_date", "-", "-"]
     max_display_length = 100
 
     def render_column(self, row, column):
-        return super(OrderListJson, self).render_column(row, column)
+        if column == "GISAID":
+            ass = row.accessions.filter(service="GISAID").first()
+            if ass:
+                return ass.primary_accession
+            else:
+                return "-"
+        elif column == "ENA":
+            ass = row.accessions.filter(service="ENA").first()
+            if ass:
+                return ass.primary_accession
+            else:
+                return "-"
+        else:
+            return super(OrderListJson, self).render_column(row, column)
 
     def filter_queryset(self, qs):
         search = self.request.GET.get('search[value]', None)
