@@ -183,3 +183,16 @@ CELERY_S3_ACCESS_KEY_ID = ""
 CELERY_S3_SECRET_ACCESS_KEY = ""
 CELERY_S3_BUCKET = ""
 
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'majora2.authentication.TatlTokenAuthentication',
+    ],
+}

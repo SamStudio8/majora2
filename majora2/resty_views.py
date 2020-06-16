@@ -14,22 +14,13 @@ from majora2 import resty_serializers as serializers
 from majora2.authentication import TatlTokenAuthentication
 
 class ArtifactDetail(generics.RetrieveAPIView):
-    authentication_classes = [TatlTokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-
     queryset = models.MajoraArtifact.objects.all()
     serializer_class = serializers.RestyArtifactSerializer
 
 class BiosampleView(viewsets.ReadOnlyModelViewSet):
-    authentication_classes = [TatlTokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-
     queryset = models.BiosampleArtifact.objects.all()
     serializer_class = serializers.RestyBiosampleArtifactSerializer
 
 class PublishedArtifactGroupView(viewsets.ReadOnlyModelViewSet):
-    authentication_classes = [TatlTokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-
     queryset = models.PublishedArtifactGroup.objects.all()
     serializer_class = serializers.RestyPublishedArtifactGroupSerializer
