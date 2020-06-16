@@ -17,9 +17,10 @@ class ArtifactDetail(generics.RetrieveAPIView):
     queryset = models.MajoraArtifact.objects.all()
     serializer_class = serializers.RestyArtifactSerializer
 
-class BiosampleView(viewsets.ReadOnlyModelViewSet):
+class BiosampleView(viewsets.ModelViewSet):
     queryset = models.BiosampleArtifact.objects.all()
     serializer_class = serializers.RestyBiosampleArtifactSerializer
+    #TODO permissions class
 
 class PublishedArtifactGroupView(viewsets.ReadOnlyModelViewSet):
     queryset = models.PublishedArtifactGroup.objects.all()
