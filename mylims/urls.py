@@ -41,3 +41,8 @@ urlpatterns = [
     path('', include(tf_urls)),
     path('account/', include('django.contrib.auth.urls')), # tf login will supercede this
 ]
+
+import debug_toolbar
+urlpatterns = [
+    path('__debug__/', include(debug_toolbar.urls)),
+] + urlpatterns
