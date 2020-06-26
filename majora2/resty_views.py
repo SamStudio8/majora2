@@ -24,14 +24,15 @@ class MajoraUUID4orDiceNameLookupMixin(object):
         queryset = self.filter_queryset(queryset)  # Apply any filter backends
         filter = {}
 
-        # Try ID as UUID, else assume its a "dice_name" (majora internal name)
         filter_on = "pk"
-        if type(self.kwargs["pk"]) != uuid.UUID:
-            try:
-                # Check if this parameter looks like a UUID anyway
-                uuid.UUID(self.kwargs["pk"], version=4)
-            except ValueError:
-                filter_on = "dice_name"
+        if self.majora_alternative_field:
+            # Try ID as UUID, else assume its a "dice_name" (majora internal name)
+            if type(self.kwargs["pk"]) != uuid.UUID:
+                try:
+                    # Check if this parameter looks like a UUID anyway
+                    uuid.UUID(self.kwargs["pk"], version=4)
+                except ValueError:
+                    filter_on = self.majora_alternative_field
 
         filter[filter_on] = self.kwargs["pk"]
         obj = get_object_or_404(queryset, **filter) # Lookup the object
@@ -41,6 +42,7 @@ class MajoraUUID4orDiceNameLookupMixin(object):
 class ArtifactDetail(MajoraUUID4orDiceNameLookupMixin, generics.RetrieveAPIView):
     queryset = models.MajoraArtifact.objects.all()
     serializer_class = serializers.RestyArtifactSerializer
+    majora_alternative_field = "dice_name"
 
 class BiosampleView(
                     MajoraUUID4orDiceNameLookupMixin,
@@ -49,8 +51,14 @@ class BiosampleView(
                     viewsets.GenericViewSet):
     queryset = models.BiosampleArtifact.objects.all()
     serializer_class = serializers.RestyBiosampleArtifactSerializer
+    majora_alternative_field = "dice_name"
     #TODO permissions class
 
-class PublishedArtifactGroupView(viewsets.ReadOnlyModelViewSet):
+class PublishedArtifactGroupView(
+                    MajoraUUID4orDiceNameLookupMixin,
+                    mixins.ListModelMixin,
+                    mixins.RetrieveModelMixin,
+                    viewsets.GenericViewSet):
     queryset = models.PublishedArtifactGroup.objects.all()
     serializer_class = serializers.RestyPublishedArtifactGroupSerializer
+    majora_alternative_field = "published_name"
