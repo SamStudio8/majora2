@@ -81,7 +81,8 @@ class RestyArtifactSerializer(PolymorphicSerializer):
 
 
 class RestyPublishedArtifactGroupSerializer(serializers.ModelSerializer):
+    artifacts = RestyArtifactSerializer(source="tagged_artifacts", many=True)
     class Meta:
         model = models.PublishedArtifactGroup
-        fields = ('id', 'published_name', 'published_date',)
+        fields = ('id', 'published_name', 'published_date', "artifacts")
 
