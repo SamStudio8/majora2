@@ -71,11 +71,24 @@ class RestyBiosampleArtifactSerializer(BaseRestyArtifactSerializer):
                 'sender_sample_id': {'write_only': True}
         }
 
+class RestyDigitalResourceArtifactSerializer(BaseRestyArtifactSerializer):
+    class Meta:
+        model = models.DigitalResourceArtifact
+        fields = BaseRestyArtifactSerializer.Meta.fields + (
+                'current_path',
+                'current_name',
+                'current_hash',
+                'current_size',
+                'current_extension',
+                'current_kind',
+        )
+
 class RestyArtifactSerializer(PolymorphicSerializer):
     resource_type_field_name = 'artifact_model'
     model_serializer_mapping = {
         models.MajoraArtifact: BaseRestyArtifactSerializer,
         models.BiosampleArtifact: RestyBiosampleArtifactSerializer,
+        models.DigitalResourceArtifact : RestyDigitalResourceArtifactSerializer,
     }
 
 
