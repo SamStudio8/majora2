@@ -44,8 +44,6 @@ class ArtifactDetail(MajoraUUID4orDiceNameLookupMixin, generics.RetrieveAPIView)
 
 class BiosampleView(
                     MajoraUUID4orDiceNameLookupMixin,
-                    mixins.CreateModelMixin,
-                    mixins.UpdateModelMixin,
                     mixins.ListModelMixin,
                     mixins.RetrieveModelMixin,
                     viewsets.GenericViewSet):
