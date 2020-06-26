@@ -71,52 +71,6 @@ class RestyBiosampleArtifactSerializer(BaseRestyArtifactSerializer):
                 'sender_sample_id': {'write_only': True}
         }
 
-    """
-    def create(self, validated_data):
-        collection_data = validated_data.pop('created')
-        
-        collection_data["collected_by"] = collection_data["collecting_org"]
-        collection_data["when"] = collection_data["collection_date"] if collection_data["collection_date"] else collection_data["received_date"]
-        sample_p = models.BiosourceSamplingProcess.objects(**collection_data)
-
-
-        if not sample_p.who:
-            sample_p.who = user
-            sample_p.when = collection_date if collection_date else received_date
-            sample_p.submitted_by = submitted_by
-            sample_p.submission_user = user
-            sample_p.submission_org = form.cleaned_data.get("submitting_org")
-            sample_p.save()
-            #signals.new_sample.send(sender=None, sample_id=sample.central_sample_id, submitter=sample.created.submitted_by)
-            # fuck
-            if source:
-                for record in sample_p.records.all():
-                    if record.out_artifact == sample:
-                        record.in_group = source
-                        record.save()
-
-        sample_p.collection_location_country = form.cleaned_data.get("country")
-        sample_p.collection_location_adm1 = form.cleaned_data.get("adm1")
-        sample_p.collection_location_adm2 = form.cleaned_data.get("adm2").upper() # capitalise the county for now?
-        sample_p.private_collection_location_adm2 = form.cleaned_data.get("adm2_private")
-        sample_p.source_age = form.cleaned_data.get("source_age")
-        sample_p.source_sex = form.cleaned_data.get("source_sex")
-
-        sampling_rec = models.BiosourceSamplingProcessRecord(
-            process=sample_p,
-            in_group=source,
-            out_artifact=sample,
-        )
-        sampling_rec.save()
-        sample.created = sample_p # Set the sample collection process
-        sample.save()
-
-       modela_data = validated_data.pop('model_a')
-       model_b = ModelB.objects.create(**validated_data)
-       ModelA.objects.create(model_b=model_b, **modela_data)
-       return model_b
-        """
-
 class RestyArtifactSerializer(PolymorphicSerializer):
     resource_type_field_name = 'artifact_model'
     model_serializer_mapping = {
