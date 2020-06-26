@@ -54,11 +54,38 @@ class BiosampleView(
     majora_alternative_field = "dice_name"
     #TODO permissions class
 
+
 class PublishedArtifactGroupView(
                     MajoraUUID4orDiceNameLookupMixin,
                     mixins.ListModelMixin,
                     mixins.RetrieveModelMixin,
                     viewsets.GenericViewSet):
-    queryset = models.PublishedArtifactGroup.objects.all()
     serializer_class = serializers.RestyPublishedArtifactGroupSerializer
     majora_alternative_field = "published_name"
+    queryset = models.PublishedArtifactGroup.objects.all()
+
+    def get_queryset(self):
+        queryset = self.queryset
+
+        service = self.request.query_params.get('service', None)
+        public = self.request.query_params.get('public', None)
+        private = self.request.query_params.get('private', None)
+
+        if public and private:
+            # Ignore
+            pass
+        elif public:
+            if service:
+                queryset = queryset.filter(accessions__service=service)
+            else:
+                queryset = queryset.filter(is_public=True)
+        elif private:
+            if service:
+                queryset = queryset.filter(~Q(accessions__service=service))
+            else:
+                queryset = queryset.filter(is_public=False)
+
+
+
+        return queryset
+
