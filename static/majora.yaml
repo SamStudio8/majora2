@@ -467,6 +467,7 @@ components:
             "ROCHE",
             "INHOUSE",
             "SEEGENE",
+            "VIASURE",
             null
           ]
         test_platform:

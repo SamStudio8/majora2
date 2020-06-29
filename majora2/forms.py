@@ -238,6 +238,7 @@ class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a mode
                 ("BOSPHORE", "BOSPHORE"),
                 ("INHOUSE", "INHOUSE"),
                 ("SEEGENE", "SEEGENE"),
+                ("VIASURE", "VIASURE"),
             ],
             required=False,
     )
