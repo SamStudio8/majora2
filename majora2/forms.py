@@ -464,7 +464,6 @@ class TestSampleForm(forms.Form):
             label="Outward postcode",
             max_length=10,
             required=False,
-            disabled=True,
             help_text="Enter the <b>first part</b> of the patients home postcode. Leave blank if this was not available."
     )
     submitting_user = forms.CharField(disabled=True, required=False)
