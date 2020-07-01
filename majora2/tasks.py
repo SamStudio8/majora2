@@ -5,6 +5,7 @@ from celery import shared_task, current_task
 from . import models
 from . import signals
 from . import serializers
+from . import resty_serializers
 
 from django.db.models import Q
 
@@ -121,4 +122,16 @@ def task_get_pag_by_qc(request, api_o, json_data, user=None):
         api_o["errors"] += 1
         api_o["messages"].append(str(e))
     signals.task_end.send(sender=current_task.request, task="structify_pags", task_id=current_task.request.id)
+    return api_o
+
+@shared_task
+def task_get_pag_by_qc_v3(pag_ids, context={}):
+    queryset = models.PublishedArtifactGroup.objects.filter(id__in=pag_ids)
+    serializer = resty_serializers.RestyPublishedArtifactGroupSerializer(queryset, many=True, context=context)
+
+    api_o = {
+        "data": serializer.data,
+    }
+
+    signals.task_end.send(sender=current_task.request, task="structify_pags_v3", task_id=current_task.request.id)
     return api_o

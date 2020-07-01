@@ -86,16 +86,23 @@ class PublishedArtifactGroupView(
                 queryset = queryset.filter(is_public=False)
         return queryset
 
-    #def list(self, request, *args, **kwargs):
-    #    #TODO This overrides the list function entirely which loses pagination
-    #    # there is probably a "correct" way to do this re:mixins
-    #    queryset = self.filter_queryset(self.get_queryset())
-    #    serializer = self.get_serializer(queryset, many=True, context={
-    #        "process_leaf_cls": request.query_params.get('leaf_cls', None)
-    #    })
-    #    return Response({
-    #        'n': queryset.count(),
-    #        'results': serializer.data,
-    #    })
+    def list(self, request, *args, **kwargs):
+        #TODO This overrides the list function entirely which loses pagination
+        # there is probably a "correct" way to do this re:mixins
+        queryset = list(self.filter_queryset(self.get_queryset()).values_list('id', flat=True))
 
-
+        api_o = {}
+        from . import tasks
+        celery_task = tasks.task_get_pag_by_qc_v3.delay(queryset, context={"leaf_cls":request.query_params.get("leaf_cls")})
+        if celery_task:
+            api_o["errors"] = 0
+            api_o["test"] = request.query_params
+            api_o["expected_n"] = len(queryset)
+            api_o["tasks"] = celery_task.id
+            api_o["messages"] = "Call api.majora.task.get with the appropriate task ID later..."
+        else:
+            api_o["errors"] = 1
+            api_o["messages"] = "Could not add requested task to Celery..."
+        return Response(
+            api_o
+        )

@@ -127,7 +127,7 @@ class RestyPublishedArtifactGroupSerializer(serializers.ModelSerializer):
         )
 
     def get_processes(self, obj):
-        leaf_cls = self.context['request'].query_params.get('leaf_cls', None)
+        leaf_cls = self.context.get('leaf_cls', None)
         if leaf_cls:
             #leaf_cls, kind = leaf_cls.split('.', 1)
             try:
