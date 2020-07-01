@@ -12,9 +12,11 @@ class BaseRestyProcessRecordSerializer(serializers.ModelSerializer):
         model = models.MajoraArtifactProcessRecord
 
 class BaseRestyProcessSerializer(serializers.ModelSerializer):
+    who = serializers.CharField(source='who.username')
     class Meta:
         model = models.MajoraArtifactProcess
         fields = ('id', 'when', 'who', 'process_kind')
+
 class RestyBiosourceSamplingProcessSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.BiosourceSamplingProcess
