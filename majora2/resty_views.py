@@ -84,8 +84,18 @@ class PublishedArtifactGroupView(
                 queryset = queryset.filter(~Q(accessions__service=service))
             else:
                 queryset = queryset.filter(is_public=False)
-
-
-
         return queryset
+
+    #def list(self, request, *args, **kwargs):
+    #    #TODO This overrides the list function entirely which loses pagination
+    #    # there is probably a "correct" way to do this re:mixins
+    #    queryset = self.filter_queryset(self.get_queryset())
+    #    serializer = self.get_serializer(queryset, many=True, context={
+    #        "process_leaf_cls": request.query_params.get('leaf_cls', None)
+    #    })
+    #    return Response({
+    #        'n': queryset.count(),
+    #        'results': serializer.data,
+    #    })
+
 

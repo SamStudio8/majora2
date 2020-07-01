@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from rest_polymorphic.serializers import PolymorphicSerializer
 
+from django.apps import apps
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
+
 from majora2 import models
 
 class BaseRestyProcessRecordSerializer(serializers.ModelSerializer):
@@ -27,11 +31,22 @@ class RestyBiosourceSamplingProcessSerializer(serializers.ModelSerializer):
         extra_kwargs = {
                 'private_collection_location_adm2': {'write_only': True},
         }
+class RestyDNASequencingProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.DNASequencingProcess
+        fields = BaseRestyProcessSerializer.Meta.fields + (
+            'run_name',
+            'instrument_make',
+            'instrument_model',
+            'flowcell_type',
+            'flowcell_id',
+        )
 class RestyProcessSerializer(PolymorphicSerializer):
     resource_type_field_name = 'process_model'
     model_serializer_mapping = {
         models.MajoraArtifactProcess: BaseRestyProcessSerializer,
         models.BiosourceSamplingProcess: RestyBiosourceSamplingProcessSerializer,
+        models.DNASequencingProcess: RestyDNASequencingProcessSerializer,
     }
 
 
@@ -39,6 +54,7 @@ class RestyProcessSerializer(PolymorphicSerializer):
 
 class BaseRestyArtifactSerializer(serializers.ModelSerializer):
     created = RestyProcessSerializer()
+
     class Meta:
         model = models.MajoraArtifact
         fields = ('id', 'dice_name', 'artifact_kind', 'created')
@@ -95,6 +111,8 @@ class RestyArtifactSerializer(PolymorphicSerializer):
 
 class RestyPublishedArtifactGroupSerializer(serializers.ModelSerializer):
     artifacts = RestyArtifactSerializer(source="tagged_artifacts", many=True)
+    processes = serializers.SerializerMethodField()
+
     class Meta:
         model = models.PublishedArtifactGroup
         fields = (
@@ -102,6 +120,23 @@ class RestyPublishedArtifactGroupSerializer(serializers.ModelSerializer):
                 'published_name',
                 'published_date',
                 'is_public',
-                "artifacts"
+                "artifacts",
+                "processes",
         )
 
+    def get_processes(self, obj):
+        leaf_cls = self.context['request'].query_params.get('leaf_cls', None)
+        if leaf_cls:
+            #leaf_cls, kind = leaf_cls.split('.', 1)
+            try:
+                model = apps.get_model('majora2', leaf_cls)
+            except:
+                #TODO Need to return an error message to the Response
+                return []
+
+            artifact = obj.tagged_artifacts.filter(
+                Q(polymorphic_ctype_id=ContentType.objects.get_for_model(model))
+            ).first() #TODO
+            if artifact:
+                return RestyProcessSerializer(artifact.process_tree_up(), many=True).data
+        return []
