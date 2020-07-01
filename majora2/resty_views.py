@@ -55,6 +55,32 @@ class BiosampleView(
     #TODO permissions class
 
 
+class TaskView(APIView):
+    def get(self, request, tid, format=None):
+        task_id = tid
+        if not task_id:
+            return Response({"booooooooooooo": 1})
+
+        api_o = {}
+        from mylims.celery import app
+        res = app.AsyncResult(task_id)
+        if res.state == "SUCCESS":
+            try:
+                api_o.update(res.get())
+            except Exception as e:
+                api_o["errors"] = 1
+                api_o["messages"] = str(e)
+        else:
+            api_o["warnings"] = 1
+            api_o["messages"] = "Task is not (yet) SUCCESS..."
+
+        api_o["task"] = {
+            "id": task_id,
+            "state": res.state,
+        }
+        return Response(api_o)
+
+
 class PublishedArtifactGroupView(
                     MajoraUUID4orDiceNameLookupMixin,
                     mixins.ListModelMixin,
