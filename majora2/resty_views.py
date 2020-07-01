@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.settings import api_settings
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import permissions
@@ -56,6 +57,7 @@ class BiosampleView(
 
 
 class TaskView(APIView):
+    renderer_classes = [JSONRenderer]
     def get(self, request, tid, format=None):
         task_id = tid
         if not task_id:
