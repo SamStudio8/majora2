@@ -171,5 +171,5 @@ class RestyPublishedArtifactGroupSerializer(serializers.ModelSerializer):
         wide_ids = []
         for d in models.MajoraArtifactProcessRecord.objects.filter(Q(in_artifact__id__in=ids) | Q(out_artifact__id__in=ids)).values('in_artifact', 'out_artifact', 'in_group', 'out_group'):
             wide_ids.extend(d.values())
-        return RestyProcessRecordSerializer(models.MajoraArtifactProcessRecord.objects.filter(Q(in_artifact__id__in=ids) | Q(out_artifact__id__in=ids)), many=True).data
+        return RestyProcessRecordSerializer(models.MajoraArtifactProcessRecord.objects.filter(Q(in_artifact__id__in=wide_ids) | Q(out_artifact__id__in=wide_ids)), many=True).data
 
