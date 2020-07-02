@@ -60,7 +60,7 @@ class BiosampleView(
 
 
 class TaskView(APIView):
-    renderer_classes = [JSONRenderer]
+    #renderer_classes = [JSONRenderer]
     def get(self, request, tid, format=None):
         task_id = tid
         if not task_id:
@@ -117,7 +117,12 @@ class PublishedArtifactGroupView(
                 queryset = queryset.filter(is_public=False)
         return queryset
 
-    def list(self, request, *args, **kwargs):
+    def get_serializer_context(self, **kwargs):
+        context = super().get_serializer_context()
+        context["leaf_cls"] = self.request.query_params.get("leaf_cls")
+        return context
+
+    def xlist(self, request, *args, **kwargs):
         #TODO This overrides the list function entirely which loses pagination
         # there is probably a "correct" way to do this re:mixins
         queryset = list(self.filter_queryset(self.get_queryset()).values_list('id', flat=True))

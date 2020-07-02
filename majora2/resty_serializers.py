@@ -7,15 +7,38 @@ from django.db.models import Q
 
 from majora2 import models
 
+"""
 class BaseRestyProcessRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.MajoraArtifactProcessRecord
 
+TODO Need to resolve circular artifact>process>processrecord>artifact dep
+class BaseRestyProcessRecordSerializer(serializers.ModelSerializer):
+    in_artifact = 
+    out_artifact =
+    in_group =
+    out_group =
+    class Meta:
+        model = models.MajoraArtifactProcessRecord
+        fields = (
+            'in_artifact'
+            'in_group'
+            'out_artifact'
+            'out_group'
+        )
+
+class RestyProcessRecordSerializer(PolymorphicSerializer):
+    resource_type_field_name = 'processrecord_model'
+    model_serializer_mapping = {
+        models.MajoraArtifactProcessRecord: BaseRestyProcessRecordSerializer,
+    }
+"""
 class BaseRestyProcessSerializer(serializers.ModelSerializer):
     who = serializers.CharField(source='who.username')
+    #records = RestyProcessRecordSerializer()
     class Meta:
         model = models.MajoraArtifactProcess
-        fields = ('id', 'when', 'who', 'process_kind')
+        fields = ('id', 'when', 'who', 'process_kind', 'records')
 
 class RestyCOGUK_BiosourceSamplingProcessSupplement(serializers.ModelSerializer):
     class Meta:
@@ -23,9 +46,27 @@ class RestyCOGUK_BiosourceSamplingProcessSupplement(serializers.ModelSerializer)
         fields = (
             'is_surveillance',
         )
+class RestyGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.MajoraArtifactGroup
+        fields = ('id', 'dice_name', 'group_kind', 'physical')
 
+
+class RestyBiosampleSourceSerializer(serializers.ModelSerializer):
+    biosample_source_id = serializers.CharField(source='secondary_id')
+    class Meta:
+        model = models.BiosampleSource
+        fields = RestyGroupSerializer.Meta.fields + (
+                'source_type',
+                'biosample_source_id',
+        )
 class RestyBiosourceSamplingProcessSerializer(serializers.ModelSerializer):
     coguk_supp = RestyCOGUK_BiosourceSamplingProcessSupplement()
+    adm0 = serializers.CharField(source='collection_location_country')
+    adm1 = serializers.CharField(source='collection_location_adm1')
+    adm2 = serializers.CharField(source='collection_location_adm2')
+    biosources = serializers.SerializerMethodField()
+
     class Meta:
         model = models.BiosourceSamplingProcess
         fields = BaseRestyProcessSerializer.Meta.fields + (
@@ -33,15 +74,22 @@ class RestyBiosourceSamplingProcessSerializer(serializers.ModelSerializer):
                 'received_date',
                 'source_age',
                 'source_sex',
-                'collection_location_country',
-                'collection_location_adm1',
-                'collection_location_adm2',
+                'adm0',
+                'adm1',
+                'adm2',
                 'private_collection_location_adm2',
                 'coguk_supp',
+                'biosources',
         )
         extra_kwargs = {
                 'private_collection_location_adm2': {'write_only': True},
         }
+
+    def get_biosources(self, obj):
+        source_ids = obj.records.filter(biosourcesamplingprocessrecord__isnull=False).values_list('in_group', flat=True)
+        return RestyBiosampleSourceSerializer(models.BiosampleSource.objects.filter(id__in=source_ids), many=True).data
+
+
 class RestyDNASequencingProcessSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.DNASequencingProcess
@@ -70,20 +118,6 @@ class BaseRestyArtifactSerializer(serializers.ModelSerializer):
         model = models.MajoraArtifact
         fields = ('id', 'dice_name', 'artifact_kind', 'created')
 
-class RestyGroupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.MajoraArtifactGroup
-        fields = ('id', 'dice_name', 'group_kind', 'physical')
-
-
-class RestyBiosampleSourceSerializer(serializers.ModelSerializer):
-    created = RestyBiosourceSamplingProcessSerializer()
-    class Meta:
-        model = models.BiosampleSource
-        fields = RestyGroupSerializer.Meta.fields + (
-                'source_type',
-                'secondary_id',
-        )
 
 class RestyBiosampleArtifactSerializer(BaseRestyArtifactSerializer):
     class Meta:
