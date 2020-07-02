@@ -117,11 +117,6 @@ class PublishedArtifactGroupView(
                 queryset = queryset.filter(is_public=False)
         return queryset
 
-    def get_serializer_context(self, **kwargs):
-        context = super().get_serializer_context()
-        context["leaf_cls"] = self.request.query_params.get("leaf_cls")
-        return context
-
     def xlist(self, request, *args, **kwargs):
         #TODO This overrides the list function entirely which loses pagination
         # there is probably a "correct" way to do this re:mixins
@@ -129,7 +124,7 @@ class PublishedArtifactGroupView(
 
         api_o = {}
         from . import tasks
-        celery_task = tasks.task_get_pag_by_qc_v3.delay(queryset, context={"leaf_cls":request.query_params.get("leaf_cls")})
+        celery_task = tasks.task_get_pag_by_qc_v3.delay(queryset)
         if celery_task:
             api_o["errors"] = 0
             api_o["test"] = request.query_params

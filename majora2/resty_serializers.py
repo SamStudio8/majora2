@@ -7,35 +7,8 @@ from django.db.models import Q
 
 from majora2 import models
 
-"""
-class BaseRestyProcessRecordSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.MajoraArtifactProcessRecord
-
-TODO Need to resolve circular artifact>process>processrecord>artifact dep
-class BaseRestyProcessRecordSerializer(serializers.ModelSerializer):
-    in_artifact = 
-    out_artifact =
-    in_group =
-    out_group =
-    class Meta:
-        model = models.MajoraArtifactProcessRecord
-        fields = (
-            'in_artifact'
-            'in_group'
-            'out_artifact'
-            'out_group'
-        )
-
-class RestyProcessRecordSerializer(PolymorphicSerializer):
-    resource_type_field_name = 'processrecord_model'
-    model_serializer_mapping = {
-        models.MajoraArtifactProcessRecord: BaseRestyProcessRecordSerializer,
-    }
-"""
 class BaseRestyProcessSerializer(serializers.ModelSerializer):
     who = serializers.CharField(source='who.username')
-    #records = RestyProcessRecordSerializer()
     class Meta:
         model = models.MajoraArtifactProcess
         fields = ('id', 'when', 'who', 'process_kind', 'records')
@@ -107,9 +80,32 @@ class RestyProcessSerializer(PolymorphicSerializer):
         models.BiosourceSamplingProcess: RestyBiosourceSamplingProcessSerializer,
         models.DNASequencingProcess: RestyDNASequencingProcessSerializer,
     }
+class BaseRestyProcessRecordSerializer(serializers.ModelSerializer):
+    process = RestyProcessSerializer()
+    class Meta:
+        model = models.MajoraArtifactProcessRecord
+        fields = (
+            'process',
+        )
 
+class RestyLibraryPoolingProcessRecord(serializers.ModelSerializer):
+    class Meta:
+        model = models.LibraryPoolingProcessRecord
+        fields = BaseRestyProcessRecordSerializer.Meta.fields + (
+                'barcode',
+                'library_strategy',
+                'library_source',
+                'library_selection',
+                'library_primers',
+                'library_protocol',
+        )
 
-
+class RestyProcessRecordSerializer(PolymorphicSerializer):
+    resource_type_field_name = 'processrecord_model'
+    model_serializer_mapping = {
+        models.MajoraArtifactProcessRecord: BaseRestyProcessRecordSerializer,
+        models.LibraryPoolingProcessRecord: RestyLibraryPoolingProcessRecord,
+    }
 
 class BaseRestyArtifactSerializer(serializers.ModelSerializer):
     created = RestyProcessSerializer()
@@ -156,7 +152,7 @@ class RestyArtifactSerializer(PolymorphicSerializer):
 
 class RestyPublishedArtifactGroupSerializer(serializers.ModelSerializer):
     artifacts = RestyArtifactSerializer(source="tagged_artifacts", many=True)
-    processes = serializers.SerializerMethodField()
+    process_records = serializers.SerializerMethodField()
 
     class Meta:
         model = models.PublishedArtifactGroup
@@ -166,22 +162,14 @@ class RestyPublishedArtifactGroupSerializer(serializers.ModelSerializer):
                 'published_date',
                 'is_public',
                 "artifacts",
-                "processes",
+                "process_records",
         )
 
-    def get_processes(self, obj):
-        leaf_cls = self.context.get('leaf_cls', None)
-        if leaf_cls:
-            #leaf_cls, kind = leaf_cls.split('.', 1)
-            try:
-                model = apps.get_model('majora2', leaf_cls)
-            except:
-                #TODO Need to return an error message to the Response
-                return []
+    def get_process_records(self, obj):
+        ids = obj.tagged_artifacts.values_list('id', flat=True)
+        models.MajoraArtifactProcessRecord.objects.filter(Q(in_artifact__id__in=ids) | Q(out_artifact__id__in=ids))
+        wide_ids = []
+        for d in models.MajoraArtifactProcessRecord.objects.filter(Q(in_artifact__id__in=ids) | Q(out_artifact__id__in=ids)).values('in_artifact', 'out_artifact', 'in_group', 'out_group'):
+            wide_ids.extend(d.values())
+        return RestyProcessRecordSerializer(models.MajoraArtifactProcessRecord.objects.filter(Q(in_artifact__id__in=ids) | Q(out_artifact__id__in=ids)), many=True).data
 
-            artifact = obj.tagged_artifacts.filter(
-                Q(polymorphic_ctype_id=ContentType.objects.get_for_model(model))
-            ).first() #TODO
-            if artifact:
-                return RestyProcessSerializer(artifact.process_tree_up(), many=True).data
-        return []
