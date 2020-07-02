@@ -16,3 +16,6 @@ class COGUK_BiosourceSamplingProcessSupplement(models.Model):
     anonymised_care_home_code = models.CharField(max_length=10, blank=True, null=True)
     admitted_with_covid_diagnosis = models.BooleanField(null=True)
 
+    def get_resty_serializer(self):
+        from . import resty_serializers
+        return resty_serializers.RestyCOGUK_BiosourceSamplingProcessSupplement

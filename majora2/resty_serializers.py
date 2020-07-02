@@ -17,7 +17,15 @@ class BaseRestyProcessSerializer(serializers.ModelSerializer):
         model = models.MajoraArtifactProcess
         fields = ('id', 'when', 'who', 'process_kind')
 
+class RestyCOGUK_BiosourceSamplingProcessSupplement(serializers.ModelSerializer):
+    class Meta:
+        model = models.COGUK_BiosourceSamplingProcessSupplement
+        fields = (
+            'is_surveillance',
+        )
+
 class RestyBiosourceSamplingProcessSerializer(serializers.ModelSerializer):
+    coguk_supp = RestyCOGUK_BiosourceSamplingProcessSupplement()
     class Meta:
         model = models.BiosourceSamplingProcess
         fields = BaseRestyProcessSerializer.Meta.fields + (
@@ -29,6 +37,7 @@ class RestyBiosourceSamplingProcessSerializer(serializers.ModelSerializer):
                 'collection_location_adm1',
                 'collection_location_adm2',
                 'private_collection_location_adm2',
+                'coguk_supp',
         )
         extra_kwargs = {
                 'private_collection_location_adm2': {'write_only': True},

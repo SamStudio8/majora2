@@ -19,6 +19,9 @@ from majora2.authentication import TatlTokenAuthentication
 
 import uuid
 
+class MajoraCeleryMixin(object):
+    pass
+
 class MajoraUUID4orDiceNameLookupMixin(object):
     def get_object(self):
         queryset = self.get_queryset()             # Get the base queryset
