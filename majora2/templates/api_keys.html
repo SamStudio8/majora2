@@ -78,10 +78,10 @@
             {% for key in available %}
             <tr>
                 <td>{{ key.key_name }}{% if key.permission %} ({{ key.permission.codename }}){% endif %}</td>
-		<td class="text-right">
+                <td class="text-right">
                 <form class="" action="{% url 'api_keys_activate' %}" method="post">
                 {% csrf_token %}
-                    <input type="hidden" id="key_name" name="key_name" value="{{ key.key_definition.key_name }}">
+                    <input type="hidden" id="key_name" name="key_name" value="{{ key.key_name }}">
                     <button type="submit" class="btn btn-sm btn-success"><b>Activate</b></button>
                 </div>
                 </form>
