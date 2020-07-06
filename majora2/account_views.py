@@ -207,11 +207,17 @@ def api_keys(request):
     })
 
 @login_required
-def api_keys_activate(request, key_name):
+def api_keys_activate(request):
     otp = django_2fa_mixin_hack(request)
     if otp:
         return otp
 
+    if request.method != 'POST':
+        return HttpResponseBadRequest() # bye
+
+    key_name = request.POST.get("key_name")
+    if not key_name:
+        return HttpResponseBadRequest() # bye
     key_def = get_object_or_404(models.ProfileAPIKeyDefinition, key_name=key_name)
 
     # Check user has permission to activate the key

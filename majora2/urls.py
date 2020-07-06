@@ -26,7 +26,7 @@ urlpatterns = [
 
     path('accounts/profile/', views.profile, name='profile'),
     path('keys/list/', account_views.api_keys, name='api_keys'),
-    path('keys/activate/<str:key_name>', account_views.api_keys_activate, name='api_keys_activate'),
+    path('keys/activate/', account_views.api_keys_activate, name='api_keys_activate'),
     path('institute/profiles/', account_views.list_site_profiles, name='list_site_profiles'),
 
     # DATAMATRIX ###############################################################
@@ -44,6 +44,7 @@ urlpatterns = [
     # PUBLIC
     path('public/dashboard', public_views.sample_sequence_count_dashboard),
     path('public/accessions', public_views.list_accessions),
+    path('public/metametrics', public_views.metadata_metrics),
 
     # PRIV MAJORA-TOKEN
     path('accounts/keys/', account_views.list_ssh_keys, name='list_ssh_keys'),

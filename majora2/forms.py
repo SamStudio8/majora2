@@ -238,6 +238,7 @@ class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a mode
                 ("BOSPHORE", "BOSPHORE"),
                 ("INHOUSE", "INHOUSE"),
                 ("SEEGENE", "SEEGENE"),
+                ("VIASURE", "VIASURE"),
             ],
             required=False,
     )
@@ -463,7 +464,6 @@ class TestSampleForm(forms.Form):
             label="Outward postcode",
             max_length=10,
             required=False,
-            disabled=True,
             help_text="Enter the <b>first part</b> of the patients home postcode. Leave blank if this was not available."
     )
     submitting_user = forms.CharField(disabled=True, required=False)

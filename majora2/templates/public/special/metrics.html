@@ -1,0 +1,43 @@
+{% load crispy_forms_tags %}
+{% load instance %}
+{% instance_name as instance_name_str %}
+{% include 'public/header.html' with title="Metrics Dashboard" navtitle=""|add:instance_name_str|add:" Metrics Dashboard" %}
+<div class="mast2">
+    <div class="container">
+    </div>
+</div>
+<div class="container">
+
+<div class="row">
+    <div class="col-md-2">
+    </div>
+    <div class="col-md-8">
+    senders {{ no_ph_senders.0 }} ( {{ no_ph_senders.1 }}% ) 
+<br>
+    collection date {{ collections_with_collection_date.0 }} ( {{ collections_with_collection_date.1 }}% )
+
+<br>
+    adm2 {{ collections_with_adm2.0 }} ( {{ collections_with_adm2.1 }}% )
+
+<br>
+    adm2_private {{ collections_with_adm2_private.0 }} ( {{ collections_with_adm2_private.1 }}% )
+
+<br>
+    age {{ collections_with_age.0 }} ( {{ collections_with_age.1 }}% )
+
+<br>
+    sex {{ collections_with_sex.0 }} ( {{ collections_with_sex.1 }}% )
+<br>
+    whc {{ supps_with_hcw.0 }} ( {{ supps_with_hcw.1 }}% )
+<br>
+    wcc {{ supps_with_carecode.0 }} ( {{ supps_with_carecode.1 }}% )
+    </div>
+    <div class="col-md-2">
+    </div>
+</div>
+<hr>
+</div>
+
+
+{% include 'public/footer.html' %}
+

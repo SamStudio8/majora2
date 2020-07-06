@@ -32,7 +32,7 @@ class MetricSerializer_ThresholdCycle(MetricSerializer):
     max_ct = serpy.FloatField(required=False)
 
 class COGUK_BiosourceSamplingProcessSupplementSerializer(serpy.Serializer):
-    is_surveillance = serpy.BoolField()
+    is_surveillance = serpy.BoolField(required=False)
     is_hcw = serpy.BoolField(required=False)
     employing_hospital_name = serpy.StrField(required=False)
     employing_hospital_trust_or_board = serpy.StrField(required=False)

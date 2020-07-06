@@ -5,7 +5,7 @@ from django.views.decorators.cache import cache_page
 from django.core.paginator import Paginator
 
 from django.utils import timezone
-from django.db.models.functions import TruncDay
+from django.db.models.functions import TruncDay, Substr
 import datetime
 
 from . import models
@@ -90,4 +90,36 @@ def sample_sequence_count_dashboard(request):
 
         "consensus_spark": consensus_spark,
         "request_sparks": request_sparks,
+    })
+
+
+@cache_page(60 * 60)
+def metadata_metrics(request):
+    t_samplings = models.BiosourceSamplingProcess.objects.filter(collection_location_country__isnull=False).count()
+    
+    with_collection_date = models.BiosourceSamplingProcess.objects.filter(collection_location_country__isnull=False, collection_date__isnull=False).count()
+    with_adm2 = models.BiosourceSamplingProcess.objects.filter(collection_location_country__isnull=False, collection_location_adm2__isnull=False).exclude(collection_location_adm2="").count()
+    with_adm2_private = models.BiosourceSamplingProcess.objects.filter(collection_location_country__isnull=False, private_collection_location_adm2__isnull=False).exclude(private_collection_location_adm2="").count()
+
+    with_age = models.BiosourceSamplingProcess.objects.filter(collection_location_country__isnull=False, source_age__isnull=False).count()
+    with_sex = models.BiosourceSamplingProcess.objects.filter(collection_location_country__isnull=False, source_sex__isnull=False).exclude(source_sex="").count()
+
+    t_noph = models.BiosampleArtifact.objects.exclude(Q(created__who__profile__institute__code="PHEC") | Q(created__who__profile__institute__code="PHWC"))
+    with_sender = t_noph.filter(sender_sample_id__isnull=False).exclude(sender_sample_id="").exclude(sender_sample_id__exact=F('dice_name')).exclude(sender_sample_id__startswith=Substr(F('dice_name'),1,3))
+
+    supps = models.COGUK_BiosourceSamplingProcessSupplement.objects.filter(is_surveillance__isnull=False)
+    with_hcw = supps.filter(is_hcw__isnull=False)
+
+    supps_cc = supps.filter(Q(is_care_home_worker=True) | Q(is_care_home_resident=True))
+    with_carecode = supps_cc.filter(anonymised_care_home_code__isnull=False).exclude(anonymised_care_home_code="")
+
+    return render(request, 'public/special/metrics.html', {
+        "no_ph_senders": (with_sender.count(), "%.2f" % (with_sender.count()/t_noph.count()*100.0)),
+        "collections_with_collection_date": (with_collection_date, "%.2f" % (with_collection_date/t_samplings*100.0)),
+        "collections_with_adm2": (with_adm2, "%.2f" % (with_adm2/t_samplings*100.0)),
+        "collections_with_adm2_private": (with_adm2_private, "%.2f" % (with_adm2_private/t_samplings*100.0)),
+        "collections_with_age": (with_age, "%.2f" % (with_age/t_samplings*100.0)),
+        "collections_with_sex": (with_sex, "%.2f" % (with_sex/t_samplings*100.0)),
+        "supps_with_hcw": (with_hcw.count(), "%.2f" % (with_hcw.count()/supps.count()*100.0)),
+        "supps_with_carecode": (with_carecode.count(), "%.2f" % (with_carecode.count()/supps_cc.count()*100.0)),
     })
