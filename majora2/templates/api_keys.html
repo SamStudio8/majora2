@@ -30,16 +30,33 @@
             <tr>
                 <th>Key Name and Key</th>
                 <th>Expiry</th>
-                <th class="text-right">Renew</th>
             </tr>
             </thead>
             <tbody>
             {% for key in generated %}
             <tr class="table-{% if key.is_expired or key.was_revoked %}danger{%else%}success{% endif %}">
-                <td>{{ key.key_definition.key_name }}{% if key.key_definition.permission %} ({{ key.key_definition.permission.codename }}){% endif %}
-                </br><code>{{ key.key }}</code></td>
-                <td>{{ key.validity_end | naturaltime }}</td>
-                <td class="text-right"><a class="badge badge-warning" href="{% url 'api_keys_activate' key.key_definition.key_name %}">RENEW</a>
+                <td><b>{{ key.key_definition.key_name }}{% if key.key_definition.permission %} ({{ key.key_definition.permission.codename }})</b>{% endif %}
+                </br>
+                <form>
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="hidden" id="key_name" name="key_name" value="{{ key.key_definition.key_name }}">
+                    <div class="input-group-append">
+                        <span class="input-group-text"><code>{{ key.key }}</code></span>
+                        <button type="button" class="copy-btn btn btn-sm btn-primary" data-clipboard-text="{{ key.key }}"><b>Copy</b></button>
+                    </div>
+                </div>
+                </form>
+                </td>
+                <td class="text-right">
+                {{ key.validity_end | naturaltime }}</br>
+                <form class="" action="{% url 'api_keys_activate' %}" method="post">
+                {% csrf_token %}
+                    <input type="hidden" id="key_name" name="key_name" value="{{ key.key_definition.key_name }}">
+                    <button type="submit" class="btn btn-sm btn-warning"><b>Renew</b></button>
+                </div>
+                </form>
+                </td>
             </tr>
             {% empty %}
             <tr><td>No keys to list...</td></tr>
@@ -78,4 +95,36 @@
 {% include 'footer.html' %}
 
 
+<script>
+//Tooltip tip from https://stackoverflow.com/questions/37381640/tooltips-highlight-animation-with-clipboard-js-click
+$( document ).ready(function() {
+$('button').tooltip({
+  trigger: 'click',
+  placement: 'bottom'
+});
 
+function setTooltip(btn, message) {
+  $(btn).tooltip('hide')
+    .attr('data-original-title', message)
+    .tooltip('show');
+}
+
+function hideTooltip(btn) {
+  setTimeout(function() {
+    $(btn).tooltip('hide');
+  }, 1000);
+}
+
+var clipboard = new ClipboardJS('.copy-btn');
+
+clipboard.on('success', function(e) {
+  setTooltip(e.trigger, 'Copied!');
+  hideTooltip(e.trigger);
+});
+
+clipboard.on('error', function(e) {
+  setTooltip(e.trigger, 'Failed!');
+  hideTooltip(e.trigger);
+});
+});
+</script>
