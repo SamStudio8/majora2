@@ -239,6 +239,8 @@ class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a mode
                 ("INHOUSE", "INHOUSE"),
                 ("SEEGENE", "SEEGENE"),
                 ("VIASURE", "VIASURE"),
+                ("BD", "BD"),
+                ("XPERT", "XPERT"),
             ],
             required=False,
     )
@@ -260,6 +262,7 @@ class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a mode
                 ("PANTHER", "PANTHER"),
                 ("SEEGENE_NIMBUS", "SEEGENE_NIMBUS"),
                 ("QIAGEN_ROTORGENE", "QIAGEN_ROTORGENE"),
+                ("BD_MAX", "BD_MAX"),
             ],
             required=False,
     )
