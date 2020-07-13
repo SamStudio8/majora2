@@ -54,13 +54,16 @@
     </div>
     <div class="col-md-8 text-right">
     <hr>
-        <form class="" action="{% url 'agreements' %}" method="post">
+    {% if not signed %}
+        <form class="" action="{% url 'view_agreement' agreement.slug %}" method="post">
         {% csrf_token %}
         <a href="{% url 'agreements' %}"><button type="button" class="btn btn-lrg btn-danger"><b>Cancel</b></button></a>
-            <input type="hidden" id="aid" name="aid" value="{{ agreement.id }}">
             <button type="submit" class="btn btn-lrg btn-success"><b>Agree and sign</b></button>
         </div>
         </form>
+    {% else %}
+    <b>Agreement signed by {{ signature.profile.user.username }} on {{ signature.signature_timestamp }}</b>
+    {% endif %}
     </div>
 </div>
 

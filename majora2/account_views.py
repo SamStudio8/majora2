@@ -305,11 +305,32 @@ def view_agreement(request, slug):
     signature = None
     if request.method == 'POST':
         # SIGNING AGREEMENT
-        pass
+        #TODO Do we need to manually check the CSRF? I think this might be done by django middleware automatically
+        #TODO Tatl call here?
+        try:
+            # Check not already signed
+            signature = models.ProfileAgreement.objects.get(agreement_slug=slug, profile=request.user.profile)
+            agreement = signature.agreement
+            signed = True
+        except:
+            try:
+                agreement = models.ProfileAgreementDefinition.objects.get(slug=slug)
+                signed = False
+            except:
+                return HttpResponseBadRequest() # bye
+
+            signature = models.ProfileAgreement(
+                agreement = agreement,
+                profile = request.user.profile,
+                signature_timestamp = timezone.now(),
+            )
+            signed = True
+            signature.save()
+
     else:
         # VIEWING AGREEMENT
         try:
-            signature = models.ProfileAgreement.objects.get(agreement_slug=slug, profile=request.user.profile)
+            signature = models.ProfileAgreement.objects.get(agreement__slug=slug, profile=request.user.profile)
             agreement = signature.agreement
             signed = True
         except:

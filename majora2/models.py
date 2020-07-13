@@ -1520,7 +1520,7 @@ class ProfileAgreement(models.Model):
     signature_timestamp = models.DateTimeField()
     is_terminated = models.BooleanField(default=False)
     terminated_reason = models.CharField(max_length=24, blank=True, null=True)
-    terminated_timestamp = models.DateTimeField()
+    terminated_timestamp = models.DateTimeField(blank=True, null=True)
 
 class ProfileAPIKeyDefinition(models.Model):
     key_name = models.CharField(max_length=48, unique=True)

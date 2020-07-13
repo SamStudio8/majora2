@@ -29,14 +29,17 @@
             <thead class="table-dark">
             <tr>
                 <th>Agreement</th>
-                <th>Signed</th>
+                <th>View</th>
             </tr>
             </thead>
             <tbody>
             {% for s in signed %}
             <tr class="table-success">
-                <td><b>{{ s.agreement.slug }}</b></td>
-                <td><b>{{ s.signature_timestamp | naturaltime }}</b></td>
+                <td><b>{{ s.agreement.name }}</b></br>
+                    {{ s.agreement.description }}
+                </td>
+                <td><b>{{ s.signature_timestamp | naturaltime }}</b></br>
+                <a href="{% url 'view_agreement' s.agreement.slug %}" class="btn btn-sm btn-warning"><b>View</b></a></td>
             </tr>
             {% empty %}
             <tr><td>No signed agreements to list...</td></tr>
