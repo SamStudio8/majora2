@@ -1505,8 +1505,8 @@ class Profile(models.Model):
 # eg: not showing scottish users agreements for english data
 class ProfileAgreementDefinition(models.Model):
     slug = models.CharField(max_length=48, unique=True)
-    name = models.CharField(max_length=96, unique=True)
-    description = models.CharField(max_length=256, unique=True)
+    name = models.CharField(max_length=96)
+    description = models.CharField(max_length=256)
     content = models.TextField()
     version = models.PositiveIntegerField(default=1)
     proposal_timestamp = models.DateTimeField()

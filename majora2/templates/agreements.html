@@ -45,7 +45,7 @@
         </table>
     </div>
     <div class="col-md-4">
-        <h1>Available agreements</h1>
+        <h1>New agreements</h1>
         <br>
         <table class="table">
             <thead class="table-dark">
@@ -57,7 +57,7 @@
             <tbody>
             {% for agreement in available %}
             <tr>
-                <td>{{ agreement.slug }}</td>
+                <td>{{ agreement.name }}</td>
                 <td class="text-right">
                 <form class="" action="{% url 'agreements' %}" method="post">
                 {% csrf_token %}
