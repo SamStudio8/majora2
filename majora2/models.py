@@ -1500,6 +1500,26 @@ class Profile(models.Model):
         if action:
             return action.timestamp
 
+#TODO samstudio8 - future versions of the agreement model might consider
+# properties of the user model that determine applicability to sign an agreement
+# eg: not showing scottish users agreements for english data
+class ProfileAgreementDefinition(models.Model):
+    slug = models.CharField(max_length=48, unique=True)
+    name = models.CharField(max_length=96, unique=True)
+    description = models.CharField(max_length=256, unique=True)
+    content = models.TextField()
+    version = models.PositiveIntegerField(default=1)
+    proposal_timestamp = models.DateTimeField()
+    effective_timestamp = models.DateTimeField(null=True, blank=True)
+
+class ProfileAgreement(models.Model):
+    agreement = models.ForeignKey('ProfileAgreementDefinition', on_delete=models.PROTECT)
+    profile = models.ForeignKey('Profile', on_delete=models.PROTECT)
+    signature_timestamp = models.DateTimeField()
+    is_terminated = models.BooleanField(default=False)
+    terminated_reason = models.CharField(max_length=24, blank=True, null=True)
+    terminated_timestamp = models.DateTimeField()
+
 class ProfileAPIKeyDefinition(models.Model):
     key_name = models.CharField(max_length=48, unique=True)
     permission = models.ForeignKey(Permission, blank=True, null=True, on_delete=models.PROTECT)
