@@ -291,3 +291,37 @@ def agreements(request):
         'available': available,
         'signed': signed,
     })
+
+@login_required
+def view_agreement(request, slug):
+    otp = django_2fa_mixin_hack(request)
+    if otp:
+        return otp
+
+    if not hasattr(request.user, "profile"):
+        return HttpResponseBadRequest() # bye
+
+    agreement = None
+    signature = None
+    if request.method == 'POST':
+        # SIGNING AGREEMENT
+        pass
+    else:
+        # VIEWING AGREEMENT
+        try:
+            signature = models.ProfileAgreement.objects.get(agreement_slug=slug, profile=request.user.profile)
+            agreement = signature.agreement
+            signed = True
+        except:
+            try:
+                agreement = models.ProfileAgreementDefinition.objects.get(slug=slug)
+                signed = False
+            except:
+                return HttpResponseBadRequest() # bye
+
+    return render(request, 'view_agreement.html', {
+        'user': request.user,
+        'agreement': agreement,
+        'signature': signature,
+        'signed': signed,
+    })

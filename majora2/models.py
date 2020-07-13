@@ -1514,6 +1514,7 @@ class ProfileAgreementDefinition(models.Model):
 
 #TODO Store this in Tatl?
 class ProfileAgreement(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # 
     agreement = models.ForeignKey('ProfileAgreementDefinition', on_delete=models.PROTECT)
     profile = models.ForeignKey('Profile', on_delete=models.PROTECT)
     signature_timestamp = models.DateTimeField()

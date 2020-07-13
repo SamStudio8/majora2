@@ -59,12 +59,7 @@
             <tr>
                 <td>{{ agreement.name }}</td>
                 <td class="text-right">
-                <form class="" action="{% url 'agreements' %}" method="post">
-                {% csrf_token %}
-                    <input type="hidden" id="aid" name="aid" value="{{ agreement.id }}">
-                    <button type="submit" class="btn btn-sm btn-success"><b>Sign</b></button>
-                </div>
-                </form>
+                    <a class="btn btn-sm btn-info" href="{% url 'view_agreement' agreement.slug %}"><b>View and sign</b></a>
                 </td>
             </tr>
             {% empty %}
