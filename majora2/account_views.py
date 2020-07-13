@@ -277,3 +277,17 @@ def list_site_profiles(request):
         'inactive_profiles': inactive_site_profiles,
     })
 
+@login_required
+def agreements(request):
+    otp = django_2fa_mixin_hack(request)
+    if otp:
+        return otp
+
+    signed = models.ProfileAgreement.objects.filter(profile=request.user.profile)
+    available = models.ProfileAgreementDefinition.objects.exclude(id__in=signed.values('agreement__id'))
+
+    return render(request, 'agreements.html', {
+        'user': request.user,
+        'available': available,
+        'signed': signed,
+    })

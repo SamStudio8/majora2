@@ -1512,6 +1512,7 @@ class ProfileAgreementDefinition(models.Model):
     proposal_timestamp = models.DateTimeField()
     effective_timestamp = models.DateTimeField(null=True, blank=True)
 
+#TODO Store this in Tatl?
 class ProfileAgreement(models.Model):
     agreement = models.ForeignKey('ProfileAgreementDefinition', on_delete=models.PROTECT)
     profile = models.ForeignKey('Profile', on_delete=models.PROTECT)

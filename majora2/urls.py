@@ -27,6 +27,7 @@ urlpatterns = [
     path('accounts/profile/', views.profile, name='profile'),
     path('keys/list/', account_views.api_keys, name='api_keys'),
     path('keys/activate/', account_views.api_keys_activate, name='api_keys_activate'),
+    path('accounts/profile/agreements/', account_views.agreements, name='agreements'),
     path('institute/profiles/', account_views.list_site_profiles, name='list_site_profiles'),
 
     # DATAMATRIX ###############################################################
