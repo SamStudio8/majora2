@@ -8,7 +8,6 @@ from django.db.models import Q
 
 from django.utils import timezone
 
-from . import serializers
 
 from django.contrib.auth.models import Permission
 
@@ -266,6 +265,7 @@ class MajoraArtifact(PolymorphicModel):
     def as_struct(self):
         return {}
     def get_serializer(self):
+        from . import serializers
         return serializers.ArtifactSerializer
 
 # TODO This will become the MajoraGroup
@@ -639,6 +639,7 @@ class TemporaryMajoraArtifactMetric(PolymorphicModel):
     def as_struct(self):
         return {}
     def get_serializer(self):
+        from . import serializers
         return serializers.MetricSerializer
 
 class TemporaryMajoraArtifactMetricRecord(PolymorphicModel):
@@ -660,6 +661,7 @@ class TemporaryMajoraArtifactMetric_ThresholdCycle(TemporaryMajoraArtifactMetric
             "records": [record.as_struct() for record in self.metric_records.all()],
         }
     def get_serializer(self):
+        from . import serializers
         return serializers.MetricSerializer_ThresholdCycle
 
 class TemporaryMajoraArtifactMetricRecord_ThresholdCycle(TemporaryMajoraArtifactMetricRecord):
@@ -827,6 +829,7 @@ class DigitalResourceArtifact(MajoraArtifact):
     current_kind = models.CharField(max_length=48, default="File")
 
     def get_serializer(self):
+        from . import serializers
         return serializers.DigitalResourceArtifactSerializer
 
     def as_struct(self):
@@ -1057,6 +1060,7 @@ class BiosampleArtifact(MajoraArtifact):
     def artifact_kind(self):
         return 'Biosample'
     def get_serializer(self):
+        from . import serializers
         return serializers.BiosampleArtifactSerializer
     @property
     def name(self):
@@ -1596,10 +1600,12 @@ class Institute(models.Model):
         ]
 
 class InstituteCredit(models.Model):
-    institute = models.ForeignKey('Institute', on_delete=models.CASCADE)
+    institute = models.ForeignKey('Institute', on_delete=models.CASCADE, related_name="credits")
     credit_code = models.CharField(max_length=10, unique=True)
 
-    apply_by = models.CharField(max_length=48)
+    #TODO fuckit we will just fix the namespace for now ffs
+    #apply_by_namespace = models.CharField(max_length=64)
+    #apply_by_name = models.CharField(max_length=64)
 
     lab_name = models.CharField(max_length=512, null=True, blank=True)
     lab_addr = models.CharField(max_length=512, null=True, blank=True)
