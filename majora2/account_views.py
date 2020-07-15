@@ -3,6 +3,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.contrib.auth.decorators import login_required
+from django.forms.models import model_to_dict
 
 from django.db.models import Q
 from django.contrib.auth.models import User
@@ -92,7 +93,6 @@ def form_account(request):
     if otp:
         return otp
 
-    from django.forms.models import model_to_dict
 
     if not hasattr(request.user, "profile"):
         return HttpResponseBadRequest() # bye
@@ -120,12 +120,55 @@ def form_account(request):
     return render(request, 'forms/account.html', {'form': form})
 
 @login_required
+def form_credit(request, credit_code=None):
+    otp = django_2fa_mixin_hack(request)
+    if otp:
+        return otp
+    if not hasattr(request.user, "profile"):
+        return HttpResponseBadRequest() # bye
+
+
+    init = None
+    if request.method == "POST":
+        credit_code = request.POST.get("credit_code")
+
+    if credit_code:
+        if request.method == "POST":
+            credit = models.InstituteCredit.objects.filter(credit_code=credit_code).first()
+        else:
+            credit = get_object_or_404(models.InstituteCredit, credit_code=credit_code)
+
+        if credit:
+            if credit.institute != request.user.profile.institute:
+                return HttpResponseBadRequest() # bye
+            init = model_to_dict(credit)
+
+    if request.method == "POST":
+        form = forms.CreditForm(request.POST, initial=init)
+        if form.is_valid():
+            credit, created = models.InstituteCredit.objects.get_or_create(
+                    institute=request.user.profile.institute,
+                    credit_code="%s:%s" % (request.user.profile.institute.code, form.cleaned_data["credit_code"]),
+            )
+            if not created:
+                if credit.institute != request.user.profile.institute:
+                    return HttpResponseBadRequest() # bye
+
+            credit.lab_name = form.cleaned_data["lab_name"]
+            credit.lab_addr = form.cleaned_data["lab_addr"]
+            credit_lab_list = form.cleaned_data["lab_list"] 
+            return render(request, 'accounts/institute_success.html')
+    else:
+        form = forms.CreditForm(initial=init)
+    return render(request, 'forms/credit.html', {'form': form, 'credit_code': credit_code})
+
+
+@login_required
 def form_institute(request):
     otp = django_2fa_mixin_hack(request)
     if otp:
         return otp
 
-    from django.forms.models import model_to_dict
 
     if not hasattr(request.user, "profile"):
         return HttpResponseBadRequest() # bye

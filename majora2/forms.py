@@ -31,6 +31,44 @@ def majora_clean_ssh_key(ssh_key):
 
     return ssh_key
 
+class CreditForm(forms.Form):
+    credit_code = forms.CharField(max_length=10, required=True)
+
+    lab_name = forms.CharField(max_length=512, required=True, label="Originating lab name(s)", help_text="The name or names of originating labs you would like to credit")
+    lab_addr = forms.CharField(max_length=512, required=True, label="Originating lab address(es)", help_text="Use the broadest address that encompasses all the originating labs")
+    lab_list = forms.CharField(max_length=2048, required=False, widget=forms.Textarea(attrs={"rows": 5}), label="Author list")
+
+    delete = forms.BooleanField(required=False, label="Delete", help_text="Tick this to remove this Credit from your Institute")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset("Credit",
+                Row(
+                    Column('credit_code', css_class="form-group col-md-2 mb-0"),
+                    css_class="form-row",
+                ),
+                Row(
+                    Column('lab_name', css_class="form-group col-md-6 mb-0"),
+                    Column('lab_addr', css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                ),
+                Row(
+                    Column('lab_list', css_class="form-group col-md-12 mb-0"),
+                    css_class="form-row",
+                ),
+                Row(
+                    Column('delete', css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                ),
+            ),
+            FormActions(
+                    Submit('save', 'Save'),
+                    css_class="text-right",
+            )
+        )
 
 class InstituteForm(forms.Form):
     name = forms.CharField(max_length=100, disabled=True, required=False)

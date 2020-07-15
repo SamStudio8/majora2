@@ -1,0 +1,23 @@
+{% load instance %}
+{% load crispy_forms_tags %}
+{% include 'header.html' with title="Credit" %}
+<div class="mast2">
+    <div class="container">
+    </div>
+</div>
+<div class="container">
+
+<h1>Update institute credit</h1>
+<hr>
+
+<form action="{% url 'form_credit' %}" method="post">
+    {% if credit_code %}
+        <input type="hidden" name="credit_code" value="{{ credit_code }}" />
+    {% endif %}
+    {% csrf_token %}
+    {% crispy form %}
+</form>
+</div>
+{% include 'footer.html' %}
+
+
