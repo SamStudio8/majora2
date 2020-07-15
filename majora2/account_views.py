@@ -129,10 +129,6 @@ def form_credit(request, credit_code=None):
 
     credit = None
     init = None
-    if request.method == "POST":
-        # Hidden field allows passthrough of existing credit_code
-        # Users can change the name in the hidden field if they want but it won't do what the expect
-        credit_code = request.POST.get("credit_code")
 
     if credit_code:
         if request.method == "POST":
@@ -146,8 +142,10 @@ def form_credit(request, credit_code=None):
         init = model_to_dict(credit)
 
     if request.method == "POST":
-        form = forms.CreditForm(request.POST, initial=init)
-
+        post = request.POST.copy()
+        if credit:
+            post["credit_code"] = credit.credit_code
+        form = forms.CreditForm(post, initial=init)
         if form.is_valid():
             proposed_cc = form.cleaned_data["credit_code"]
             if not credit:
@@ -169,6 +167,10 @@ def form_credit(request, credit_code=None):
             credit_lab_list = form.cleaned_data["lab_list"] 
             credit.save()
             return render(request, 'accounts/institute_success.html')
+        else:
+            if credit:
+                form.fields['credit_code'].disabled = True
+                form.fields['credit_code'].required = False
     else:
         form = forms.CreditForm(initial=init)
         if credit:
@@ -182,7 +184,6 @@ def form_institute(request):
     otp = django_2fa_mixin_hack(request)
     if otp:
         return otp
-
 
     if not hasattr(request.user, "profile"):
         return HttpResponseBadRequest() # bye
@@ -203,7 +204,7 @@ def form_institute(request):
             return render(request, 'accounts/institute_success.html')
     else:
         form = forms.InstituteForm(initial=init)
-    return render(request, 'forms/institute.html', {'form': form})
+    return render(request, 'forms/institute.html', {'form': form, 'institute': org})
 
 
 @csrf_exempt

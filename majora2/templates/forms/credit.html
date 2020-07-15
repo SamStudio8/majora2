@@ -10,10 +10,11 @@
 <h1>Update institute credit</h1>
 <hr>
 
+{% if credit_code %}
+<form action="{% url 'form_credit' credit_code %}" method="post">
+{% else %}
 <form action="{% url 'form_credit' %}" method="post">
-    {% if credit_code %}
-        <input type="hidden" name="credit_code" value="{{ credit_code }}" />
-    {% endif %}
+{% endif %}
     {% csrf_token %}
     {% crispy form %}
 </form>
