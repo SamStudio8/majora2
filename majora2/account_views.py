@@ -127,9 +127,11 @@ def form_credit(request, credit_code=None):
     if not hasattr(request.user, "profile"):
         return HttpResponseBadRequest() # bye
 
-
+    credit = None
     init = None
     if request.method == "POST":
+        # Hidden field allows passthrough of existing credit_code
+        # Users can change the name in the hidden field if they want but it won't do what the expect
         credit_code = request.POST.get("credit_code")
 
     if credit_code:
@@ -138,17 +140,21 @@ def form_credit(request, credit_code=None):
         else:
             credit = get_object_or_404(models.InstituteCredit, credit_code=credit_code)
 
-        if credit:
-            if credit.institute != request.user.profile.institute:
-                return HttpResponseBadRequest() # bye
-            init = model_to_dict(credit)
+    if credit:
+        if credit.institute != request.user.profile.institute:
+            return HttpResponseBadRequest() # bye
+        init = model_to_dict(credit)
 
     if request.method == "POST":
         form = forms.CreditForm(request.POST, initial=init)
+
         if form.is_valid():
+            proposed_cc = form.cleaned_data["credit_code"]
+            if not credit:
+                proposed_cc = "%s:%s" % (request.user.profile.institute.code, form.cleaned_data["credit_code"])
             credit, created = models.InstituteCredit.objects.get_or_create(
                     institute=request.user.profile.institute,
-                    credit_code="%s:%s" % (request.user.profile.institute.code, form.cleaned_data["credit_code"]),
+                    credit_code=proposed_cc,
             )
             if not created:
                 if credit.institute != request.user.profile.institute:
@@ -157,9 +163,13 @@ def form_credit(request, credit_code=None):
             credit.lab_name = form.cleaned_data["lab_name"]
             credit.lab_addr = form.cleaned_data["lab_addr"]
             credit_lab_list = form.cleaned_data["lab_list"] 
+            credit.save()
             return render(request, 'accounts/institute_success.html')
     else:
         form = forms.CreditForm(initial=init)
+        if credit:
+            form.fields['credit_code'].disabled = True
+            form.fields['credit_code'].required = False
     return render(request, 'forms/credit.html', {'form': form, 'credit_code': credit_code})
 
 
