@@ -153,7 +153,7 @@ class PAGSerializer(serpy.Serializer):
         a = pag.tagged_artifacts.values_list('id', flat=True)
         try:
             credit_code = models.MajoraMetaRecord.objects.get(artifact__id__in=a, meta_tag='majora', meta_name='credit').value
-            name = models.InstituteCredit.objects.get(institute=pag.owner.profile.institute, credit_code=credit_code).lab_name
+            name = models.InstituteCredit.objects.get(institute=pag.owner.profile.institute, credit_code=credit_code.upper()).lab_name
         except:
             name = pag.owner.profile.institute.gisaid_lab_name
         return name
@@ -162,7 +162,7 @@ class PAGSerializer(serpy.Serializer):
         a = pag.tagged_artifacts.values_list('id', flat=True)
         try:
             credit_code = models.MajoraMetaRecord.objects.get(artifact__id__in=a, meta_tag='majora', meta_name='credit').value
-            addr = models.InstituteCredit.objects.get(institute=pag.owner.profile.institute, credit_code=credit_code).lab_addr
+            addr = models.InstituteCredit.objects.get(institute=pag.owner.profile.institute, credit_code=credit_code.upper()).lab_addr
         except:
             addr = pag.owner.profile.institute.gisaid_lab_addr
         return addr
@@ -172,7 +172,7 @@ class PAGSerializer(serpy.Serializer):
         l = None
         try:
             credit_code = models.MajoraMetaRecord.objects.get(artifact__id__in=a, meta_tag='majora', meta_name='credit').value
-            l = models.InstituteCredit.objects.get(institute=pag.owner.profile.institute, credit_code=credit_code).lab_list
+            l = models.InstituteCredit.objects.get(institute=pag.owner.profile.institute, credit_code=credit_code.upper()).lab_list
         except:
             l = pag.owner.profile.institute.gisaid_list
 
