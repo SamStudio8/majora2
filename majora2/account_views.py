@@ -160,6 +160,10 @@ def form_credit(request, credit_code=None):
                 if credit.institute != request.user.profile.institute:
                     return HttpResponseBadRequest() # bye
 
+                if form.cleaned_data.get("delete"):
+                    credit.delete()
+                    return render(request, 'accounts/institute_success.html')
+
             credit.lab_name = form.cleaned_data["lab_name"]
             credit.lab_addr = form.cleaned_data["lab_addr"]
             credit_lab_list = form.cleaned_data["lab_list"] 
