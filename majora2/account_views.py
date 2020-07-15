@@ -152,7 +152,7 @@ def form_credit(request, credit_code=None):
                 proposed_cc = "%s:%s" % (request.user.profile.institute.code, form.cleaned_data["credit_code"])
             credit, created = models.InstituteCredit.objects.get_or_create(
                     institute=request.user.profile.institute,
-                    credit_code=proposed_cc,
+                    credit_code=proposed_cc.upper(),
             )
             if not created:
                 if credit.institute != request.user.profile.institute:

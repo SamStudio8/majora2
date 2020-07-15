@@ -1604,7 +1604,7 @@ class Institute(models.Model):
 
 class InstituteCredit(models.Model):
     institute = models.ForeignKey('Institute', on_delete=models.CASCADE, related_name="credits")
-    credit_code = models.CharField(max_length=10, unique=True)
+    credit_code = models.CharField(max_length=24, unique=True)
 
     #TODO fuckit we will just fix the namespace for now ffs
     #apply_by_namespace = models.CharField(max_length=64)
