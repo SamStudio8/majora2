@@ -32,7 +32,8 @@ def majora_clean_ssh_key(ssh_key):
     return ssh_key
 
 class CreditForm(forms.Form):
-    credit_code = forms.CharField(max_length=10, required=True, help_text="A short string to refer to this credit list when uploading metadata. This need not match an existing site name, or barcode. Note that this will automatically be prefixed by your site identifier.")
+    #TODO samstudio8: There is a condition where the max_length can be overrun as we append the site name, reduce this field maxlen by 4+1 to account for the general case of a 4 letter side code and :
+    credit_code = forms.CharField(max_length=19, required=True, help_text="A short string to refer to this credit list when uploading metadata. This need not match an existing site name, or barcode. Note that this will automatically be prefixed by your site identifier.")
 
     lab_name = forms.CharField(max_length=512, required=True, label="Originating lab name(s)", help_text="The name or names of originating labs you would like to credit")
     lab_addr = forms.CharField(max_length=512, required=True, label="Originating lab address(es)", help_text="Use the broadest address that encompasses all the originating labs")
