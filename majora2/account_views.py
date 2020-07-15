@@ -164,7 +164,7 @@ def form_credit(request, credit_code=None):
 
             credit.lab_name = form.cleaned_data["lab_name"]
             credit.lab_addr = form.cleaned_data["lab_addr"]
-            credit_lab_list = form.cleaned_data["lab_list"] 
+            credit.lab_list = form.cleaned_data["lab_list"]
             credit.save()
             return render(request, 'accounts/institute_success.html')
         else:
