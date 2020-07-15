@@ -1,0 +1,76 @@
+{% include 'header.html' %}
+{% load humanize %}
+<div class="mast" style="margin-bottom:0">
+    <div class="container">
+        <div class="row">
+        <div class="col-md-6">
+            <span class="badge badge-warning">User</span>
+            <span class="uuid-mast" style="margin-top:0; padding-top:0;">{{ user.id }}</span>
+        </div>
+        <div class="col-md-6 text-right">
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-md-12">
+            <h1>{{ user.username }}</h1>
+        </div>
+        </div>
+    </div>
+</div>
+<div class="mast2">
+</div>
+
+<div class="container">
+<div class="row">
+    <div class="col-md-4">
+        <h1>Information</h1>
+        <hr>
+        <b>Description</b></br>
+        {{ agreement.description }}
+        </br>
+        </br>
+        <b>Proposed</b></br>
+        {{ agreement.proposal_timestamp }}
+        </br>
+        </br>
+        <b>Effective</b></br>
+        {{ agreement.effective_timestamp }}
+        </br>
+        </br>
+        <b>Version</b>
+        {{ agreement.version }}
+
+    </div>
+    <div class="col-md-8">
+        <h1>Agreement text</h1>
+        <hr>
+        {{ agreement.content|linebreaks }}
+
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4">
+    <hr>
+    </div>
+    <div class="col-md-8 text-right">
+    <hr>
+    {% if not signed %}
+        <form class="" action="{% url 'view_agreement' agreement.slug %}" method="post">
+        {% csrf_token %}
+        <a href="{% url 'agreements' %}"><button type="button" class="btn btn-lrg btn-danger"><b>Cancel</b></button></a>
+            <button type="submit" class="btn btn-lrg btn-success"><b>Agree and sign</b></button>
+        </div>
+        </form>
+    {% else %}
+    <b>Agreement signed by {{ signature.profile.user.username }} on {{ signature.signature_timestamp }}</b>
+    {% endif %}
+    </div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+{% include 'footer.html' %}
+

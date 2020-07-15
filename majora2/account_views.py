@@ -3,6 +3,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.contrib.auth.decorators import login_required
+from django.forms.models import model_to_dict
 
 from django.db.models import Q
 from django.contrib.auth.models import User
@@ -92,7 +93,6 @@ def form_account(request):
     if otp:
         return otp
 
-    from django.forms.models import model_to_dict
 
     if not hasattr(request.user, "profile"):
         return HttpResponseBadRequest() # bye
@@ -120,12 +120,70 @@ def form_account(request):
     return render(request, 'forms/account.html', {'form': form})
 
 @login_required
+def form_credit(request, credit_code=None):
+    otp = django_2fa_mixin_hack(request)
+    if otp:
+        return otp
+    if not hasattr(request.user, "profile"):
+        return HttpResponseBadRequest() # bye
+
+    credit = None
+    init = None
+
+    if credit_code:
+        if request.method == "POST":
+            credit = models.InstituteCredit.objects.filter(credit_code=credit_code).first()
+        else:
+            credit = get_object_or_404(models.InstituteCredit, credit_code=credit_code)
+
+    if credit:
+        if credit.institute != request.user.profile.institute:
+            return HttpResponseBadRequest() # bye
+        init = model_to_dict(credit)
+
+    if request.method == "POST":
+        post = request.POST.copy()
+        if credit:
+            post["credit_code"] = credit.credit_code
+        form = forms.CreditForm(post, initial=init)
+        if form.is_valid():
+            proposed_cc = form.cleaned_data["credit_code"]
+            if not credit:
+                proposed_cc = "%s:%s" % (request.user.profile.institute.code, form.cleaned_data["credit_code"])
+            credit, created = models.InstituteCredit.objects.get_or_create(
+                    institute=request.user.profile.institute,
+                    credit_code=proposed_cc,
+            )
+            if not created:
+                if credit.institute != request.user.profile.institute:
+                    return HttpResponseBadRequest() # bye
+
+                if form.cleaned_data.get("delete"):
+                    credit.delete()
+                    return render(request, 'accounts/institute_success.html')
+
+            credit.lab_name = form.cleaned_data["lab_name"]
+            credit.lab_addr = form.cleaned_data["lab_addr"]
+            credit.lab_list = form.cleaned_data["lab_list"]
+            credit.save()
+            return render(request, 'accounts/institute_success.html')
+        else:
+            if credit:
+                form.fields['credit_code'].disabled = True
+                form.fields['credit_code'].required = False
+    else:
+        form = forms.CreditForm(initial=init)
+        if credit:
+            form.fields['credit_code'].disabled = True
+            form.fields['credit_code'].required = False
+    return render(request, 'forms/credit.html', {'form': form, 'credit_code': credit_code})
+
+
+@login_required
 def form_institute(request):
     otp = django_2fa_mixin_hack(request)
     if otp:
         return otp
-
-    from django.forms.models import model_to_dict
 
     if not hasattr(request.user, "profile"):
         return HttpResponseBadRequest() # bye
@@ -146,7 +204,7 @@ def form_institute(request):
             return render(request, 'accounts/institute_success.html')
     else:
         form = forms.InstituteForm(initial=init)
-    return render(request, 'forms/institute.html', {'form': form})
+    return render(request, 'forms/institute.html', {'form': form, 'institute': org})
 
 
 @csrf_exempt
@@ -277,3 +335,72 @@ def list_site_profiles(request):
         'inactive_profiles': inactive_site_profiles,
     })
 
+@login_required
+def agreements(request):
+    otp = django_2fa_mixin_hack(request)
+    if otp:
+        return otp
+
+    signed = models.ProfileAgreement.objects.filter(profile=request.user.profile)
+    available = models.ProfileAgreementDefinition.objects.exclude(id__in=signed.values('agreement__id'))
+
+    return render(request, 'agreements.html', {
+        'user': request.user,
+        'available': available,
+        'signed': signed,
+    })
+
+@login_required
+def view_agreement(request, slug):
+    otp = django_2fa_mixin_hack(request)
+    if otp:
+        return otp
+
+    if not hasattr(request.user, "profile"):
+        return HttpResponseBadRequest() # bye
+
+    agreement = None
+    signature = None
+    if request.method == 'POST':
+        # SIGNING AGREEMENT
+        #TODO Do we need to manually check the CSRF? I think this might be done by django middleware automatically
+        #TODO Tatl call here?
+        try:
+            # Check not already signed
+            signature = models.ProfileAgreement.objects.get(agreement_slug=slug, profile=request.user.profile)
+            agreement = signature.agreement
+            signed = True
+        except:
+            try:
+                agreement = models.ProfileAgreementDefinition.objects.get(slug=slug)
+                signed = False
+            except:
+                return HttpResponseBadRequest() # bye
+
+            signature = models.ProfileAgreement(
+                agreement = agreement,
+                profile = request.user.profile,
+                signature_timestamp = timezone.now(),
+            )
+            signed = True
+            signature.save()
+
+    else:
+        # VIEWING AGREEMENT
+        try:
+            signature = models.ProfileAgreement.objects.get(agreement__slug=slug, profile=request.user.profile)
+            agreement = signature.agreement
+            signed = True
+        except:
+            try:
+                agreement = models.ProfileAgreementDefinition.objects.get(slug=slug)
+                signed = False
+            except:
+                return HttpResponseBadRequest() # bye
+
+    return render(request, 'view_agreement.html', {
+        'user': request.user,
+        'agreement': agreement,
+        'signature': signature,
+        'signed': signed,
+    })

@@ -8,7 +8,6 @@ from django.db.models import Q
 
 from django.utils import timezone
 
-from . import serializers
 
 from django.contrib.auth.models import Permission
 
@@ -266,6 +265,7 @@ class MajoraArtifact(PolymorphicModel):
     def as_struct(self):
         return {}
     def get_serializer(self):
+        from . import serializers
         return serializers.ArtifactSerializer
 
 # TODO This will become the MajoraGroup
@@ -639,6 +639,7 @@ class TemporaryMajoraArtifactMetric(PolymorphicModel):
     def as_struct(self):
         return {}
     def get_serializer(self):
+        from . import serializers
         return serializers.MetricSerializer
 
 class TemporaryMajoraArtifactMetricRecord(PolymorphicModel):
@@ -660,6 +661,7 @@ class TemporaryMajoraArtifactMetric_ThresholdCycle(TemporaryMajoraArtifactMetric
             "records": [record.as_struct() for record in self.metric_records.all()],
         }
     def get_serializer(self):
+        from . import serializers
         return serializers.MetricSerializer_ThresholdCycle
 
 class TemporaryMajoraArtifactMetricRecord_ThresholdCycle(TemporaryMajoraArtifactMetricRecord):
@@ -827,6 +829,7 @@ class DigitalResourceArtifact(MajoraArtifact):
     current_kind = models.CharField(max_length=48, default="File")
 
     def get_serializer(self):
+        from . import serializers
         return serializers.DigitalResourceArtifactSerializer
 
     def as_struct(self):
@@ -1057,6 +1060,7 @@ class BiosampleArtifact(MajoraArtifact):
     def artifact_kind(self):
         return 'Biosample'
     def get_serializer(self):
+        from . import serializers
         return serializers.BiosampleArtifactSerializer
     def get_resty_serializer(self):
         from . import resty_serializers
@@ -1503,6 +1507,28 @@ class Profile(models.Model):
         if action:
             return action.timestamp
 
+#TODO samstudio8 - future versions of the agreement model might consider
+# properties of the user model that determine applicability to sign an agreement
+# eg: not showing scottish users agreements for english data
+class ProfileAgreementDefinition(models.Model):
+    slug = models.CharField(max_length=48, unique=True)
+    name = models.CharField(max_length=96)
+    description = models.CharField(max_length=256)
+    content = models.TextField()
+    version = models.PositiveIntegerField(default=1)
+    proposal_timestamp = models.DateTimeField()
+    effective_timestamp = models.DateTimeField(null=True, blank=True)
+
+#TODO Store this in Tatl?
+class ProfileAgreement(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # 
+    agreement = models.ForeignKey('ProfileAgreementDefinition', on_delete=models.PROTECT)
+    profile = models.ForeignKey('Profile', on_delete=models.PROTECT)
+    signature_timestamp = models.DateTimeField()
+    is_terminated = models.BooleanField(default=False)
+    terminated_reason = models.CharField(max_length=24, blank=True, null=True)
+    terminated_timestamp = models.DateTimeField(blank=True, null=True)
+
 class ProfileAPIKeyDefinition(models.Model):
     key_name = models.CharField(max_length=48, unique=True)
     permission = models.ForeignKey(Permission, blank=True, null=True, on_delete=models.PROTECT)
@@ -1576,6 +1602,17 @@ class Institute(models.Model):
             ("can_register_institute", "Can register a new institute in Majora"),
         ]
 
+class InstituteCredit(models.Model):
+    institute = models.ForeignKey('Institute', on_delete=models.CASCADE, related_name="credits")
+    credit_code = models.CharField(max_length=10, unique=True)
+
+    #TODO fuckit we will just fix the namespace for now ffs
+    #apply_by_namespace = models.CharField(max_length=64)
+    #apply_by_name = models.CharField(max_length=64)
+
+    lab_name = models.CharField(max_length=512, null=True, blank=True)
+    lab_addr = models.CharField(max_length=512, null=True, blank=True)
+    lab_list = models.CharField(max_length=2048, null=True, blank=True)
 
 class County(models.Model):
     country_code = models.CharField(max_length=10)

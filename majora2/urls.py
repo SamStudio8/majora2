@@ -27,6 +27,8 @@ urlpatterns = [
     path('accounts/profile/', views.profile, name='profile'),
     path('keys/list/', account_views.api_keys, name='api_keys'),
     path('keys/activate/', account_views.api_keys_activate, name='api_keys_activate'),
+    path('accounts/profile/agreements/<str:slug>/', account_views.view_agreement, name='view_agreement'),
+    path('accounts/profile/agreements/', account_views.agreements, name='agreements'),
     path('institute/profiles/', account_views.list_site_profiles, name='list_site_profiles'),
 
     # DATAMATRIX ###############################################################
@@ -37,6 +39,8 @@ urlpatterns = [
     path('forms/account/', account_views.form_account, name='form_account'),
     path('forms/register/', account_views.form_register, name='form_register'),
     path('forms/institute/', account_views.form_institute, name='form_institute'),
+    path('forms/credit/', account_views.form_credit, name='form_credit'),
+    path('forms/credit/<str:credit_code>', account_views.form_credit, name='form_credit'),
     
     # BOT ######################################################################
     path('bot/accounts/approve', csrf_exempt(bot_views.bot_approve_registration)),

@@ -468,6 +468,8 @@ components:
             "INHOUSE",
             "SEEGENE",
             "VIASURE",
+            "BD",
+            "XPERT",
             null
           ]
         test_platform:
@@ -489,6 +491,7 @@ components:
             "PANTHER",
             "SEEGENE_NIMBUS",
             "QIAGEN_ROTORGENE",
+            "BD_MAX",
             null
           ]
         test_target:

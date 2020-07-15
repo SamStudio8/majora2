@@ -14,6 +14,39 @@
     {% csrf_token %}
     {% crispy form %}
 </form>
+
+<hr>
+<h1>Additional credits</h1>
+Uploading metadata with the <code>majora_credit</code> code set to a credit code in the table below, will override the default institution author credits defined above.
+<table class="table table-sm">
+    <thead>
+    <tr class="thead-dark">
+        <th>Credit code</th>
+        <th>Lab name</th>
+        <th>Lab address</th>
+        <th>Lab authors</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for credit in institute.credits.all %}
+    <tr>
+        <td><b>{{ credit.credit_code }}</b></td>
+        <td>{{ credit.lab_name }}</td>
+        <td>{{ credit.lab_addr }}</td>
+        <td>{{ credit.lab_list }}</td>
+        <td><a href="{% url 'form_credit' credit.credit_code %}" class="btn btn-sm btn-warning">Edit</a></td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><a href="{% url 'form_credit' %}" class="btn btn-sm btn-success">Add</a></td>
+    </tr>
+    </tbody>
+</table>
 </div>
 {% include 'footer.html' %}
 

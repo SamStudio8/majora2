@@ -1,0 +1,80 @@
+{% include 'header.html' %}
+{% load humanize %}
+<div class="mast" style="margin-bottom:0">
+    <div class="container">
+        <div class="row">
+        <div class="col-md-6">
+            <span class="badge badge-warning">User</span>
+            <span class="uuid-mast" style="margin-top:0; padding-top:0;">{{ user.id }}</span>
+        </div>
+        <div class="col-md-6 text-right">
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-md-12">
+            <h1>{{ user.username }}</h1>
+        </div>
+        </div>
+    </div>
+</div>
+<div class="mast2">
+</div>
+
+<div class="container">
+<div class="row">
+    <div class="col-md-8">
+        <h1>Signed agreements</h1>
+        <br>
+        <table class="table table-borderless">
+            <thead class="table-dark">
+            <tr>
+                <th>Agreement</th>
+                <th>View</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for s in signed %}
+            <tr class="table-success">
+                <td><b>{{ s.agreement.name }}</b></br>
+                    {{ s.agreement.description }}
+                </td>
+                <td><b>{{ s.signature_timestamp | naturaltime }}</b></br>
+                <a href="{% url 'view_agreement' s.agreement.slug %}" class="btn btn-sm btn-warning"><b>View</b></a></td>
+            </tr>
+            {% empty %}
+            <tr><td>No signed agreements to list...</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-4">
+        <h1>New agreements</h1>
+        <br>
+        <table class="table">
+            <thead class="table-dark">
+            <tr>
+                <th>Agreement name</th>
+                <th class="text-right">Sign</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for agreement in available %}
+            <tr>
+                <td>{{ agreement.name }}</td>
+                <td class="text-right">
+                    <a class="btn btn-sm btn-info" href="{% url 'view_agreement' agreement.slug %}"><b>View and sign</b></a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td>No agreements to sign...</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</div>
+</div>
+</div>
+
+{% include 'footer.html' %}
