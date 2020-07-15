@@ -1595,6 +1595,15 @@ class Institute(models.Model):
             ("can_register_institute", "Can register a new institute in Majora"),
         ]
 
+class InstituteCredit(models.Model):
+    institute = models.ForeignKey('Institute', on_delete=models.CASCADE)
+    credit_code = models.CharField(max_length=10, unique=True)
+
+    apply_by = models.CharField(max_length=48)
+
+    lab_name = models.CharField(max_length=512, null=True, blank=True)
+    lab_addr = models.CharField(max_length=512, null=True, blank=True)
+    lab_list = models.CharField(max_length=2048, null=True, blank=True)
 
 class County(models.Model):
     country_code = models.CharField(max_length=10)
