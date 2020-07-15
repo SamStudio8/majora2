@@ -1,4 +1,5 @@
 import serpy
+from majora2 import models # gross
 
 class ArtifactSerializer(serpy.Serializer):
     id = serpy.StrField()
@@ -140,13 +141,45 @@ class PAGSerializer(serpy.Serializer):
     owner_org_gisaid_opted = serpy.BoolField(attr='owner.profile.institute.gisaid_opted')
     owner_org_gisaid_user = serpy.StrField(attr='owner.profile.institute.gisaid_user')
     owner_org_gisaid_mail = serpy.StrField(attr='owner.profile.institute.gisaid_mail')
-    owner_org_gisaid_lab_name = serpy.StrField(attr='owner.profile.institute.gisaid_lab_name')
-    owner_org_gisaid_lab_addr = serpy.StrField(attr='owner.profile.institute.gisaid_lab_addr')
+    owner_org_gisaid_lab_name = serpy.MethodField('serialize_owner_org_gisaid_lab_name')
+    owner_org_gisaid_lab_addr = serpy.MethodField('serialize_owner_org_gisaid_lab_addr')
     owner_org_gisaid_lab_list = serpy.MethodField('serialize_owner_org_gisaid_lab_list')
 
     owner_org_ena_opted = serpy.BoolField(attr='owner.profile.institute.ena_opted')
 
     owner_org_lab_or_name = serpy.MethodField('serialize_owner_org_lab_or_name')
+
+    def serialize_owner_org_gisaid_lab_name(self, pag):
+        a = pag.tagged_artifacts.values_list('id', flat=True)
+        try:
+            credit_code = models.MajoraMetaRecord.objects.get(artifact__id__in=a, meta_tag='majora', meta_name='credit').value
+            name = models.InstituteCredit.objects.get(institute=pag.owner.profile.institute, credit_code=credit_code).lab_name
+        except:
+            name = pag.owner.profile.institute.gisaid_lab_name
+        return name
+
+    def serialize_owner_org_gisaid_lab_addr(self, pag):
+        a = pag.tagged_artifacts.values_list('id', flat=True)
+        try:
+            credit_code = models.MajoraMetaRecord.objects.get(artifact__id__in=a, meta_tag='majora', meta_name='credit').value
+            addr = models.InstituteCredit.objects.get(institute=pag.owner.profile.institute, credit_code=credit_code).lab_addr
+        except:
+            addr = pag.owner.profile.institute.gisaid_lab_addr
+        return addr
+
+    def serialize_owner_org_gisaid_lab_list(self, pag):
+        a = pag.tagged_artifacts.values_list('id', flat=True)
+        l = None
+        try:
+            credit_code = models.MajoraMetaRecord.objects.get(artifact__id__in=a, meta_tag='majora', meta_name='credit').value
+            l = models.InstituteCredit.objects.get(institute=pag.owner.profile.institute, credit_code=credit_code).lab_list
+        except:
+            l = pag.owner.profile.institute.gisaid_list
+
+        if l:
+            return l.replace('\t', ' ').replace('\r', '').replace('\n', ',').replace(",,", ',').replace(' ,', ',') # sigh
+        return ""
+
 
     def serialize_owner_org_lab_or_name(self, pag):
         if pag.owner.profile.institute.gisaid_lab_name:
@@ -171,11 +204,6 @@ class PAGSerializer(serpy.Serializer):
 
     def serialize_published_date(self, pag):
         return pag.published_date.isoformat()
-
-    def serialize_owner_org_gisaid_lab_list(self, pag):
-        if pag.owner.profile.institute.gisaid_list: 
-            return pag.owner.profile.institute.gisaid_list.replace('\t', ' ').replace('\r', '').replace('\n', ',').replace(",,", ',').replace(' ,', ',') # sigh
-        return ""
 
 class PAGQCSerializer(serpy.Serializer):
     id = serpy.StrField()
