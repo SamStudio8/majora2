@@ -41,6 +41,7 @@ class MajoraCeleryListingMixin(object):
                 api_o
             )
 
+
 class MajoraUUID4orDiceNameLookupMixin(object):
     def get_object(self):
         queryset = self.get_queryset()             # Get the base queryset
@@ -116,6 +117,14 @@ class PublishedArtifactGroupView(
     queryset = models.PublishedArtifactGroup.objects.all()
 
     celery_task = tasks.task_get_pag_by_qc_v3
+
+    #def get_serializer(self, *args, **kwargs):
+    #    return serializers.RestyPublishedArtifactGroupSerializer(fields=["id", "artifacts"], *args, **kwargs)
+
+    def get_serializer_context(self):
+        context = super(PublishedArtifactGroupView, self).get_serializer_context()
+        context.update({"mdv": 'A'})
+        return context
 
     def get_queryset(self):
         queryset = self.queryset
