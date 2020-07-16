@@ -182,3 +182,24 @@ CELERY_S3_ACCESS_KEY_ID = ""
 CELERY_S3_SECRET_ACCESS_KEY = ""
 CELERY_S3_BUCKET = ""
 
+MARKDOWNIFY_WHITELIST_TAGS = [
+    'a',
+    'abbr',
+    'acronym',
+    'b',
+    'blockquote',
+    'code',
+    'em',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'i',
+    'li',
+    'ol',
+    'p',
+    'strong',
+    'ul'
+]
