@@ -397,6 +397,10 @@ def view_agreement(request, slug):
                 agreement = signature.agreement
                 signed = True
 
+                if not agreement.is_terminable:
+                    # Nice try pal
+                    return HttpResponseBadRequest() # bye
+
                 signature.is_terminated = True
                 signature.terminated_timestamp = timezone.now()
                 signature.terminated_reason = "TERMINATED BY USER"

@@ -37,6 +37,14 @@
         {{ agreement.effective_timestamp }}
         </br>
         </br>
+        <b>Can be terminated</b></br>
+        {% if agreement.is_terminable %}
+            <span class="badge badge-success">Yes</span>
+        {% else %}
+            <span class="badge badge-danger">No</span>
+        {% endif %}
+        </br>
+        </br>
         <b>Version</b>
         {{ agreement.version }}
 
@@ -78,6 +86,7 @@
         </form>
     {% else %}
     <b>Agreement signed by {{ signature.profile.user.username }} on {{ signature.signature_timestamp }}</b>
+        {% if agreement.is_terminable %}
         <form class="" action="{% url 'view_agreement' agreement.slug %}" method="post">
         {% csrf_token %}
         <a href="{% url 'agreements' %}"><button type="button" class="btn btn-lrg btn-info"><b>Return to agreement list</b></button></a>
@@ -85,6 +94,7 @@
             <button type="submit" class="btn btn-lrg btn-danger"><b>Terminate this agreement</b></button>
         </div>
         </form>
+        {% endif %}
     {% endif %}
     </div>
 </div>
