@@ -20,23 +20,10 @@ class DynamicDataviewModelSerializer(serializers.ModelSerializer):
                 self.fields[f] = s[0](context=self.context, **s[1])
 
 
-        lfields = {
-            "A": {
-                "COGUK_BiosourceSamplingProcessSupplement": [],
-                "PublishedArtifactGroup": ["id", "artifacts", "published_name", "created", "process_records"],
-                "BiosampleSource": ["source_type"],
-                "BiosourceSamplingProcess": ["source_age", "source_sex"],
-                #"DigitalResourceArtifact": ["id", "current_path", "created"],
-                #"BiosampleArtifact": ["id", "central_sample_id", "created"],
-                #"MajoraArtifact": ["created"],
-            },
-        }
-
-        mdv = lfields.get(self.context.get("mdv"), {})
-        if self.Meta.model.__name__ in mdv:
-            fields = mdv[self.Meta.model.__name__]
-        else:
-            #fields = []
+        try:
+            mdv = models.MajoraDataview.objects.get(code_name=self.context.get("mdv"))
+            fields = mdv.fields.filter(model_name=self.Meta.model.__name__).values_list('model_field', flat=True)
+        except:
             fields = None
 
         if fields is not None:

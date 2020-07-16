@@ -1774,7 +1774,7 @@ class MajoraDataview(models.Model):
     description = models.CharField(max_length=256)
 
 class MajoraDataviewSerializerField(models.Model):
-    dataview = models.ForeignKey('MajoraDataview', on_delete=models.CASCADE)
+    dataview = models.ForeignKey('MajoraDataview', on_delete=models.CASCADE, related_name="fields")
     model_name = models.CharField(max_length=64)
     model_field = models.CharField(max_length=64) #TODO can we ref the actual model?
 
