@@ -1,5 +1,6 @@
 {% include 'header.html' %}
 {% load humanize %}
+{% load markdownify %}
 <div class="mast" style="margin-bottom:0">
     <div class="container">
         <div class="row">
@@ -37,14 +38,36 @@
         {{ agreement.effective_timestamp }}
         </br>
         </br>
+        <b>Can be terminated</b></br>
+        {% if agreement.is_terminable %}
+            <span class="badge badge-success">Yes</span>
+        {% else %}
+            <span class="badge badge-danger">No</span>
+        {% endif %}
+        </br>
+        </br>
         <b>Version</b>
         {{ agreement.version }}
+
+        <hr/>
+        <h4>Previous signatures</h4>
+        <table class="table table-sm">
+            <tbody>
+                {% for sig in previous_signatures %}
+                <tr>
+                    <td>{{ sig.signature_timestamp }}</td>
+                    <td>{{ sig.terminated_timestamp }}</td>
+                    <td>{{ sig.terminated_reason }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
     </div>
     <div class="col-md-8">
         <h1>Agreement text</h1>
         <hr>
-        {{ agreement.content|linebreaks }}
+        {{ agreement.content|markdownify }}
 
     </div>
 </div>
@@ -58,11 +81,21 @@
         <form class="" action="{% url 'view_agreement' agreement.slug %}" method="post">
         {% csrf_token %}
         <a href="{% url 'agreements' %}"><button type="button" class="btn btn-lrg btn-danger"><b>Cancel</b></button></a>
+            <input type="hidden" name="action" value="sign">
             <button type="submit" class="btn btn-lrg btn-success"><b>Agree and sign</b></button>
         </div>
         </form>
     {% else %}
     <b>Agreement signed by {{ signature.profile.user.username }} on {{ signature.signature_timestamp }}</b>
+        {% if agreement.is_terminable %}
+        <form class="" action="{% url 'view_agreement' agreement.slug %}" method="post">
+        {% csrf_token %}
+        <a href="{% url 'agreements' %}"><button type="button" class="btn btn-lrg btn-info"><b>Return to agreement list</b></button></a>
+            <input type="hidden" name="action" value="terminate">
+            <button type="submit" class="btn btn-lrg btn-danger"><b>Terminate this agreement</b></button>
+        </div>
+        </form>
+        {% endif %}
     {% endif %}
     </div>
 </div>

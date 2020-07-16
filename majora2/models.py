@@ -1518,6 +1518,7 @@ class ProfileAgreementDefinition(models.Model):
     version = models.PositiveIntegerField(default=1)
     proposal_timestamp = models.DateTimeField()
     effective_timestamp = models.DateTimeField(null=True, blank=True)
+    is_terminable = models.BooleanField(default=True)
 
 #TODO Store this in Tatl?
 class ProfileAgreement(models.Model):
