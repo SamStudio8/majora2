@@ -1767,4 +1767,18 @@ class AbstractBioinformaticsProcess(MajoraArtifactProcess):
         return 'Bioinformatics: %s' % self.pipe_kind
     pass
 
+
+class MajoraDataview(models.Model):
+    code_name = models.CharField(max_length=10, unique=True)
+    name = models.CharField(max_length=128)
+    description = models.CharField(max_length=256)
+
+class MajoraDataviewSerializerField(models.Model):
+    dataview = models.ForeignKey('MajoraDataview', on_delete=models.CASCADE)
+    model_name = models.CharField(max_length=64)
+    model_field = models.CharField(max_length=64) #TODO can we ref the actual model?
+
+#TODO Filter on fields and stuff
+
+
 from . import receivers
