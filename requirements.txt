@@ -17,3 +17,4 @@ phonenumberslite
 django-two-factor-auth
 serpy
 django-datatables-view
+django-markdownify
