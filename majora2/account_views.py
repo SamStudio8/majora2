@@ -341,7 +341,7 @@ def agreements(request):
     if otp:
         return otp
 
-    signed = models.ProfileAgreement.objects.filter(profile=request.user.profile)
+    signed = models.ProfileAgreement.objects.filter(profile=request.user.profile, is_terminated=False)
     available = models.ProfileAgreementDefinition.objects.exclude(id__in=signed.values('agreement__id'))
 
     return render(request, 'agreements.html', {
@@ -365,30 +365,54 @@ def view_agreement(request, slug):
         # SIGNING AGREEMENT
         #TODO Do we need to manually check the CSRF? I think this might be done by django middleware automatically
         #TODO Tatl call here?
-        try:
-            # Check not already signed
-            signature = models.ProfileAgreement.objects.get(agreement_slug=slug, profile=request.user.profile)
-            agreement = signature.agreement
-            signed = True
-        except:
+
+        form_action = request.POST.get("action")
+        if not form_action:
+            return HttpResponseBadRequest() # bye
+
+        if form_action == "sign":
             try:
-                agreement = models.ProfileAgreementDefinition.objects.get(slug=slug)
+                # Check not already signed
+                signature = models.ProfileAgreement.objects.get(agreement__slug=slug, profile=request.user.profile, is_terminated=False)
+                agreement = signature.agreement
+                signed = True
+            except:
+                try:
+                    agreement = models.ProfileAgreementDefinition.objects.get(slug=slug)
+                    signed = False
+                except:
+                    return HttpResponseBadRequest() # bye
+
+                signature = models.ProfileAgreement(
+                    agreement = agreement,
+                    profile = request.user.profile,
+                    signature_timestamp = timezone.now(),
+                )
+                signed = True
+                signature.save()
+        elif form_action == "terminate":
+            try:
+                # Check already signed
+                signature = models.ProfileAgreement.objects.get(agreement__slug=slug, profile=request.user.profile, is_terminated=False)
+                agreement = signature.agreement
+                signed = True
+
+                signature.is_terminated = True
+                signature.terminated_timestamp = timezone.now()
+                signature.terminated_reason = "TERMINATED BY USER"
+                signature.save()
                 signed = False
+
             except:
                 return HttpResponseBadRequest() # bye
 
-            signature = models.ProfileAgreement(
-                agreement = agreement,
-                profile = request.user.profile,
-                signature_timestamp = timezone.now(),
-            )
-            signed = True
-            signature.save()
+        else:
+            return HttpResponseBadRequest() # bye
 
     else:
         # VIEWING AGREEMENT
         try:
-            signature = models.ProfileAgreement.objects.get(agreement__slug=slug, profile=request.user.profile)
+            signature = models.ProfileAgreement.objects.get(agreement__slug=slug, profile=request.user.profile, is_terminated=False)
             agreement = signature.agreement
             signed = True
         except:
@@ -398,8 +422,10 @@ def view_agreement(request, slug):
             except:
                 return HttpResponseBadRequest() # bye
 
+    old_sigs = models.ProfileAgreement.objects.filter(agreement__slug=slug, profile=request.user.profile, is_terminated=True)
     return render(request, 'view_agreement.html', {
         'user': request.user,
+        'previous_signatures': old_sigs,
         'agreement': agreement,
         'signature': signature,
         'signed': signed,
