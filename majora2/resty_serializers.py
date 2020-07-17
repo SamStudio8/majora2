@@ -24,6 +24,7 @@ class DynamicDataviewModelSerializer(serializers.ModelSerializer):
             fields = mdv.fields.filter(model_name=self.Meta.model.__name__).values_list('model_field', flat=True)
         except:
             fields = []
+            #TODO Return a very sad response here?
 
         if fields is not None:
             # Drop any fields that are not specified in the `fields` argument.
