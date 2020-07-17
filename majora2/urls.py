@@ -91,13 +91,13 @@ from rest_framework.routers import DefaultRouter
 from . import resty_views
 
 router = DefaultRouter()
-router.register(r'biosample', resty_views.BiosampleView)
+#router.register(r'biosample', resty_views.BiosampleView)
 router.register(r'pag', resty_views.PublishedArtifactGroupView)
 
 
 urlpatterns += [
     # Exciting new v3 API
-    path('api/v3/artifact/get/<uuid:pk>', resty_views.ArtifactDetail.as_view(), name="api.v3.artifact.get"),
+    #path('api/v3/artifact/get/<uuid:pk>', resty_views.ArtifactDetail.as_view(), name="api.v3.artifact.get"),
     path('api/v3/task/<uuid:tid>/', resty_views.TaskView.as_view()),
 
     path('api/v3/', include(router.urls)),
