@@ -1773,6 +1773,19 @@ class MajoraDataview(models.Model):
     name = models.CharField(max_length=128)
     description = models.CharField(max_length=256)
 
+#TODO This looks a lot like the API key, which is also tied to a profile
+# but I think it makes sense to keep them separate for now?
+class MajoraDataviewUserPermission(models.Model):
+    profile = models.ForeignKey('Profile', on_delete=models.PROTECT)
+    dataview = models.ForeignKey('MajoraDataview', on_delete=models.CASCADE, related_name="viewers")
+
+    validity_start = models.DateTimeField(null=True, blank=True)
+    validity_end = models.DateTimeField(null=True, blank=True)
+
+    is_revoked = models.BooleanField(default=False)
+    revoked_reason = models.CharField(max_length=24, blank=True, null=True)
+    revoked_timestamp = models.DateTimeField(blank=True, null=True)
+
 class MajoraDataviewSerializerField(models.Model):
     dataview = models.ForeignKey('MajoraDataview', on_delete=models.CASCADE, related_name="fields")
     model_name = models.CharField(max_length=64)
