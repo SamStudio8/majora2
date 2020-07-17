@@ -7,7 +7,6 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 from rest_framework import generics
-from rest_framework import permissions
 from rest_framework import viewsets
 from rest_framework import mixins
 
@@ -16,7 +15,7 @@ from two_factor.views.mixins import OTPRequiredMixin
 from majora2 import tasks
 from majora2 import models
 from majora2 import resty_serializers as serializers
-from majora2.authentication import TatlTokenAuthentication
+from majora2.authentication import TatlTokenAuthentication, APIKeyPermission
 
 import uuid
 
@@ -106,6 +105,8 @@ class TaskView(APIView):
         return Response(api_o)
 
 
+#TODO We'll start with PAG as the default entry point for Dataviews but in future
+# we can probably move to specifying the entry point serializer and work from there
 class PublishedArtifactGroupView(
                     MajoraUUID4orDiceNameLookupMixin,
                     #mixins.ListModelMixin,
@@ -118,12 +119,14 @@ class PublishedArtifactGroupView(
 
     celery_task = tasks.task_get_pag_by_qc_v3
 
-    #def get_serializer(self, *args, **kwargs):
-    #    return serializers.RestyPublishedArtifactGroupSerializer(fields=["id", "artifacts"], *args, **kwargs)
+    permission_classes = [APIKeyPermission]
+    majora_api_permission = "majora2.can_read_dataview_via_api"
+    renderer_classes = [JSONRenderer]
 
     def get_serializer_context(self):
-        context = super(PublishedArtifactGroupView, self).get_serializer_context()
-        context.update({"mdv": 'A'})
+        context = super().get_serializer_context()
+        mdv = self.request.query_params.get("mdv")
+        context.update({"mdv": mdv})
         return context
 
     def get_queryset(self):
