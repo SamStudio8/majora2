@@ -1775,7 +1775,7 @@ class MajoraDataview(models.Model):
 
     class Meta:
         permissions = [
-            ("can_read_dataview", "Can read the contents of data views via the API"),
+            ("can_read_dataview_via_api", "Can read the contents of data views via the API"),
         ]
 
 #TODO This looks a lot like the API key, which is also tied to a profile
