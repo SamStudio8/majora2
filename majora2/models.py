@@ -1773,6 +1773,11 @@ class MajoraDataview(models.Model):
     name = models.CharField(max_length=128)
     description = models.CharField(max_length=256)
 
+    class Meta:
+        permissions = [
+            ("can_read_dataview", "Can read the contents of data views via the API"),
+        ]
+
 #TODO This looks a lot like the API key, which is also tied to a profile
 # but I think it makes sense to keep them separate for now?
 class MajoraDataviewUserPermission(models.Model):
