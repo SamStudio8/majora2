@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django_otp import devices_for_user
+from django.utils import timezone
 
 # Modified from the original 2FA disable command to call Tatl
 # https://raw.githubusercontent.com/Bouke/django-two-factor-auth/master/two_factor/management/commands/two_factor_disable.py
@@ -24,6 +25,7 @@ class Command(BaseCommand):
 
     def handle(self, *usernames, **options):
         User = get_user_model()
+        su = User.objects.get(is_superuser=True)
         for username in usernames:
             try:
                 user = User.objects.get_by_natural_key(username)
