@@ -22,6 +22,7 @@ class DynamicDataviewModelSerializer(serializers.ModelSerializer):
         try:
             mdv = models.MajoraDataview.objects.get(code_name=self.context.get("mdv"))
             fields = mdv.fields.filter(model_name=self.Meta.model.__name__).values_list('model_field', flat=True)
+            #TODO Implement extra language here? '*' '-field' etc.
         except:
             fields = []
             #TODO Return a very sad response here?
