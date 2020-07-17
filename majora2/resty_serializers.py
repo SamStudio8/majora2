@@ -23,7 +23,7 @@ class DynamicDataviewModelSerializer(serializers.ModelSerializer):
             mdv = models.MajoraDataview.objects.get(code_name=self.context.get("mdv"))
             fields = mdv.fields.filter(model_name=self.Meta.model.__name__).values_list('model_field', flat=True)
         except:
-            fields = None
+            fields = []
 
         if fields is not None:
             # Drop any fields that are not specified in the `fields` argument.
