@@ -2,13 +2,15 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 
 from rest_framework.settings import api_settings
-from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import viewsets
 from rest_framework import mixins
+from rest_framework import permissions
+from rest_framework.status import HTTP_400_BAD_REQUEST
+from rest_condition import Or
 
 from two_factor.views.mixins import OTPRequiredMixin
 
@@ -18,6 +20,14 @@ from majora2 import resty_serializers as serializers
 from majora2.authentication import TatlTokenAuthentication, APIKeyPermission
 
 import uuid
+
+class RequiredParamRetrieveMixin(object):
+    def retrieve(self, request, *args, **kwargs):
+        # Check the view has the required params (if any)
+        for param in self.majora_required_params:
+            if param not in request.query_params:
+                return Response({"detail": "Your request is missing a required parameter: %s" % param}, HTTP_400_BAD_REQUEST)
+        return super().retrieve(request, *args, **kwargs)
 
 class MajoraCeleryListingMixin(object):
     def list(self, request, *args, **kwargs):
@@ -108,6 +118,7 @@ class TaskView(APIView):
 #TODO We'll start with PAG as the default entry point for Dataviews but in future
 # we can probably move to specifying the entry point serializer and work from there
 class PublishedArtifactGroupView(
+                    RequiredParamRetrieveMixin,
                     MajoraUUID4orDiceNameLookupMixin,
                     #mixins.ListModelMixin,
                     MajoraCeleryListingMixin,
@@ -119,13 +130,15 @@ class PublishedArtifactGroupView(
 
     celery_task = tasks.task_get_pag_by_qc_v3
 
-    permission_classes = [APIKeyPermission]
+    permission_classes = (Or(permissions.IsAuthenticated, APIKeyPermission),)
     majora_api_permission = "majora2.can_read_dataview_via_api"
-    renderer_classes = [JSONRenderer]
+    majora_required_params = ["mdv"]
+    #renderer_classes = [JSONRenderer]
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
         mdv = self.request.query_params.get("mdv")
+        # I tried to raise http400 here but it didnt seem to work
         context.update({"mdv": mdv})
         return context
 

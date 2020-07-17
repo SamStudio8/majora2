@@ -29,6 +29,9 @@ class APIKeyPermission(permissions.BasePermission):
         user = request.user
         key = request.auth
 
+        if not key:
+            return False
+
         #TODO We can build more complex permissions here with lists of lists
         permission = view.majora_api_permission
 

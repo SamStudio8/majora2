@@ -21,3 +21,4 @@ djangorestframework
 django-rest-polymorphic
 djangorestframework-csv
 django-markdownify
+rest_condition
