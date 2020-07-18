@@ -161,8 +161,8 @@ class RestyBiosampleArtifactSerializer(BaseRestyArtifactSerializer):
                 'root_sample_id',
         )
         extra_kwargs = {
-                'root_sample_id': {'write_only': True},
-                'sender_sample_id': {'write_only': True}
+                #'root_sample_id': {'write_only': True},
+                #'sender_sample_id': {'write_only': True}
         }
 
 class RestyDigitalResourceArtifactSerializer(BaseRestyArtifactSerializer):
