@@ -22,12 +22,24 @@ from majora2.authentication import TatlTokenAuthentication, APIKeyPermission
 import uuid
 
 class RequiredParamRetrieveMixin(object):
-    def retrieve(self, request, *args, **kwargs):
+
+    def _check_param(self, request):
         # Check the view has the required params (if any)
         for param in self.majora_required_params:
             if param not in request.query_params:
                 return Response({"detail": "Your request is missing a required parameter: %s" % param}, HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, *args, **kwargs):
+        bad = self._check_param(request)
+        if bad:
+            return bad
         return super().retrieve(request, *args, **kwargs)
+
+    def list(self, request, *args, **kwargs):
+        bad = self._check_param(request)
+        if bad:
+            return bad
+        return super().list(request, *args, **kwargs)
 
 class MajoraCeleryListingMixin(object):
     def list(self, request, *args, **kwargs):
@@ -36,7 +48,11 @@ class MajoraCeleryListingMixin(object):
         api_o = {}
 
         if self.celery_task:
-            celery_task = self.celery_task.delay(queryset)
+            context = {}
+            s_context = super().get_serializer_context()
+            for param in self.majora_required_params:
+                context[param] = request.query_params[param]
+            celery_task = self.celery_task.delay(queryset, context=context)
             if celery_task:
                 api_o["errors"] = 0
                 api_o["test"] = request.query_params
@@ -118,9 +134,8 @@ class TaskView(APIView):
 #TODO We'll start with PAG as the default entry point for Dataviews but in future
 # we can probably move to specifying the entry point serializer and work from there
 class PublishedArtifactGroupView(
-                    RequiredParamRetrieveMixin,
                     MajoraUUID4orDiceNameLookupMixin,
-                    #mixins.ListModelMixin,
+                    RequiredParamRetrieveMixin,
                     MajoraCeleryListingMixin,
                     mixins.RetrieveModelMixin,
                     viewsets.GenericViewSet):
