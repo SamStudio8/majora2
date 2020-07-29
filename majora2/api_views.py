@@ -974,6 +974,88 @@ def add_pag_accession(request):
 
     return wrap_api_v2(request, f)
 
+def get_outbound_summary(request):
+    def f(request, api_o, json_data, user=None):
+        from django.db.models import Count, F, Q
+        from dateutil.rrule import rrule, WEEKLY, MO
+
+        service = json_data.get("service")
+        if not service or len(service) == 0:
+            api_o["errors"] += 1
+            api_o["messages"].append("'service' key missing or empty")
+            return
+
+        #status = json_data.get("status")
+        #if not status or len(status) == 0:
+        #    api_o["errors"] += 1
+        #    api_o["messages"].append("'status' key missing or empty")
+        #    return
+        #
+        #statuses = ["public", "submitted", "rejected"]
+        #if status.lower() not in statuses:
+        #    api_o["errors"] += 1
+        #    api_o["messages"].append("'status' must be one of: %s" % str(statuses))
+        #    return
+
+        gte_date = None
+        if json_data.get("gte_date"):
+            try:
+                gte_date = datetime.datetime.strptime(json_data.get("gte_date", ""), "%Y-%m-%d")
+            except:
+                api_o["errors"] += 1
+                api_o["messages"].append("Could not convert %s to date." % json_data.get("gte_date"))
+                return
+
+        accessions = models.TemporaryAccessionRecord.objects.filter(service=service)
+        api_o["get"] = {}
+        api_o["get"]["intervals"] = []
+        api_o["get"]["accessions"] = accessions.count()
+
+        interval_ends = list(rrule(WEEKLY, wkst=MO, dtstart=gte_date, until=timezone.now().date(), byweekday=MO))
+        for i in range(len(interval_ends)):
+            submitted_accessions = accessions
+            rejected_accessions = accessions.filter(is_rejected=True)
+            published_accessions = accessions.filter(is_public=True)
+            dt = interval_ends[i].date()
+            if i == 0:
+                # Everything before the date
+                submitted_accessions = submitted_accessions.filter(requested_timestamp__lte=dt)
+                rejected_accessions = rejected_accessions.filter(rejected_timestamp__lte=dt)
+                published_accessions = published_accessions.filter(public_timestamp__lte=dt)
+            else:
+                # Everything between the last date and current date
+                last_dt = interval_ends[i-1].date() + datetime.timedelta(days=1)
+                submitted_accessions = submitted_accessions.filter(requested_timestamp__lte=dt, requested_timestamp__gte=last_dt)
+                rejected_accessions = rejected_accessions.filter(rejected_timestamp__lte=dt, rejected_timestamp__gte=last_dt)
+                published_accessions = published_accessions.filter(public_timestamp__lte=dt, public_timestamp__gte=last_dt)
+
+            api_o["get"]["intervals"].append({
+              "whole": True,
+              "dt": dt.strftime("%Y-%m-%d"),
+              "submitted": submitted_accessions.count(),
+              "rejected": rejected_accessions.count(),
+              "released": published_accessions.count(),
+            })
+
+        # Tack on a final timestamp if the last time interval is not today
+        if interval_ends[-1].date() != timezone.now().date():
+            last_dt = interval_ends[-1].date() + datetime.timedelta(days=1)
+            submitted_accessions = accessions
+            rejected_accessions = accessions.filter(is_rejected=True)
+            published_accessions = accessions.filter(is_public=True)
+            submitted_accessions = submitted_accessions.filter(requested_timestamp__gte=last_dt)
+            rejected_accessions = rejected_accessions.filter(rejected_timestamp__gte=last_dt)
+            published_accessions = published_accessions.filter(public_timestamp__gte=last_dt)
+            api_o["get"]["intervals"].append({
+              "whole": False,
+              "dt": timezone.now().date().strftime("%Y-%m-%d"),
+              "submitted": submitted_accessions.count(),
+              "rejected": rejected_accessions.count(),
+              "released": published_accessions.count(),
+            })
+
+    return wrap_api_v2(request, f)
+
 def get_dashboard_metrics(request):
     def f(request, api_o, json_data, user=None):
         from django.db.models import Count, F, Q

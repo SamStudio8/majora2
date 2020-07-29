@@ -70,6 +70,7 @@ urlpatterns = [
     path('api/v2/pag/accession/add/', csrf_exempt(api_views.add_pag_accession), name="api.pag.accession.add"),
     path('api/v2/pag/qc/get/', csrf_exempt(api_views.get_pag_by_qc_celery), name="api.pag.qc.get"),
     path('api/v2/majora/summary/get/', csrf_exempt(api_views.get_dashboard_metrics), name="api.majora.summary.get"),
+    path('api/v2/outbound/summary/get/', csrf_exempt(api_views.get_outbound_summary), name="api.outbound.summary.get"),
 
     #path('api/v2/artifact/digitalresource/add/', csrf_exempt(api_views.add_digitalresource), name="api.artifact.digitalresource.add"),
 
