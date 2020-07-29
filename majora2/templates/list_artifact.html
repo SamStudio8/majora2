@@ -46,7 +46,11 @@
                     <span style="font-size: 1.2em"><span class="badge badge-left badge-dark"><b>SUPPRESSED</b></span><span class="badge badge-right badge-danger">{{ group.suppressed_reason }}</span></span>
                 {% else %}
                 {% for accession in group.accessions.all %}
-                    <span style="font-size: 1.2em"><span class="badge badge-left badge-dark">{{ accession.service }}</span><span class="badge badge-right badge-info">{{ accession.primary_accession }}</span></span>
+                    {% if accession.is_public %}
+                        <span style="font-size: 1.2em"><span class="badge badge-left badge-dark">{{ accession.service }}</span><span class="badge badge-right badge-success">{{ accession.primary_accession }}</span></span>
+                    {% else %}
+                        <span style="font-size: 1.2em"><span class="badge badge-left badge-dark">{{ accession.service }}</span><span class="badge badge-right badge-warning">-TBD-</span></span>
+                    {% endif %}
                 {% endfor %}
                 {% endif %}
     </div>
