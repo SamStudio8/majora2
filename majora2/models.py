@@ -502,6 +502,8 @@ class TemporaryAccessionRecord(models.Model):
     secondary_accession = models.CharField(max_length=64, blank=True, null=True)
     tertiary_accession = models.CharField(max_length=64, blank=True, null=True)
 
+    requested_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True)
+
     requested_timestamp = models.DateTimeField(blank=True, null=True)
     is_public = models.BooleanField(default=False)
     public_timestamp = models.DateTimeField(blank=True, null=True)
