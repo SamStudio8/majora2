@@ -12,7 +12,7 @@ from django_slack import slack_message
 from django.core.mail import send_mail
 
 @receiver(signals.new_registration)
-def recv_new_registration(sender, username, first_name, last_name, organisation, **kwargs):
+def recv_new_registration(sender, username, first_name, last_name, organisation, email, **kwargs):
     from django.contrib.auth.models import User, Permission
     perm = Permission.objects.get(codename='can_approve_profiles')
     site_admins = models.Profile.objects.filter(user__user_permissions=perm, institute__name=organisation) # TODO works for users specifically given this perm
@@ -39,6 +39,14 @@ def recv_new_registration(sender, username, first_name, last_name, organisation,
                 {
                     "title": "Metadata",
                     "short": False
+                },
+                {
+                    "title": "Email",
+                    "short": True
+                },
+                {
+                    "value": email,
+                    "short": True
                 },
                 {
                     "title": "Organisation",
@@ -111,6 +119,14 @@ def recv_site_approval(sender, approver, approved_profile, **kwargs):
                 },
                 {
                     "value": "%s %s" % (approved_profile.user.first_name, approved_profile.user.last_name),
+                    "short": True
+                },
+                {
+                    "title": "Email",
+                    "short": True
+                },
+                {
+                    "value": approved_profile.user.email,
                     "short": True
                 },
                 {
