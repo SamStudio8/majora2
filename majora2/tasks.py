@@ -100,11 +100,13 @@ def task_get_pag_by_qc(request, api_o, json_data, user=None):
         pass
     elif json_data.get("public"):
         if json_data.get("service_name"):
-            reports = reports.filter(pag__accessions__service=json_data.get("service_name"))
+            reports = reports.filter(pag__accessions__service=json_data.get("service_name"), pag__accessions__is_public=True)
         else:
             reports = reports.filter(pag__is_public=True)
     elif json_data.get("private"):
         if json_data.get("service_name"):
+            # Exclude any PAG that has this service name (public or not)
+            # Private means unsubmitted in this context basically
             reports = reports.filter(~Q(pag__accessions__service=json_data.get("service_name")))
         else:
             reports = reports.filter(pag__is_public=False)
@@ -112,6 +114,7 @@ def task_get_pag_by_qc(request, api_o, json_data, user=None):
         if json_data.get("service_name"):
             api_o["messages"].append("service_name is ignored without public or private")
         pass
+
 
 
     try:
