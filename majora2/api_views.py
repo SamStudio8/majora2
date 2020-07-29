@@ -958,7 +958,7 @@ def add_pag_accession(request):
             if api_o:
                 api_o["updated"].append(form_handlers._format_tuple(pag))
 
-            if not accession.requested_timestamp:
+            if not accession.requested_timestamp and json_data.get("submitted"):
                 accession.requested_timestamp = timezone.now()
                 accession.requested_by = user
                 accession.save()
