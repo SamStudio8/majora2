@@ -1012,6 +1012,15 @@ def get_outbound_summary(request):
         api_o["get"]["intervals"] = []
         api_o["get"]["accessions"] = accessions.count()
 
+        if json_data.get("user"):
+            try:
+                p = models.Profile.objects.get(user__username=json_data.get("user"))
+                accessions = accessions.filter(requested_by=p.user)
+            except:
+                api_o["errors"] += 1
+                api_o["messages"].append("Could not find named user.")
+                return
+
         interval_ends = list(rrule(WEEKLY, wkst=MO, dtstart=gte_date, until=timezone.now().date(), byweekday=MO))
         for i in range(len(interval_ends)):
             submitted_accessions = accessions
