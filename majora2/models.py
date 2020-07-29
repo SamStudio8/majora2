@@ -498,9 +498,17 @@ class TemporaryAccessionRecord(models.Model):
     pag = models.ForeignKey('PublishedArtifactGroup', on_delete=models.PROTECT, related_name="accessions")
     #artifact = models.ForeignKey('MajoraArtifact', blank=True, null=True, on_delete=models.PROTECT)
     service = models.CharField(max_length=64)
-    primary_accession = models.CharField(max_length=64)
+    primary_accession = models.CharField(max_length=64, blank=True, null=True)
     secondary_accession = models.CharField(max_length=64, blank=True, null=True)
     tertiary_accession = models.CharField(max_length=64, blank=True, null=True)
+
+    requested_timestamp = models.DateTimeField(blank=True, null=True)
+    is_public = models.BooleanField(default=True)
+    public_timestamp = models.DateTimeField(blank=True, null=True)
+
+    is_rejected = models.BooleanField(default=False)
+    rejected_timestamp = models.DateTimeField(blank=True, null=True)
+    terminated_reason = models.CharField(max_length=24, blank=True, null=True)
 
     def as_struct(self):
         return {
