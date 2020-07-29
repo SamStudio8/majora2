@@ -503,12 +503,12 @@ class TemporaryAccessionRecord(models.Model):
     tertiary_accession = models.CharField(max_length=64, blank=True, null=True)
 
     requested_timestamp = models.DateTimeField(blank=True, null=True)
-    is_public = models.BooleanField(default=True)
+    is_public = models.BooleanField(default=False)
     public_timestamp = models.DateTimeField(blank=True, null=True)
 
     is_rejected = models.BooleanField(default=False)
     rejected_timestamp = models.DateTimeField(blank=True, null=True)
-    terminated_reason = models.CharField(max_length=24, blank=True, null=True)
+    rejected_reason = models.CharField(max_length=24, blank=True, null=True)
 
     def as_struct(self):
         return {
