@@ -960,6 +960,7 @@ def add_pag_accession(request):
 
             if not accession.requested_timestamp:
                 accession.requested_timestamp = timezone.now()
+                accession.requested_by = user
                 accession.save()
 
             if json_data.get("public") and not pag.is_public:
