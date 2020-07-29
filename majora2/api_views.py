@@ -936,8 +936,13 @@ def add_pag_accession(request):
             api_o["errors"] += 1
             return
 
-        if not json_data.get("service") or not json_data.get("accession"):
-            api_o["messages"].append("'service' or 'accession' key missing or empty")
+        if not json_data.get("service"):
+            api_o["messages"].append("'service' key missing or empty")
+            api_o["errors"] += 1
+            return
+
+        if not json_data.get("accession") and json_data.get("public"):
+            api_o["messages"].append("You are trying to mark this PAG as public, but the 'accession' key is missing or empty.")
             api_o["errors"] += 1
             return
 
