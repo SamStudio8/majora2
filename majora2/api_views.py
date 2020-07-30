@@ -978,7 +978,7 @@ def add_pag_accession(request):
 def get_outbound_summary(request):
     def f(request, api_o, json_data, user=None):
         from django.db.models import Count, F, Q
-        from dateutil.rrule import rrule, WEEKLY, MO
+        from dateutil.rrule import rrule, DAILY, WEEKLY, MO
 
         service = json_data.get("service")
         if not service or len(service) == 0:
@@ -1022,6 +1022,7 @@ def get_outbound_summary(request):
                 return
 
         interval_ends = list(rrule(WEEKLY, wkst=MO, dtstart=gte_date, until=timezone.now().date(), byweekday=MO))
+        #interval_ends = list(rrule(DAILY, wkst=MO, dtstart=gte_date, until=timezone.now().date()))
         for i in range(len(interval_ends)):
             submitted_accessions = accessions
             rejected_accessions = accessions.filter(is_rejected=True)
@@ -1034,10 +1035,10 @@ def get_outbound_summary(request):
                 published_accessions = published_accessions.filter(public_timestamp__lte=dt)
             else:
                 # Everything between the last date and current date
-                last_dt = interval_ends[i-1].date() + datetime.timedelta(days=1)
-                submitted_accessions = submitted_accessions.filter(requested_timestamp__lte=dt, requested_timestamp__gte=last_dt)
-                rejected_accessions = rejected_accessions.filter(rejected_timestamp__lte=dt, rejected_timestamp__gte=last_dt)
-                published_accessions = published_accessions.filter(public_timestamp__lte=dt, public_timestamp__gte=last_dt)
+                last_dt = interval_ends[i-1].date() #+ datetime.timedelta(days=1)
+                submitted_accessions = submitted_accessions.filter(requested_timestamp__lte=dt, requested_timestamp__gt=last_dt)
+                rejected_accessions = rejected_accessions.filter(rejected_timestamp__lte=dt, rejected_timestamp__gt=last_dt)
+                published_accessions = published_accessions.filter(public_timestamp__lte=dt, public_timestamp__gt=last_dt)
 
             api_o["get"]["intervals"].append({
               "whole": True,
