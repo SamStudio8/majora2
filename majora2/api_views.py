@@ -963,11 +963,12 @@ def add_pag_accession(request):
                 accession.requested_by = user
                 accession.save()
 
-            if json_data.get("public") and not pag.is_public:
+            if json_data.get("public") and not accession.is_public:
                 accession.is_public = True
                 accession.public_timestamp = timezone.now()
                 accession.save()
 
+            if json_data.get("public") and not pag.is_public:
                 pag.is_public = True
                 pag.public_timestamp = timezone.now()
                 pag.save()
@@ -1021,8 +1022,8 @@ def get_outbound_summary(request):
                 api_o["messages"].append("Could not find named user.")
                 return
 
-        interval_ends = list(rrule(WEEKLY, wkst=MO, dtstart=gte_date, until=timezone.now().date(), byweekday=MO))
-        #interval_ends = list(rrule(DAILY, wkst=MO, dtstart=gte_date, until=timezone.now().date()))
+        #interval_ends = list(rrule(WEEKLY, wkst=MO, dtstart=gte_date, until=timezone.now().date(), byweekday=MO))
+        interval_ends = list(rrule(DAILY, wkst=MO, dtstart=gte_date, until=timezone.now().date()))
         for i in range(len(interval_ends)):
             submitted_accessions = accessions
             rejected_accessions = accessions.filter(is_rejected=True)
