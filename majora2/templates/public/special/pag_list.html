@@ -71,6 +71,17 @@ $(document).ready(function() {
         columnDefs: [
             { 
                 "render": function(data, type, row){
+                    if (data == "True"){
+                        return '<span class="badge badge-success">Pass</span>';
+                    }
+                    else {
+                        return '<span class="badge badge-danger">Fail</span>';
+                    }
+                },
+                "targets": [6,7],
+            },
+            { 
+                "render": function(data, type, row){
                     return '<a href="https://www.ebi.ac.uk/ena/data/view/' + data + '">' + data + '</a>';
                 },
                 "targets": 5
