@@ -28,9 +28,15 @@ class ArtifactSerializer(serpy.Serializer):
 
 class MetricSerializer(serpy.Serializer):
     namespace = serpy.StrField() 
+class MetricSerializer_ThresholdCycleRecord(serpy.Serializer):
+    ct_value = serpy.FloatField(required=False)
+    test_platform = serpy.StrField(required=False)
+    test_target = serpy.StrField(required=False)
+    test_kit = serpy.StrField(required=False)
 class MetricSerializer_ThresholdCycle(MetricSerializer):
     min_ct = serpy.FloatField(required=False)
     max_ct = serpy.FloatField(required=False)
+    records = MetricSerializer_ThresholdCycleRecord(attr='metric_records.all', many=True, call=True)
 
 class COGUK_BiosourceSamplingProcessSupplementSerializer(serpy.Serializer):
     is_surveillance = serpy.BoolField(required=False)
