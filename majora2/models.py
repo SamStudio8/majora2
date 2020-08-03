@@ -747,6 +747,9 @@ class TemporaryMajoraArtifactMetric_Mapping(TemporaryMajoraArtifactMetric):
         if self.mean_cov is not None:
             ret["mean_cov"] = self.mean_cov
         return ret
+    def get_serializer(self):
+        from . import serializers
+        return serializers.MetricSerializer_Mapping
 
 
 class TemporaryMajoraArtifactMetric_Mapping_Tiles(TemporaryMajoraArtifactMetric):

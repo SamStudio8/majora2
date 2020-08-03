@@ -38,6 +38,13 @@ class MetricSerializer_ThresholdCycle(MetricSerializer):
     max_ct = serpy.FloatField(required=False)
     records = MetricSerializer_ThresholdCycleRecord(attr='metric_records.all', many=True, call=True)
 
+class MetricSerializer_Mapping(MetricSerializer):
+    num_pos = serpy.IntField(required=False)
+    num_maps = serpy.IntField(required=False)
+    num_unmaps = serpy.IntField(required=False)
+    median_cov = serpy.FloatField(required=False)
+    mean_cov = serpy.FloatField(required=False)
+
 class COGUK_BiosourceSamplingProcessSupplementSerializer(serpy.Serializer):
     is_surveillance = serpy.BoolField(required=False)
     is_hcw = serpy.BoolField(required=False)
