@@ -47,6 +47,16 @@
 
 <script>
 $(document).ready(function() {
+    // https://stackoverflow.com/questions/46790263/replace-nth-occurence-of-number-in-string-with-javascript
+    function replaceOccurrence(string, regex, n, replace) {
+       var i = 0;
+       return string.replace(regex, function(match) {
+            i+=1;
+            if(i===n) return replace;
+            return match;
+        });
+    }
+
     var oTable = $('.datatable').dataTable({
         processing: true,
         serverSide: true,
@@ -72,10 +82,10 @@ $(document).ready(function() {
             { 
                 "render": function(data, type, row){
                     if (data == "True"){
-                        return '<span class="badge badge-success">Pass</span>';
+                        return '<span class="badge badge-success">PASS</span>';
                     }
                     else {
-                        return '<span class="badge badge-danger">Fail</span>';
+                        return '<span class="badge badge-danger">FAIL</span>';
                     }
                 },
                 "targets": [6,7],
@@ -88,6 +98,7 @@ $(document).ready(function() {
             },
             { 
                 "render": function(data, type, row){
+                    data = replaceOccurrence(data, /\//g, 2, '<br />')
                     var url_mask = "{% url 'group_artifact' '00000000-0000-0000-0000-000000000000' %}".replace(/00000000-0000-0000-0000-000000000000/, row[0].toString());
                     return '<a style="font-size; 0.8em" href="' + url_mask + '">' + data + '</a>';
                 },
