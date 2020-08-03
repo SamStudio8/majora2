@@ -17,8 +17,8 @@ from django_datatables_view.base_datatable_view import BaseDatatableView
 class OrderListJson(BaseDatatableView):
     model = models.PublishedArtifactGroup
 
-    columns = ["id", "published_name", "published_date", "seqsite", "GISAID", "ENA"]
-    order_columns = ["id", "published_name", "published_date", "seqsite", "-", "-"]
+    columns = ["id", "published_name", "published_date", "seqsite", "GISAID", "ENA", "qc_basic", "qc_high"]
+    order_columns = ["id", "published_name", "published_date", "seqsite", "-", "-", "qc_basic", "qc_high"]
     max_display_length = 25
 
     def render_column(self, row, column):
@@ -39,6 +39,16 @@ class OrderListJson(BaseDatatableView):
                 return row.owner.profile.institute.code
             except:
                 return "????"
+        elif column == "qc_basic":
+            try:
+                return str(row.quality_groups.get(test_group__slug="cog-uk-elan-minimal-qc").is_pass)
+            except:
+                return ""
+        elif column == "qc_high":
+            try:
+                return str(row.quality_groups.get(test_group__slug="cog-uk-high-quality-public").is_pass)
+            except:
+                return ""
         else:
             return super(OrderListJson, self).render_column(row, column)
 
