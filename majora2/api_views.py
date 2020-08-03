@@ -1022,13 +1022,14 @@ def get_outbound_summary(request):
                 api_o["messages"].append("Could not find named user.")
                 return
 
-        interval_ends = list(rrule(WEEKLY, wkst=MO, dtstart=gte_date, until=timezone.now().date(), byweekday=MO))
-        #interval_ends = list(rrule(DAILY, wkst=MO, dtstart=gte_date, until=timezone.now().date()))
+        #interval_ends = list(rrule(WEEKLY, wkst=MO, dtstart=gte_date, until=timezone.now().date(), byweekday=MO))
+        interval_ends = list(rrule(DAILY, wkst=MO, dtstart=gte_date, until=timezone.now().date()))
         for i in range(len(interval_ends)):
             submitted_accessions = accessions
             rejected_accessions = accessions.filter(is_rejected=True)
             published_accessions = accessions.filter(is_public=True)
             dt = interval_ends[i].date()
+            last_dt = None
             if i == 0:
                 # Everything before the date
                 submitted_accessions = submitted_accessions.filter(requested_timestamp__date__lte=dt)
@@ -1044,6 +1045,7 @@ def get_outbound_summary(request):
             api_o["get"]["intervals"].append({
               "whole": True,
               "dt": dt.strftime("%Y-%m-%d"),
+              "last_dt": last_dt.strftime("%Y-%m-%d") if last_dt else '',
               "submitted": submitted_accessions.count(),
               "rejected": rejected_accessions.count(),
               "released": published_accessions.count(),
@@ -1061,6 +1063,7 @@ def get_outbound_summary(request):
             api_o["get"]["intervals"].append({
               "whole": False,
               "dt": timezone.now().date().strftime("%Y-%m-%d"),
+              "last_dt": last_dt.strftime("%Y-%m-%d") if last_dt else '',
               "submitted": submitted_accessions.count(),
               "rejected": rejected_accessions.count(),
               "released": published_accessions.count(),
