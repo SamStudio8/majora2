@@ -89,7 +89,7 @@ $(document).ready(function() {
             { 
                 "render": function(data, type, row){
                     var url_mask = "{% url 'group_artifact' '00000000-0000-0000-0000-000000000000' %}".replace(/00000000-0000-0000-0000-000000000000/, row[0].toString());
-                    return '<a href="' + url_mask + '">' + data + '</a>';
+                    return '<a style="font-size; 0.8em" href="' + url_mask + '">' + data + '</a>';
                 },
                 "targets": 1
             },
