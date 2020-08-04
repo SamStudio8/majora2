@@ -44,6 +44,8 @@ class MetricSerializer_Mapping(MetricSerializer):
     num_unmaps = serpy.IntField(required=False)
     median_cov = serpy.FloatField(required=False)
     mean_cov = serpy.FloatField(required=False)
+    pc_pos_cov_gte10 = serpy.FloatField(required=False)
+    pc_pos_cov_gte20 = serpy.FloatField(required=False)
 
 class COGUK_BiosourceSamplingProcessSupplementSerializer(serpy.Serializer):
     is_surveillance = serpy.BoolField(required=False)
