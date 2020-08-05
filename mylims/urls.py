@@ -19,6 +19,7 @@ from django.contrib.auth import views as auth_views
 
 from two_factor.urls import urlpatterns as tf_urls
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
 
