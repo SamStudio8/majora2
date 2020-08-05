@@ -1076,7 +1076,7 @@ def get_dashboard_metrics(request):
         from django.db.models import Count, F, Q
 
         gte_date=None
-        the_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc")
+        the_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc", pag__is_latest=True, pag__is_suppressed=False)
         try:
             gte_date = datetime.datetime.strptime(json_data.get("gte_date", ""), "%Y-%m-%d")
             the_pags = the_pags.filter(last_updated__gt=gte_date)
