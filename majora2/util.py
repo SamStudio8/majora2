@@ -27,6 +27,7 @@ def get_mag(root, path, sep="/", artifact=False, by_hard_path=False):
     if by_hard_path:
         try:
             dir_g = models.DigitalResourceGroup.objects.get(root_group=node, group_path=sep.join(lpath))
+            return dir_g
         except:
             return None, []
     else:
@@ -41,6 +42,7 @@ def get_mag(root, path, sep="/", artifact=False, by_hard_path=False):
                 parent = dir_g
             except:
                 return None, []
+        return dir_g
 
 
 def mkroot(node_name):
