@@ -292,7 +292,6 @@ class MajoraArtifactGroup(PolymorphicModel):
         for g in self.children.all():
             g.nuke_tree()
         self.delete()
-
     @property
     def group_kind(self):
         return 'Artifact Group'
@@ -453,7 +452,6 @@ class PublishedArtifactGroup(MajoraArtifactGroup):
         permissions = [
             ("temp_can_read_pags_via_api", "Can read published artifact groups via the API"),
         ]
-
     def as_struct(self):
         if self.is_suppressed:
             return {

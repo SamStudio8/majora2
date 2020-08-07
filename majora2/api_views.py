@@ -1201,3 +1201,29 @@ def del_task_result(request):
         }
 
     return wrap_api_v2(request, f)
+
+def get_mag(request):
+    def f(request, api_o, json_data, user=None):
+        path = json_data.get("path")
+        sep = json_data.get("sep")
+
+        if not path or len(path) == 0 or "://" not in path:
+            api_o["messages"].append("'path' key missing, empty or malformed")
+            api_o["errors"] += 1
+            return
+
+        node_name, path = path.split("://")
+        mag = util.get_mag(node_name, path, by_hard_path=True)
+
+        if not mag:
+            api_o["messages"].append("Invalid path.")
+            api_o["warnings"] += 1
+            return
+
+        api_o["mag"] = {
+            "name": mag.current_name,
+            "children": [(str(m.id), m.name, [(a.artifact_kind, a.name, a.current_path if hasattr(a, 'current_path') else '') for a in m.tagged_artifacts.all()]) for m in mag.children.all()],
+            "links": [(str(m.id), m.name, [(a.artifact_kind, a.name, a.current_path if hasattr(a, 'current_path') else '') for a in m.tagged_artifacts.all()]) for m in mag.groups.all()],
+        }
+
+    return wrap_api_v2(request, f)
