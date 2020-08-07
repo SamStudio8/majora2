@@ -16,6 +16,19 @@ class TatlRequest(models.Model):
     response_time = models.DurationField(blank=True, null=True)
     response_uuid = models.UUIDField(blank=True, null=True, unique=True) #TODO I want this to be the UUID but its not trivial now
 
+class TatlTask(models.Model):
+    celery_uuid = models.UUIDField(unique=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="tasks")
+    substitute_user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="su_tasks")
+
+    task = models.CharField(max_length=128)
+    state = models.CharField(max_length=48, blank=True, null=True)
+    payload = models.TextField()
+    timestamp = models.DateTimeField()
+    response_time = models.DurationField(blank=True, null=True)
+
+    request = models.OneToOneField('TatlRequest', on_delete=models.PROTECT, related_name="task", blank=True, null=True)
+
 class TatlPermFlex(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="actions")
     substitute_user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="su_actions")
