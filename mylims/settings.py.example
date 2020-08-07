@@ -38,6 +38,10 @@ ALLOWED_HOSTS = []
 
 ADMINS = [('Sam', 'sam@example.org')]
 
+SILENCED_SYSTEM_CHECKS = [
+    'mysql.E001' # https://stackoverflow.com/questions/45233362/django-says-that-mysql-does-not-allow-unique-charfields-to-have-a-max-length-2
+]
+
 # Application definition
 
 INSTALLED_APPS = [
