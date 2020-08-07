@@ -25,6 +25,7 @@ MINIMUM_CLIENT_VERSION = "0.19.0"
 def wrap_api_v2(request, f, permission=None):
     from tatl.models import TatlRequest, TatlPermFlex
 
+    start_ts = timezone.now()
     api_o = {
         "errors": 0,
         "warnings": 0,
@@ -138,6 +139,11 @@ def wrap_api_v2(request, f, permission=None):
         f(request, api_o, json_data, user=user)
 
     api_o["success"] = api_o["errors"] == 0
+
+    end_ts = timezone.now()
+    treq.response_time = end_ts - start_ts
+    treq.save()
+
     return HttpResponse(json.dumps(api_o), content_type="application/json")
 
 
