@@ -5,6 +5,44 @@ import re
 from django.utils import timezone
 from dateutil.parser import parse
 
+def mkroot(node_name):
+    node, created = models.DigitalResourceNode.objects.get_or_create(
+        unique_name = node_name,
+        dice_name = node_name,
+        meta_name = node_name,
+        node_name = node_name,
+    )
+    return node
+
+def mkmag(path, sep="/", parents=True, artifact=True, physical=True, root=None):
+
+    lpath = path.split(sep)
+
+    if path[0] == sep:
+        # Chop leading path head
+        lpath = lpath[1:]
+
+    if artifact:
+        # Chop path tail
+        lpath = lpath[:-1]
+
+    mags = []
+    mags_created = []
+    parent = root
+    for i, dir_name in enumerate(lpath):
+        dir_g, created = models.DigitalResourceGroup.objects.get_or_create(
+                group_path=sep.join(lpath[:i+1]),
+                current_name=dir_name,
+                root_group=root,
+                parent_group=parent,
+                physical=physical)
+        parent = dir_g
+
+        mags.append(dir_g)
+        mags_created.append(created)
+
+    return mags, mags_created
+
 def quarantine_artifact(process, artifact):
     artifact.quarantined = True
 
