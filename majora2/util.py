@@ -5,6 +5,44 @@ import re
 from django.utils import timezone
 from dateutil.parser import parse
 
+def get_mag(root, path, sep="/", artifact=False, by_hard_path=False):
+
+    try:
+        node = models.DigitalResourceNode.objects.get(node_name=root)
+    except:
+        return None, []
+
+    lpath = path.split(sep)
+    if path[0] == sep:
+        # Chop leading path head
+        lpath = lpath[1:]
+    if path[-1] == sep:
+        lpath = lpath[:-1]
+
+    if artifact:
+        # Chop path tail
+        lpath = lpath[:-1]
+
+
+    if by_hard_path:
+        try:
+            dir_g = models.DigitalResourceGroup.objects.get(root_group=node, group_path=sep.join(lpath))
+        except:
+            return None, []
+    else:
+        parent = node
+        for i, dir_name in enumerate(lpath):
+            try:
+                dir_g = models.DigitalResourceGroup.objects.get(
+                        current_name=dir_name,
+                        root_group=node,
+                        parent_group=parent,
+                )
+                parent = dir_g
+            except:
+                return None, []
+
+
 def mkroot(node_name):
     node, created = models.DigitalResourceNode.objects.get_or_create(
         unique_name = node_name,
@@ -14,7 +52,7 @@ def mkroot(node_name):
     )
     return node
 
-def mkmag(path, sep="/", parents=True, artifact=True, physical=True, root=None):
+def mkmag(path, sep="/", parents=True, artifact=False, physical=True, root=None):
 
     lpath = path.split(sep)
 
