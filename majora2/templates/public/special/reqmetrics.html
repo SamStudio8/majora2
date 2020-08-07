@@ -37,7 +37,7 @@
                     <td class={% if metrics.1d.count == 0 %}"table-secondary"{% elif metrics.1d.total_ms <= 100.0 %}"table-success"{% elif metrics.1d.total_ms <= 200.0 %}"table-warning"{% else %}"table-danger"{% endif %}>
                     {{ metrics.1d.total_ms }}ms</br>({{ metrics.1d.count }})</td>
 
-                    <td class={% if metrics.7dm.count == 0 %}"table-secondary"{% elif metrics.7d.total_ms <= 100.0 %}"table-success"{% elif metrics.7d.total_ms <= 200.0 %}"table-warning"{% else %}"table-danger"{% endif %}>
+                    <td class={% if metrics.7d.count == 0 %}"table-secondary"{% elif metrics.7d.total_ms <= 100.0 %}"table-success"{% elif metrics.7d.total_ms <= 200.0 %}"table-warning"{% else %}"table-danger"{% endif %}>
                     {{ metrics.7d.total_ms }}ms</br>({{ metrics.7d.count }})</td>
 
                     <td class={% if metrics.all.count == 0 %}"table-secondary"{% elif metrics.all.total_ms <= 100.0 %}"table-success"{% elif metrics.all.total_ms <= 200.0 %}"table-warning"{% else %}"table-danger"{% endif %}>
