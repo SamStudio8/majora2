@@ -287,6 +287,12 @@ class MajoraArtifactGroup(PolymorphicModel):
     def __str__(self):
         return "%s (%s)" % (self.name, self.id)
 
+    def nuke_tree(self):
+        self.groups.clear()
+        for g in self.children.all():
+            g.nuke_tree()
+        self.delete()
+
     @property
     def group_kind(self):
         return 'Artifact Group'
