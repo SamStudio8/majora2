@@ -14,6 +14,7 @@ class TatlRequest(models.Model):
     remote_addr = models.CharField(max_length=48, blank=True, null=True)
     timestamp = models.DateTimeField()
     response_time = models.DurationField(blank=True, null=True)
+    response_uuid = models.UUIDField(blank=True, null=True, unique=True) #TODO I want this to be the UUID but its not trivial now
 
 class TatlPermFlex(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="actions")

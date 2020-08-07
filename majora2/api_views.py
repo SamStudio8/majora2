@@ -17,6 +17,7 @@ from . import fixed_data
 from . import form_handlers
 
 import json
+import uuid
 import datetime
 
 MINIMUM_CLIENT_VERSION = "0.19.0"
@@ -54,8 +55,10 @@ def wrap_api_v2(request, f, permission=None):
         payload = json_data,
         timestamp = timezone.now(),
         remote_addr = remote_addr,
+        response_uuid = uuid.uuid4()
     )
     treq.save()
+    api_o["request"] = str(treq.response_uuid)
 
     # Bounce non-POST
     if request.method != "POST":
