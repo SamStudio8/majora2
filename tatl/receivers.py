@@ -58,9 +58,24 @@ def task_prerun(signal=None, sender=None, task_id=None, task=None, args=None, **
     ttask.save()
 
 @task_postrun.connect()
-def task_postrun(signal=None, sender=None, task_id=None, task=None, args=None, retval=None, state=None, **kwargs):
+def task_postrun_tatl(signal=None, sender=None, task_id=None, task=None, args=None, retval=None, state=None, **kwargs):
     ttask = models.TatlTask.objects.get(celery_uuid=task_id)
     now = timezone.now()
     ttask.response_time = now - ttask.timestamp
     ttask.state = state
     ttask.save()
+
+@task_postrun.connect()
+def task_postrun_slack(signal=None, sender=None, task_id=None, task=None, args=None, retval=None, state=None, **kwargs):
+    if settings.SLACK_CHANNEL:
+        ttask = models.TatlTask.objects.get(celery_uuid=task_id)
+        slack_message('slack/blank', {
+        }, [{
+            "mrkdwn_in": ["text", "pretext", "fields"],
+            "title": "Task ended",
+            "title_link": "",
+            "text": "Task %s (`%s`) for `%s` finished with state *%s*" % (task.name, task_id, ttask.user.username, state),
+            "footer": "Task end spotted by Majora",
+            "footer_icon": "https://avatars.slack-edge.com/2019-05-03/627972616934_a621b7d3a28c2b6a7bd1_512.jpg",
+            "ts": int(timezone.now().timestamp()),
+        }])

@@ -3,7 +3,6 @@ from __future__ import absolute_import, unicode_literals
 
 from celery import shared_task, current_task
 from . import models
-from . import signals
 from . import serializers
 from . import resty_serializers
 
@@ -16,7 +15,6 @@ def structify_pags(api_o):
     # Return everything?
     api_o["get"] = {}
     api_o["get"]["result"] = serializers.PAGQCSerializer(models.PAGQualityReportEquivalenceGroup.objects.select_related('pag').prefetch_related('pag__tagged_artifacts').all(), many=True).data
-    signals.task_end.send(sender=current_task.request, task="structify_pags", task_id=current_task.request.id)
     return api_o
 
 @shared_task
@@ -54,12 +52,11 @@ def task_get_sequencing(request, api_o, json_data, user=None):
     except Exception as e:
         api_o["errors"] += 1
         api_o["messages"].append(str(e))
-    signals.task_end.send(sender=current_task.request, task="structify_runs", task_id=current_task.request.id)
     return api_o
 
 
 @shared_task
-def task_get_pag_by_qc(request, api_o, json_data, user=None):
+def task_get_pag_by_qc(request, api_o, json_data, user=None, **kwargs):
     test_name = json_data.get("test_name")
     dra_current_kind = json_data.get("dra_current_kind")
 
@@ -124,7 +121,6 @@ def task_get_pag_by_qc(request, api_o, json_data, user=None):
     except Exception as e:
         api_o["errors"] += 1
         api_o["messages"].append(str(e))
-    signals.task_end.send(sender=current_task.request, task="structify_pags", task_id=current_task.request.id)
     return api_o
 
 @shared_task
@@ -136,5 +132,4 @@ def task_get_pag_by_qc_v3(pag_ids, context={}):
         "data": serializer.data,
     }
 
-    signals.task_end.send(sender=current_task.request, task="structify_pags_v3", task_id=current_task.request.id)
     return api_o
