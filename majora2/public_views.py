@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.http import HttpResponse, HttpResponseBadRequest
-from django.db.models import Count, F, Q
+from django.db.models import Count, F, Q, Avg
 from django.views.decorators.cache import cache_page
 from django.core.paginator import Paginator
 
@@ -102,6 +102,41 @@ def sample_sequence_count_dashboard(request):
         "request_sparks": request_sparks,
     })
 
+
+@cache_page(60)
+def req_metrics(request):
+
+    reqmetrics = {}
+    from tatl.models import TatlRequest
+
+    def average_metrics(endpoint, dt):
+        if dt:
+            r = TatlRequest.objects.filter(response_time__isnull=False, route=endpoint, timestamp__gte=timezone.now()-dt).aggregate(count=Count('id'), avg=Avg('response_time'))
+        else:
+            r = TatlRequest.objects.filter(response_time__isnull=False, route=endpoint).aggregate(count=Count('id'), avg=Avg('response_time'))
+
+        total_ms = 0.0
+        if r["avg"]:
+            total_ms = (r["avg"].seconds * 1000.0) + (r["avg"].microseconds / 1000.0)
+
+        return {
+            #"total_ms": "%.2fms" % total_ms,
+            "total_ms": total_ms,
+            "count": r["count"],
+        }
+
+    for endpoint in TatlRequest.objects.all().values_list('route', flat=True).distinct():
+        reqmetrics[endpoint] = {
+            "15m": average_metrics(endpoint, datetime.timedelta(minutes=15)),
+            "1h": average_metrics(endpoint, datetime.timedelta(hours=1)),
+            "1d": average_metrics(endpoint, datetime.timedelta(days=1)),
+            "7d": average_metrics(endpoint, datetime.timedelta(days=7)),
+            "all": average_metrics(endpoint, None),
+        }
+
+    return render(request, 'public/special/reqmetrics.html', {
+        "reqmetrics": reqmetrics,
+    })
 
 @cache_page(60 * 60)
 def metadata_metrics(request):

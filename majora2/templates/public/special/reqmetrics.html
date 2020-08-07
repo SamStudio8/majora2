@@ -1,0 +1,60 @@
+{% load crispy_forms_tags %}
+{% load instance %}
+{% instance_name as instance_name_str %}
+{% include 'public/header.html' with title="Requests Metrics Dashboard" navtitle=""|add:instance_name_str|add:" Requests Metrics Dashboard" %}
+<div class="mast2">
+    <div class="container">
+    </div>
+</div>
+<div class="container">
+
+<div class="row">
+    <div class="col-md-1">
+    </div>
+    <div class="col-md-10">
+
+        <table class="table">
+            <thead>
+                <tr class="thead-dark">
+                    <th>Endpoint</th>
+                    <th>15m</th>
+                    <th>1h</th>
+                    <th>1d</th>
+                    <th>7d</th>
+                    <th>All</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for end, metrics in reqmetrics.items %}
+                <tr>
+                    <td><b>{{ end }}</b></td>
+                    <td class={% if metrics.15m.count == 0 %}"table-secondary"{% elif metrics.15m.total_ms <= 100.0 %}"table-success"{% elif metrics.15m.total_ms <= 200.0 %}"table-warning"{% else %}"table-danger"{% endif %}>
+                    {{ metrics.15m.total_ms }}ms</br>({{ metrics.15m.count }})</td>
+
+                    <td class={% if metrics.1h.count == 0 %}"table-secondary"{% elif metrics.1h.total_ms <= 100.0 %}"table-success"{% elif metrics.1h.total_ms <= 200.0 %}"table-warning"{% else %}"table-danger"{% endif %}>
+                    {{ metrics.1h.total_ms }}ms</br>({{ metrics.1h.count }})</td>
+
+                    <td class={% if metrics.1d.count == 0 %}"table-secondary"{% elif metrics.1d.total_ms <= 100.0 %}"table-success"{% elif metrics.1d.total_ms <= 200.0 %}"table-warning"{% else %}"table-danger"{% endif %}>
+                    {{ metrics.1d.total_ms }}ms</br>({{ metrics.1d.count }})</td>
+
+                    <td class={% if metrics.7dm.count == 0 %}"table-secondary"{% elif metrics.7d.total_ms <= 100.0 %}"table-success"{% elif metrics.7d.total_ms <= 200.0 %}"table-warning"{% else %}"table-danger"{% endif %}>
+                    {{ metrics.7d.total_ms }}ms</br>({{ metrics.7d.count }})</td>
+
+                    <td class={% if metrics.all.count == 0 %}"table-secondary"{% elif metrics.all.total_ms <= 100.0 %}"table-success"{% elif metrics.all.total_ms <= 200.0 %}"table-warning"{% else %}"table-danger"{% endif %}>
+                    {{ metrics.all.total_ms }}ms</br>({{ metrics.all.count }})</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+    <div class="col-md-1">
+    </div>
+</div>
+<hr>
+</div>
+
+
+{% include 'public/footer.html' %}
+
+
