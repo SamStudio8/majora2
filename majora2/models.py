@@ -276,6 +276,8 @@ class MajoraArtifactGroup(PolymorphicModel):
     dice_name = models.CharField(max_length=96, blank=True, null=True, unique=True) 
     meta_name = models.CharField(max_length=96, blank=True, null=True) # TODO force unique?
 
+    group_path = models.CharField(max_length=1024, blank=True, null=True, unique=True)
+
     root_group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, on_delete=models.PROTECT, related_name="descendants")
     parent_group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, on_delete=models.PROTECT, related_name="children")
     groups = models.ManyToManyField('MajoraArtifactGroup', related_name="tagged_groups", blank=True) # represents 'tagged' ResourceGroups
