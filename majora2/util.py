@@ -37,10 +37,11 @@ def get_mag(root, path, sep="/", artifact=False, by_hard_path=False):
         parent = node
         for i, dir_name in enumerate(lpath):
             try:
-                dir_g = models.DigitalResourceGroup.objects.get(
-                        current_name=dir_name,
+                dir_g = models.DigitalResourceGroup.objects.filter(
                         root_group=node,
                         parent_group=parent,
+                ).get(
+                        current_name=dir_name
                 )
                 parent = dir_g
             except:
