@@ -268,6 +268,13 @@ class MajoraArtifact(PolymorphicModel):
         from . import serializers
         return serializers.ArtifactSerializer
 
+class MajoraArtifactGroupLink(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
+    link_name = models.CharField(max_length=128, unique=True)
+    from_group = models.ForeignKey('MajoraArtifactGroup', on_delete=models.PROTECT, related_name="out_glinks")
+    to_group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, on_delete=models.PROTECT, related_name="in_glinks")
+    to_artifact = models.ForeignKey('MajoraArtifact', blank=True, null=True, on_delete=models.PROTECT, related_name="in_glinks")
+
 # TODO This will become the MajoraGroup
 class MajoraArtifactGroup(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
@@ -283,6 +290,8 @@ class MajoraArtifactGroup(PolymorphicModel):
     groups = models.ManyToManyField('MajoraArtifactGroup', related_name="tagged_groups", blank=True) # represents 'tagged' ResourceGroups
     processes = models.ManyToManyField('MajoraArtifactProcessGroup', related_name="tagged_processes", blank=True) # represents 'tagged' ResourceGroups
     physical = models.BooleanField(default=False)
+
+    #links = models.ManyToManyField('MajoraArtifactGroupLink', related_name="from_groups", blank=True)
 
     def __str__(self):
         return "%s (%s)" % (self.name, self.id)
