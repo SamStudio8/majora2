@@ -1222,8 +1222,8 @@ def get_mag(request):
 
         api_o["mag"] = {
             "name": mag.current_name,
-            "children": [(str(m.id), m.name, [(a.artifact_kind, a.name, a.current_path if hasattr(a, 'current_path') else '') for a in m.tagged_artifacts.all()]) for m in mag.children.all()],
-            "links": [(str(m.id), m.name, [(a.artifact_kind, a.name, a.current_path if hasattr(a, 'current_path') else '') for a in m.tagged_artifacts.all()]) for m in mag.groups.all()],
+            "children": [(str(m.id), m.group_kind, m.name, [(str(a.id), a.artifact_kind, a.name, a.current_path if hasattr(a, 'current_path') else '') for a in m.tagged_artifacts.all()]) for m in mag.children.all()],
+            "links": [(str(m.id), m.group_kind, m.name, [(str(a.id), a.artifact_kind, a.name, a.current_path if hasattr(a, 'current_path') else '') for a in m.tagged_artifacts.all()]) for m in mag.groups.all()],
         }
 
     return wrap_api_v2(request, f)
