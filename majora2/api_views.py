@@ -1217,7 +1217,13 @@ def get_mag(request):
 
         if not mag:
             api_o["messages"].append("Invalid path.")
-            api_o["warnings"] += 1
+            api_o["errors"] += 1
+            return
+
+        if (mag.children.count() > 100 or mag.groups.count() > 100 or mag.out_glinks.count() > 100) and not json_data.get("force"):
+            api_o["messages"].append("This MAG contains more than 100 groups or artifacts.")
+            api_o["error_code"] = "BIGMAG:%d" % max(mag.children.count(), mag.groups.count(), mag.out_glinks.count())
+            api_o["errors"] += 1
             return
 
         api_o["mag"] = {
