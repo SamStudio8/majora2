@@ -4,6 +4,7 @@ import datetime
 import re
 from django.utils import timezone
 from dateutil.parser import parse
+from django.db.models import prefetch_related_objects
 
 def get_mag(root, path, sep="/", artifact=False, by_hard_path=False):
 
@@ -27,9 +28,11 @@ def get_mag(root, path, sep="/", artifact=False, by_hard_path=False):
     if by_hard_path:
         try:
             dir_g = models.DigitalResourceGroup.objects.get(root_group=node, group_path=sep.join(lpath))
-            return dir_g
         except:
             return None, []
+        a = [dir_g]
+        prefetch_related_objects(a, 'children__tagged_artifacts', 'groups__tagged_artifacts', 'out_glinks', 'parent_group', 'root_group')
+        return a[0]
     else:
         parent = node
         for i, dir_name in enumerate(lpath):
@@ -42,7 +45,9 @@ def get_mag(root, path, sep="/", artifact=False, by_hard_path=False):
                 parent = dir_g
             except:
                 return None, []
-        return dir_g
+        a = [dir_g]
+        prefetch_related_objects(a, 'children__tagged_artifacts', 'groups__tagged_artifacts', 'out_glinks', 'parent_group', 'root_group')
+        return a[0]
 
 
 def mkroot(node_name):
@@ -75,12 +80,14 @@ def mkmag(path, sep="/", parents=True, artifact=False, physical=True, root=None,
                 current_name=dir_name,
                 root_group=root,
                 parent_group=parent,
-                temp_kind=kind,
                 physical=physical)
         parent = dir_g
 
         mags.append(dir_g)
         mags_created.append(created)
+    if mags_created[-1]:
+        mags[-1].temp_kind = kind
+        mags[-1].save()
 
     return mags, mags_created
 

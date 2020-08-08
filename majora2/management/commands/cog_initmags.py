@@ -12,7 +12,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         maj_root = util.mkroot("majora")
         for pag in models.PublishedArtifactGroup.objects.all():
-            if pag.published_name.startswith("COGUK"):
+            if pag.published_name.startswith("COG-UK"):
+                print(pag.published_name)
                 root, central_sample_id, run_name = pag.published_name.split("/")
                 run_site, run_name = run_name.split(":")
 
