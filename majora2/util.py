@@ -54,7 +54,7 @@ def mkroot(node_name):
     )
     return node
 
-def mkmag(path, sep="/", parents=True, artifact=False, physical=True, root=None):
+def mkmag(path, sep="/", parents=True, artifact=False, physical=True, root=None, kind=None):
 
     lpath = path.split(sep)
 
@@ -75,6 +75,7 @@ def mkmag(path, sep="/", parents=True, artifact=False, physical=True, root=None)
                 current_name=dir_name,
                 root_group=root,
                 parent_group=parent,
+                temp_kind=kind,
                 physical=physical)
         parent = dir_g
 
