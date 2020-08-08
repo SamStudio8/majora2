@@ -1221,8 +1221,8 @@ def get_mag(request):
             return
 
         api_o["mag"] = {
-            "parent": {"id": str(mag.parent_group.id), "path": mag.parent_group.path, "name": mag.parent_group.name, "kind": mag.parent_group.group_kind} if mag.parent_group else None,
-            "root": {"id": str(mag.root_group.id), "path": mag.root_group.path, "name": mag.root_group.name, "kind": mag.root_group.group_kind} if mag.root_group else None,
+            "parent": {"id": str(mag.parent_group.id), "path": mag.parent_group.group_path, "name": mag.parent_group.name, "kind": mag.parent_group.group_kind} if mag.parent_group else None,
+            "root": {"id": str(mag.root_group.id), "path": mag.root_group.group_path, "name": mag.root_group.name, "kind": mag.root_group.group_kind} if mag.root_group else None,
 
             "id": str(mag.id),
             "name": mag.name,
