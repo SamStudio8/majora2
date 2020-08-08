@@ -1221,9 +1221,16 @@ def get_mag(request):
             return
 
         api_o["mag"] = {
-            "name": mag.current_name,
-            "children": [(str(m.id), m.group_kind, m.name, [(str(a.id), a.artifact_kind, a.name, a.current_path if hasattr(a, 'current_path') else '') for a in m.tagged_artifacts.all()]) for m in mag.children.all()],
-            "links": [(str(m.id), m.group_kind, m.name, [(str(a.id), a.artifact_kind, a.name, a.current_path if hasattr(a, 'current_path') else '') for a in m.tagged_artifacts.all()]) for m in mag.groups.all()],
+            "parent": {"id": str(mag.parent_group.id), "path": mag.parent_group.path, "name": mag.parent_group.name, "kind": mag.parent_group.group_kind} if mag.parent_group else None,
+            "root": {"id": str(mag.root_group.id), "path": mag.root_group.path, "name": mag.root_group.name, "kind": mag.root_group.group_kind} if mag.root_group else None,
+
+            "id": str(mag.id),
+            "name": mag.name,
+            "group_kind": mag.group_kind,
+            "group_path": mag.group_path,
+            "children": [(str(m.id), m.group_kind, m.name, m.name, [(str(a.id), a.artifact_kind, a.name, a.current_path if hasattr(a, 'current_path') else '') for a in m.tagged_artifacts.all()]) for m in mag.children.all()],
+            "hlinks": [(str(m.id), m.group_kind, m.name, m.name, [(str(a.id), a.artifact_kind, a.name, a.current_path if hasattr(a, 'current_path') else '') for a in m.tagged_artifacts.all()]) for m in mag.groups.all()],
+            "slinks": [(str(m.to_group.id), m.to_group.group_kind, m.link_name, m.to_group.name, None) if m.to_group else (None, None, m.link_name, None, None) for m in mag.out_glinks.all()],
         }
 
     return wrap_api_v2(request, f)
