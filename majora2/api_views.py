@@ -20,7 +20,7 @@ import json
 import uuid
 import datetime
 
-MINIMUM_CLIENT_VERSION = "0.19.0"
+MINIMUM_CLIENT_VERSION = "0.24.0"
 
 @csrf_exempt
 def wrap_api_v2(request, f, permission=None):
@@ -295,6 +295,33 @@ def handle_metrics(metrics, tag_type, tag_to, user, api_o):
 
 
 
+def biosample_query_validity(request):
+    def f(request, api_o, json_data, user=None):
+        biosamples = json_data.get("biosamples", {})
+        if not biosamples:
+            api_o["messages"].append("'biosamples' key missing or empty")
+            api_o["errors"] += 1
+
+        api_o["result"] = {}
+        for biosample in biosamples:
+
+            exists = False
+            has_metadata = False
+
+            bs = models.BiosampleArtifact.objects.filter(central_sample_id=biosample).first()
+
+            if bs:
+                exists = True
+                if bs.created:
+                    if bs.created.collection_location_country and len(bs.created.collection_location_country) > 0:
+                        has_metadata = True
+            api_o["result"][biosample] = {
+                "central_sample_id": bs.central_sample_id if bs else None,
+                "exists": exists,
+                "has_metadata": has_metadata
+            }
+
+    return wrap_api_v2(request, f)
 
 def get_biosample(request):
     def f(request, api_o, json_data, user=None):

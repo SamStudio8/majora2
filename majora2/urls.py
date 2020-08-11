@@ -73,6 +73,12 @@ urlpatterns = [
     path('api/v2/majora/summary/get/', csrf_exempt(api_views.get_dashboard_metrics), name="api.majora.summary.get"),
     path('api/v2/outbound/summary/get/', csrf_exempt(api_views.get_outbound_summary), name="api.outbound.summary.get"),
 
+    # TEMPORARY SPECIAL PARTIALS
+    #path('api/v2/artifact/biosample/update/sender', csrf_exempt(api_views.partial_update_sender), name="api.artifact.biosample.upate.sender"),
+
+    # TEMPORARY SPECIAL QUERIES
+    path('api/v2/artifact/biosample/query/validity/', csrf_exempt(api_views.biosample_query_validity), name="api.artifact.biosample.query.validity"),
+
     #path('api/v2/artifact/digitalresource/add/', csrf_exempt(api_views.add_digitalresource), name="api.artifact.digitalresource.add"),
 
     path('api/v2/group/mag/get/', csrf_exempt(api_views.get_mag), name="api.group.mag.get"),
