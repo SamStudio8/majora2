@@ -411,6 +411,7 @@ components:
       required:
       - central_sample_id
       - exists
+      - has_sender_id
       - has_metadata
       properties:
         central_sample_id:
@@ -419,6 +420,9 @@ components:
         exists:
           type: boolean
           description: "if this biosample exists in Majora"
+        has_metadata:
+          type: boolean
+          description: "if this biosample has a sender_sample_id set"
         has_metadata:
           type: boolean
           description: "if this biosample has evidence of minimal metadata"

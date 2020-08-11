@@ -307,17 +307,22 @@ def biosample_query_validity(request):
 
             exists = False
             has_metadata = False
+            has_sender = False
 
             bs = models.BiosampleArtifact.objects.filter(central_sample_id=biosample).first()
 
             if bs:
                 exists = True
+                if bs.sender_sample_id and len(bs.sender_sample_id) > 0:
+                    has_sender = True
+
                 if bs.created:
                     if bs.created.collection_location_country and len(bs.created.collection_location_country) > 0:
                         has_metadata = True
             api_o["result"][biosample] = {
                 "central_sample_id": bs.central_sample_id if bs else None,
                 "exists": exists,
+                "has_sender_id": has_sender,
                 "has_metadata": has_metadata
             }
 
