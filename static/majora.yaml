@@ -40,7 +40,7 @@ info:
     * If metadata is missing, send a blank field or do not submit the field at all. Do not submit 'unknown' or 'null' or any other text that attempts to explain that the field is missing.
     <hr>
 
-  version: 2.0.4
+  version: 2.1.0
 externalDocs:
   description: Majora on github
   url: 'https://github.com/SamStudio8/majora'
@@ -72,6 +72,31 @@ paths:
           200:
             $ref: '#/components/responses/Majora_OK'
           400:
+            description: "General unauthorised or invalid query"
+            content: {}
+          500:
+            description: "Server sad"
+            content: {}
+  /artifact/biosample/query/validity:
+    post:
+        tags:
+        - artifact
+        summary: "Check the status of one or more biosamples in Majora"
+        description: ""
+        operationId: "api.artifact.biosample.query.validity"
+        requestBody:
+          description: "Biosamples to be checked"
+          content:
+            application/json:
+              schema: 
+                allOf: 
+                  - $ref: '#/components/schemas/Request'
+                  - $ref: '#/components/schemas/BiosampleList'
+          required: true
+        responses:
+          200:
+            $ref: '#/components/responses/BiosampleListReply'
+          401:
             description: "General unauthorised or invalid query"
             content: {}
           500:
@@ -133,6 +158,14 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/BaseResponse'
+    BiosampleListReply:
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/BaseResponse'
+              - $ref: '#/components/schemas/BiosampleValidityReply'
   schemas:
     Request:
       type: object
@@ -352,6 +385,43 @@ components:
             $ref: '#/components/schemas/LibraryBiosample'
         metadata:
           $ref: '#/components/schemas/Metadata'
+    BiosampleList:
+      type: object
+      required:
+      - biosamples
+      properties:
+        biosamples:
+          type: array
+          items:
+            oneOf:
+              - type: string
+          example: ["BIRM-12345", "BIRM-34567", "BIRM-56789"]
+    BiosampleValidityReply:
+      type: object
+      required:
+      - result
+      properties:
+        result:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/BiosampleValidity'
+    BiosampleValidity:
+      type: object
+      required:
+      - central_sample_id
+      - exists
+      - has_metadata
+      properties:
+        central_sample_id:
+          type: string
+          example: "BIRM-12345"
+        exists:
+          type: boolean
+          description: "if this biosample exists in Majora"
+        has_metadata:
+          type: boolean
+          description: "if this biosample has evidence of minimal metadata"
     LibraryBiosample:
       type: object
       required:
