@@ -11,7 +11,7 @@ def get_mag(root, path, sep="/", artifact=False, by_hard_path=False):
     try:
         node = models.DigitalResourceNode.objects.get(node_name=root)
     except:
-        return None, []
+        return None
 
     lpath = path.split(sep)
     if path[0] == sep:
@@ -29,8 +29,9 @@ def get_mag(root, path, sep="/", artifact=False, by_hard_path=False):
         try:
             dir_g = models.DigitalResourceGroup.objects.get(root_group=node, group_path=sep.join(lpath))
         except:
-            return None, []
+            return None
         a = [dir_g]
+        #prefetch_related_objects(a, 'children', 'groups', 'out_glinks', 'parent_group', 'root_group')
         prefetch_related_objects(a, 'children__tagged_artifacts', 'groups__tagged_artifacts', 'out_glinks', 'parent_group', 'root_group')
         return a[0]
     else:
@@ -45,7 +46,7 @@ def get_mag(root, path, sep="/", artifact=False, by_hard_path=False):
                 )
                 parent = dir_g
             except:
-                return None, []
+                return None
         a = [dir_g]
         prefetch_related_objects(a, 'children__tagged_artifacts', 'groups__tagged_artifacts', 'out_glinks', 'parent_group', 'root_group')
         return a[0]

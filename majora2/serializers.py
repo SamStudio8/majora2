@@ -141,6 +141,37 @@ class QCGroupSerializer(serpy.Serializer):
     is_pass = serpy.StrField()
     test_name = serpy.StrField(attr='test_group.slug')
 
+class MAGArtifactSerializer(serpy.Serializer):
+    id = serpy.StrField()
+    kind = serpy.StrField()
+    name = serpy.StrField()
+    path = serpy.StrField()
+class MAGSerializerLite(serpy.Serializer):
+    id = serpy.StrField()
+    name = serpy.StrField()
+    group_kind = serpy.StrField()
+    group_path = serpy.StrField()
+class MAGSerializerA(serpy.Serializer):
+    id = serpy.StrField()
+    name = serpy.StrField()
+    group_kind = serpy.StrField()
+    group_path = serpy.StrField()
+    artifacts = MAGArtifactSerializer(many=True, attr="tagged_artifacts.all", call=True)
+class MAGLinkSerializer(serpy.Serializer):
+    name = serpy.StrField()
+    group = MAGSerializerLite(required=False, attr="to_group")
+class MAGSerializer(serpy.Serializer):
+    id = serpy.StrField()
+    name = serpy.StrField()
+    group_kind = serpy.StrField()
+    group_path = serpy.StrField()
+    parent_group = MAGSerializerLite()
+    root_group = MAGSerializerLite()
+    children = MAGSerializerA(many=True, attr="children.all", call=True)
+    hlinks = MAGSerializerA(many=True, attr="groups.all", call=True)
+    slinks = MAGLinkSerializer(many=True, attr="out_glinks.all", call=True)
+
+
 class PAGSerializer(serpy.Serializer):
     id = serpy.StrField()
     published_name = serpy.StrField()

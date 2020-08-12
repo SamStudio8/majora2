@@ -37,6 +37,9 @@ class MajoraArtifact(PolymorphicModel):
     def kind(self):
         return self.artifact_kind
     @property
+    def path(self):
+        return ""
+    @property
     def name(self):
         if self.meta_name:
             return self.meta_name
@@ -505,6 +508,9 @@ class PublishedArtifactGroup(MajoraArtifactGroup):
         return "Published Artifact Group"
     @property
     def name(self):
+        return self.published_name
+    @property
+    def path(self):
         return self.published_name
 
 # TODO This is a quick and dirty way to toss the accessions we're getting snowed with onto a PAG
