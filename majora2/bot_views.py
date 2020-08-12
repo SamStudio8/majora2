@@ -27,7 +27,7 @@ def bot_approve_registration(request):
                 "text": "You didn't specify a username to approve.",
             }), content_type="application/json")
 
-        user = User.objects.get(username=user)
+        user = User.objects.filter(username=user).first()
         if not user:
             return HttpResponse(json.dumps({
                 "response_type": "ephemeral",
