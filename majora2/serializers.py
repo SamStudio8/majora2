@@ -141,6 +141,7 @@ class QCGroupSerializer(serpy.Serializer):
     is_pass = serpy.StrField()
     test_name = serpy.StrField(attr='test_group.slug')
 
+# well this was a lovely waste of tim that actually takes the same amount of time as the manual serializer
 class MAGArtifactSerializer(serpy.Serializer):
     id = serpy.StrField()
     kind = serpy.StrField()
