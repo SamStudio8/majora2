@@ -420,7 +420,7 @@ components:
         exists:
           type: boolean
           description: "if this biosample exists in Majora"
-        has_metadata:
+        has_sender_id:
           type: boolean
           description: "if this biosample has a sender_sample_id set"
         has_metadata:
