@@ -210,13 +210,6 @@ class RestyDataview(
         model = apps.get_model("majora2", mdv.entry_point)
         return model.objects.all()
 
-    #def get_serializer_context(self):
-    #    context = super().get_serializer_context()
-    #    mdv = self.request.query_params.get("mdv")
-    #    # I tried to raise http400 here but it didnt seem to work
-    #    context.update({"mdv": mdv})
-    #    return context
-
 #TODO We'll start with PAG as the default entry point for Dataviews but in future
 # we can probably move to specifying the entry point serializer and work from there
 class PublishedArtifactGroupView(
