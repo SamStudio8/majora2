@@ -3,7 +3,6 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.apps import apps
 
-from rest_framework.settings import api_settings
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
@@ -13,8 +12,6 @@ from rest_framework import mixins
 from rest_framework import permissions
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_condition import Or
-
-from two_factor.views.mixins import OTPRequiredMixin
 
 from majora2 import tasks
 from majora2 import models
