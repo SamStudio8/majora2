@@ -36,6 +36,7 @@ class Command(BaseCommand):
                 validity_start = timezone.now(),
                 #validity_end = 
         )
+        p.save()
         treq = tmodels.TatlPermFlex(
             user = su,
             substitute_user = None,
@@ -43,7 +44,8 @@ class Command(BaseCommand):
             timestamp = timezone.now(),
             content_object = user.profile,
             extra_context = json.dumps({
-                "dataview": mdv.code_name
+                "dataview": mdv.code_name,
+                "dataview_permission": p.id,
             }),
         )
         treq.save()
