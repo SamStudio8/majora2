@@ -1812,12 +1812,12 @@ class MajoraDataview(models.Model):
     code_name = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=128)
     description = models.CharField(max_length=256)
-
     entry_point = models.CharField(max_length=128)
 
     class Meta:
         permissions = [
-            ("can_read_dataview_via_api", "Can read the contents of data views via the API"),
+            ("can_read_dataview_via_api", "Can read the contents of CONSORTIUM data views via the API"),
+            ("can_read_restricted_dataview_via_api", "Can read the contents of RESTRICTED data views via the API"),
         ]
 
     def __str__(self):
