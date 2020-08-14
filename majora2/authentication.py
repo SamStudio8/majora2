@@ -32,6 +32,11 @@ class DataviewReadPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if not view.mdv_code:
             return False
+        else:
+            try:
+                mdv = models.MajoraDataview.objects.get(code_name=view.mdv_code)
+            except models.MajoraDataview.DoesNotExist:
+                return False
 
         p = models.MajoraDataviewUserPermission.objects.filter(
                 profile__user=request.user,
@@ -41,6 +46,17 @@ class DataviewReadPermission(permissions.BasePermission):
                 validity_end__gt=timezone.now()
         ).first()
         if p:
+            tflex = TatlPermFlex(
+                user = request.user,
+                substitute_user = None,
+                used_permission = "majora2.v3.DataviewReadPermission",
+                timestamp = timezone.now(),
+                request=view.treq,
+                content_object=mdv,
+                #extra_context = json.dumps({
+                #}),
+            )
+            tflex.save()
             return True
         return False #TODO logthis
 

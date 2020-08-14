@@ -192,10 +192,12 @@ class RestyDataview(
                     MajoraCeleryListingMixin,
                     viewsets.GenericViewSet):
 
-    permission_classes = [APIKeyPermission&DataviewReadPermission]
+    #NOTE We assume that DataviewReadPermission implies APIKeyPermission so
+    # we don't need to explicitly check the user can read dataviews anymore
+    #majora_api_permission = "majora2.can_read_dataview_via_api"
+    permission_classes = [DataviewReadPermission]
 
     celery_task = tasks.task_get_mdv_v3
-    majora_api_permission = "majora2.can_read_dataview_via_api"
     majora_required_params = ["mdv"]
 
     def get_serializer_class(self):
