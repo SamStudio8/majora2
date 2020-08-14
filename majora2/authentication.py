@@ -47,17 +47,13 @@ class APIKeyPermission(permissions.BasePermission):
             if key.key_definition.permission.codename != permission.split('.')[1]:
                 return False
 
-        treq = TatlRequest.objects.get(response_uuid=view.response_uuid)
-        treq.user = user
-        treq.save()
-
         if permission:
             tflex = TatlPermFlex(
                 user = user,
                 substitute_user = None,
                 used_permission = permission,
                 timestamp = timezone.now(),
-                request=treq,
+                request=view.treq,
                 content_object = treq, #TODO just use the request for now
                 #extra_context = json.dumps({
                 #}),

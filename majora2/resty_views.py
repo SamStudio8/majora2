@@ -49,23 +49,22 @@ class MajoraDispatchMixin(object):
         )
         treq.save()
 
+        self.treq = treq
         ret = super().dispatch(request, *args, **kwargs)
         return ret
 
-    #def initial(request, *args, **kwargs):
-    #    super().initial(request, *args, **kwargs)
-    #    treq = TatlRequest.objects.get(response_uuid=self.response_uuid)
-    #    treq.user = request.user
-    #    treq.save()
+    def initialize_request(self, request, *args, **kwargs):
+        request = super().initialize_request(request, *args, **kwargs)
+        self.treq.payload = json.dumps(request.data)
+        self.treq.user = request.user
+        self.treq.save()
+        return request
 
     def finalize_response(self, request, response, *args, **kwargs):
-        ret = super().finalize_response(request, response, *args, **kwargs)
-
-        treq = TatlRequest.objects.get(response_uuid=self.response_uuid)
-        treq.response_time = timezone.now() - treq.timestamp
-        treq.payload = json.dumps(request.data)
-
-        return ret
+        response = super().finalize_response(request, response, *args, **kwargs)
+        self.treq.response_time = timezone.now() - self.treq.timestamp
+        self.treq.save()
+        return response
 
 class RequiredParamRetrieveMixin(object):
 
