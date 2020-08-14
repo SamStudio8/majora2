@@ -133,3 +133,12 @@ def task_get_pag_by_qc_v3(pag_ids, context={}):
     }
 
     return api_o
+
+@shared_task
+def task_get_mdv_v3(ids, context={}, **kwargs):
+
+    api_o = {
+        "data": {},
+    }
+
+    return api_o

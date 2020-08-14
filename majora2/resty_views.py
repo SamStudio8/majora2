@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 from rest_framework.settings import api_settings
 from rest_framework.response import Response
@@ -18,8 +19,53 @@ from majora2 import tasks
 from majora2 import models
 from majora2 import resty_serializers as serializers
 from majora2.authentication import TatlTokenAuthentication, APIKeyPermission
+from tatl.models import TatlRequest, TatlPermFlex
 
 import uuid
+import json
+
+# Honestly, this was so much fucking easier when it was my own code ffs
+class MajoraDispatchMixin(object):
+    def dispatch(self, request, *args, **kwargs):
+        self.response_uuid = uuid.uuid4()
+        start_ts = timezone.now()
+
+        # Best effort grab source IP
+        # https://stackoverflow.com/questions/4581789/how-do-i-get-user-ip-address-in-django
+        remote_addr = None
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            remote_addr = x_forwarded_for.split(',')[0]
+        else:
+            remote_addr = request.META.get('REMOTE_ADDR')
+
+        treq = TatlRequest(
+            user = None,
+            substitute_user = None,
+            route = request.path,
+            timestamp = start_ts,
+            remote_addr = remote_addr,
+            response_uuid = self.response_uuid,
+        )
+        treq.save()
+
+        ret = super().dispatch(request, *args, **kwargs)
+        return ret
+
+    #def initial(request, *args, **kwargs):
+    #    super().initial(request, *args, **kwargs)
+    #    treq = TatlRequest.objects.get(response_uuid=self.response_uuid)
+    #    treq.user = request.user
+    #    treq.save()
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        ret = super().finalize_response(request, response, *args, **kwargs)
+
+        treq = TatlRequest.objects.get(response_uuid=self.response_uuid)
+        treq.response_time = timezone.now() - treq.timestamp
+        treq.payload = json.dumps(request.data)
+
+        return ret
 
 class RequiredParamRetrieveMixin(object):
 
@@ -52,8 +98,9 @@ class MajoraCeleryListingMixin(object):
             s_context = super().get_serializer_context()
             for param in self.majora_required_params:
                 context[param] = request.query_params[param]
-            celery_task = self.celery_task.delay(queryset, context=context)
+            celery_task = self.celery_task.delay(queryset, context=context, user=request.user.pk, response_uuid=self.response_uuid)
             if celery_task:
+                api_o["response_uuid"] = self.response_uuid
                 api_o["errors"] = 0
                 api_o["test"] = request.query_params
                 api_o["expected_n"] = len(queryset)
@@ -133,14 +180,15 @@ class TaskView(APIView):
 
 #TODO How to handle errors properly here? Just let them 500 for now
 class RestyDataview(
+                    MajoraDispatchMixin,
                     #MajoraUUID4orDiceNameLookupMixin,
                     RequiredParamRetrieveMixin,
-                    #MajoraCeleryListingMixin,
-                    mixins.ListModelMixin,
+                    MajoraCeleryListingMixin,
                     viewsets.GenericViewSet):
 
-    permission_classes = (Or(permissions.IsAuthenticated, APIKeyPermission),)
+    permission_classes = (APIKeyPermission,)
 
+    celery_task = tasks.task_get_mdv_v3
     majora_api_permission = "majora2.can_read_dataview_via_api"
     majora_required_params = ["mdv"]
 

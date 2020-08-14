@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from majora2 import models
 import json
+import uuid
 
 class TatlTokenAuthentication(TokenAuthentication):
     model = models.ProfileAPIKey
@@ -46,25 +47,7 @@ class APIKeyPermission(permissions.BasePermission):
             if key.key_definition.permission.codename != permission.split('.')[1]:
                 return False
 
-        # https://stackoverflow.com/questions/4581789/how-do-i-get-user-ip-address-in-django
-        remote_addr = None
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            remote_addr = x_forwarded_for.split(',')[0]
-        else:
-            remote_addr = request.META.get('REMOTE_ADDR')
-
-        # Not really sure if this is the right venue for this shit
-        json_data = json.dumps(request.data)
-        treq = TatlRequest(
-            user = None,
-            substitute_user = None,
-            route = request.path,
-            payload = json_data,
-            timestamp = timezone.now(),
-            remote_addr = remote_addr,
-        )
-        treq.save()
+        treq = TatlRequest.objects.get(response_uuid=view.response_uuid)
         treq.user = user
         treq.save()
 
