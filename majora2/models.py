@@ -1820,6 +1820,9 @@ class MajoraDataview(models.Model):
             ("can_read_dataview_via_api", "Can read the contents of data views via the API"),
         ]
 
+    def __str__(self):
+        return "MDV %s" % (self.code_name)
+
 #TODO This looks a lot like the API key, which is also tied to a profile
 # but I think it makes sense to keep them separate for now?
 class MajoraDataviewUserPermission(models.Model):
