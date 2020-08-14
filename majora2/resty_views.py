@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.apps import apps
 
 from rest_framework.settings import api_settings
 from rest_framework.response import Response
@@ -18,7 +19,7 @@ from two_factor.views.mixins import OTPRequiredMixin
 from majora2 import tasks
 from majora2 import models
 from majora2 import resty_serializers as serializers
-from majora2.authentication import TatlTokenAuthentication, APIKeyPermission, TaskOwnerReadPermission
+from majora2.authentication import TatlTokenAuthentication, APIKeyPermission, TaskOwnerReadPermission, DataviewReadPermission
 from tatl.models import TatlRequest, TatlPermFlex
 
 import uuid
@@ -58,6 +59,8 @@ class MajoraDispatchMixin(object):
         self.treq.payload = json.dumps(request.data)
         self.treq.user = request.user
         self.treq.save()
+
+        self.mdv_code = request.query_params.get("mdv")
         return request
 
     def finalize_response(self, request, response, *args, **kwargs):
@@ -189,26 +192,19 @@ class RestyDataview(
                     MajoraCeleryListingMixin,
                     viewsets.GenericViewSet):
 
-    permission_classes = (APIKeyPermission,)
+    permission_classes = [APIKeyPermission&DataviewReadPermission]
 
     celery_task = tasks.task_get_mdv_v3
     majora_api_permission = "majora2.can_read_dataview_via_api"
     majora_required_params = ["mdv"]
 
     def get_serializer_class(self):
-        mdv_code = self.request.query_params.get("mdv")
-        mdv = models.MajoraDataview.objects.get(code_name=mdv_code)
-
-        from django.apps import apps
+        mdv = models.MajoraDataview.objects.get(code_name=self.mdv_code)
         return apps.get_model("majora2", mdv.entry_point).get_resty_serializer()
 
     def get_queryset(self):
-        mdv_code = self.request.query_params.get("mdv")
-        mdv = models.MajoraDataview.objects.get(code_name=mdv_code)
-
-        from django.apps import apps
-        model = apps.get_model("majora2", mdv.entry_point)
-        return model.objects.all()
+        mdv = models.MajoraDataview.objects.get(code_name=self.mdv_code)
+        return apps.get_model("majora2", mdv.entry_point).objects.all()
 
 #TODO We'll start with PAG as the default entry point for Dataviews but in future
 # we can probably move to specifying the entry point serializer and work from there

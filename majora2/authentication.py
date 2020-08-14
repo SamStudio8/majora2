@@ -28,6 +28,22 @@ class TaskOwnerReadPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return request.user == obj.user
 
+class DataviewReadPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if not view.mdv_code:
+            return False
+
+        p = models.MajoraDataviewUserPermission.objects.filter(
+                profile__user=request.user,
+                dataview__code_name=view.mdv_code,
+                is_revoked=False,
+                validity_start__lt=timezone.now(),
+                validity_end__gt=timezone.now()
+        ).first()
+        if p:
+            return True
+        return False #TODO logthis
+
 class APIKeyPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
