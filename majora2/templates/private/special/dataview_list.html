@@ -1,0 +1,47 @@
+{% load crispy_forms_tags %}
+{% load instance %}
+{% instance_name as instance_name_str %}
+{% include 'private/header.html' with title="Dataviews" navtitle=""|add:instance_name_str|add:" Dataviews" %}
+<div class="mast2">
+    <div class="container">
+    </div>
+</div>
+<div class="container">
+
+<div class="row">
+<div class="col-md-12">
+
+<table class="table datatable">
+    <thead class="table-dark">
+        <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Fields</th>
+            <th>Users</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dv in dataviews %}
+        <tr>
+            <td>{{ dv.code_name }}</td>
+            <td>{{ dv.name }}</td>
+            <td><ul>
+                {% for field in dv.fields.all %}
+                <li>{{ field.model_name }} : {{ field.model_field }}</li>
+                {% endfor %}
+            </ul></td>
+            <td><ul>
+                {% for viewer in dv.viewers.all %}
+                <li>{{ viewer.profile.user.username }}</li>
+                {% endfor %}
+            </ul></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+</div>
+</div>
+{% include 'private/footer.html' %}
+

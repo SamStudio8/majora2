@@ -6,6 +6,7 @@ from . import views
 from . import account_views
 from . import bot_views
 from . import public_views
+from . import private_views
 from . import api_views
 
 urlpatterns = [
@@ -44,6 +45,9 @@ urlpatterns = [
     
     # BOT ######################################################################
     path('bot/accounts/approve', csrf_exempt(bot_views.bot_approve_registration)),
+
+    # PRIVATE
+    path('private/dataviews', private_views.list_dataviews),
 
     # PUBLIC
     path('public/dashboard', public_views.sample_sequence_count_dashboard),
