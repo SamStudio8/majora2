@@ -196,7 +196,7 @@ class RestyDataview(
     # actually checks the API Key being used is suitable for the permission requested
     # so we need to check both here
     permission_classes = [APIKeyPermission & DataviewReadPermission]
-    majora_api_permission = "majora2.can_read_dataview_via_api"
+    majora_api_permission = "majora2.can_read_dataview_via_api" #TODO Integrate with model
 
     celery_task = tasks.task_get_mdv_v3
     majora_required_params = ["mdv"]

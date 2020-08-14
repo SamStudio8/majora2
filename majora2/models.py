@@ -1813,6 +1813,7 @@ class MajoraDataview(models.Model):
     name = models.CharField(max_length=128)
     description = models.CharField(max_length=256)
     entry_point = models.CharField(max_length=128)
+    permission = models.ForeignKey(Permission, blank=True, null=True, on_delete=models.PROTECT)
 
     class Meta:
         permissions = [
