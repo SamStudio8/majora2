@@ -24,6 +24,10 @@ class TatlTokenAuthentication(TokenAuthentication):
 
         return (key.profile.user, key)
 
+class TaskOwnerReadPermission(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return request.user == obj.user
+
 class APIKeyPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
@@ -54,7 +58,7 @@ class APIKeyPermission(permissions.BasePermission):
                 used_permission = permission,
                 timestamp = timezone.now(),
                 request=view.treq,
-                content_object = treq, #TODO just use the request for now
+                content_object = view.treq, #TODO just use the request for now
                 #extra_context = json.dumps({
                 #}),
             )

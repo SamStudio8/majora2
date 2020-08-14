@@ -18,7 +18,7 @@ from two_factor.views.mixins import OTPRequiredMixin
 from majora2 import tasks
 from majora2 import models
 from majora2 import resty_serializers as serializers
-from majora2.authentication import TatlTokenAuthentication, APIKeyPermission
+from majora2.authentication import TatlTokenAuthentication, APIKeyPermission, TaskOwnerReadPermission
 from tatl.models import TatlRequest, TatlPermFlex
 
 import uuid
@@ -94,7 +94,6 @@ class MajoraCeleryListingMixin(object):
 
         if self.celery_task:
             context = {}
-            s_context = super().get_serializer_context()
             for param in self.majora_required_params:
                 context[param] = request.query_params[param]
             celery_task = self.celery_task.delay(queryset, context=context, user=request.user.pk, response_uuid=self.response_uuid)
@@ -151,7 +150,12 @@ class BiosampleView(
 
 
 class TaskView(APIView):
-    #renderer_classes = [JSONRenderer]
+    renderer_classes = [JSONRenderer]
+
+    #permission_classes = [APIKeyPermission & TaskOwnerReadPermission]
+    #majora_api_permission = "majora2.can_read_dataview_via_api"
+    permission_classes = [TaskOwnerReadPermission]
+
     def get(self, request, tid, format=None):
         task_id = tid
         if not task_id:
@@ -206,12 +210,12 @@ class RestyDataview(
         model = apps.get_model("majora2", mdv.entry_point)
         return model.objects.all()
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        mdv = self.request.query_params.get("mdv")
-        # I tried to raise http400 here but it didnt seem to work
-        context.update({"mdv": mdv})
-        return context
+    #def get_serializer_context(self):
+    #    context = super().get_serializer_context()
+    #    mdv = self.request.query_params.get("mdv")
+    #    # I tried to raise http400 here but it didnt seem to work
+    #    context.update({"mdv": mdv})
+    #    return context
 
 #TODO We'll start with PAG as the default entry point for Dataviews but in future
 # we can probably move to specifying the entry point serializer and work from there

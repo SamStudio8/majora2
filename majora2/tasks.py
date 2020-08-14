@@ -136,9 +136,15 @@ def task_get_pag_by_qc_v3(pag_ids, context={}):
 
 @shared_task
 def task_get_mdv_v3(ids, context={}, **kwargs):
+    from django.apps import apps
+    mdv = models.MajoraDataview.objects.get(code_name=context["mdv"])
+    model = apps.get_model("majora2", mdv.entry_point)
+    queryset = model.objects.filter(id__in=ids)
+
+    serializer = model.get_resty_serializer()(queryset, many=True, context=context)
 
     api_o = {
-        "data": {},
+        "data": serializer.data,
     }
 
     return api_o
