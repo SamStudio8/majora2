@@ -56,6 +56,7 @@ class MajoraDispatchMixin(object):
 
     def initialize_request(self, request, *args, **kwargs):
         request = super().initialize_request(request, *args, **kwargs)
+        self.treq.route = request.resolver_match.view_name # Overwrite URL route for v3
         self.treq.payload = json.dumps(request.data)
         self.treq.user = request.user
         self.treq.save()
@@ -152,7 +153,9 @@ class BiosampleView(
     #TODO permissions class
 
 
-class TaskView(APIView):
+class TaskView(
+               MajoraDispatchMixin,
+               APIView):
     renderer_classes = [JSONRenderer]
 
     #permission_classes = [APIKeyPermission & TaskOwnerReadPermission]
