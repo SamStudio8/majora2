@@ -1808,6 +1808,8 @@ class MajoraDataview(models.Model):
     name = models.CharField(max_length=128)
     description = models.CharField(max_length=256)
 
+    entry_point = models.CharField(max_length=128)
+
     class Meta:
         permissions = [
             ("can_read_dataview_via_api", "Can read the contents of data views via the API"),
