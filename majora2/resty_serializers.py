@@ -2,7 +2,6 @@ from rest_framework import serializers
 from rest_polymorphic.serializers import PolymorphicSerializer
 
 from django.apps import apps
-from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 
 from majora2 import models

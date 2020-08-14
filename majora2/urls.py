@@ -106,6 +106,7 @@ from . import resty_views
 router = DefaultRouter()
 #router.register(r'biosample', resty_views.BiosampleView)
 router.register(r'pag', resty_views.PublishedArtifactGroupView)
+router.register(r'mdv', resty_views.RestyDataview, basename="mdv")
 
 
 urlpatterns += [

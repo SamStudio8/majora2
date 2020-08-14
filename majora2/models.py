@@ -512,6 +512,10 @@ class PublishedArtifactGroup(MajoraArtifactGroup):
     @property
     def path(self):
         return self.published_name
+    @classmethod
+    def get_resty_serializer(cls):
+        from . import resty_serializers
+        return resty_serializers.RestyPublishedArtifactGroupSerializer
 
 # TODO This is a quick and dirty way to toss the accessions we're getting snowed with onto a PAG
 # Partly because we just want to be able to quickly count how many PAGs are public, by institute
@@ -1097,7 +1101,8 @@ class BiosampleArtifact(MajoraArtifact):
     def get_serializer(self):
         from . import serializers
         return serializers.BiosampleArtifactSerializer
-    def get_resty_serializer(self):
+    @classmethod
+    def get_resty_serializer(cls):
         from . import resty_serializers
         return resty_serializers.RestyBiosampleArtifactSerializer
     @property
