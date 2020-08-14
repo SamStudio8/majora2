@@ -41,6 +41,6 @@ class TatlPermFlex(models.Model):
     extra_context = models.TextField(blank=True, null=True)
     timestamp = models.DateTimeField()
 
-    request = models.OneToOneField('TatlRequest', on_delete=models.PROTECT, related_name="action", blank=True, null=True)
+    request = models.ForeignKey('TatlRequest', on_delete=models.PROTECT, related_name="action", blank=True, null=True)
 
 from . import receivers
