@@ -1008,6 +1008,13 @@ def add_pag_accession(request):
                 accession.is_public = True
                 accession.public_timestamp = timezone.now()
                 accession.save()
+            if json_data.get("public") and json_data.get("public_date"):
+                try:
+                    accession.public_timestamp = datetime.datetime.strptime(json_data.get("public_date"), '%Y-%m-%d')
+                    accession.save()
+                except:
+                    api_o["warnings"] += 1
+                    api_o["messages"].append("Failed to coerce --public-date %s to a date." % json_data.get("public_date"))
 
             if json_data.get("public") and not pag.is_public:
                 pag.is_public = True
