@@ -1121,7 +1121,7 @@ def get_outbound_summary(request):
 
 def get_dashboard_metrics(request):
     def f(request, api_o, json_data, user=None):
-        from django.db.models import Count, F, Q
+        from django.db.models import Count, F, Q, ExpressionWrapper, BooleanField
 
         gte_date=None
         the_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc", pag__is_latest=True, pag__is_suppressed=False)
@@ -1131,18 +1131,24 @@ def get_dashboard_metrics(request):
         except:
             pass
 
-        the_pags = the_pags.values(site=F('pag__owner__profile__institute__code'), sourcesite=F('pag__tagged_artifacts__biosampleartifact__created__who__profile__institute__code')) \
+        the_pags = the_pags.values(
+                                   site=F('pag__owner__profile__institute__code'),
+                                   sourcesite=F('pag__tagged_artifacts__biosampleartifact__created__who__profile__institute__code'),
+                                   is_surveillance=ExpressionWrapper(F('pag__tagged_artifacts__biosampleartifact__created__biosourcesamplingprocess__coguk_supp__is_surveillance'), output_field=BooleanField()),
+                           ) \
                            .exclude(sourcesite__isnull=True) \
                            .annotate(
                                      count=Count('pk'),
                                      failc=Count('pk', filter=Q(is_pass=False)),
-                                     passc=Count('pk', filter=Q(is_pass=True))) \
+                                     passc=Count('pk', filter=Q(is_pass=True)),
+                                     surveillance=Count('pk', filter=Q(is_surveillance=True)),
+                           ) \
                            .order_by('-count')
 
         all_pags = [{
             'site': x['site'],
             'sourcesite': x['sourcesite'],
-            'count': x['count'], 'pass_count': x['passc'], 'fail_count': x['failc'],
+            'count': x['count'], 'pass_count': x['passc'], 'fail_count': x['failc'], 'surveillance_count': x['surveillance'],
         } for x in the_pags]
 
 
