@@ -1121,7 +1121,7 @@ def get_outbound_summary(request):
 
 def get_dashboard_metrics(request):
     def f(request, api_o, json_data, user=None):
-        from django.db.models import Count, F, Q, ExpressionWrapper, BooleanField
+        from django.db.models import Count, F, Q, ExpressionWrapper, BooleanField, Subquery
 
         gte_date=None
         the_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc", pag__is_latest=True, pag__is_suppressed=False)
@@ -1131,7 +1131,8 @@ def get_dashboard_metrics(request):
         except:
             pass
 
-        the_pags = the_pags.values(
+        all_pags = {}
+        for pag in the_pags.values(
                                    site=F('pag__owner__profile__institute__code'),
                                    sourcesite=F('pag__tagged_artifacts__biosampleartifact__created__who__profile__institute__code'),
                                    is_surveillance=ExpressionWrapper(F('pag__tagged_artifacts__biosampleartifact__created__biosourcesamplingprocess__coguk_supp__is_surveillance'), output_field=BooleanField()),
@@ -1141,20 +1142,30 @@ def get_dashboard_metrics(request):
                                      count=Count('pk'),
                                      failc=Count('pk', filter=Q(is_pass=False)),
                                      passc=Count('pk', filter=Q(is_pass=True)),
-                                     surveillance=Count('pk', filter=Q(is_surveillance=True)),
-                           ) \
-                           .order_by('-count')
+                                     surveillance_num=Count('pk', filter=Q(is_surveillance=True)),
+                                     surveillance_dom=Count('pk', filter=Q(is_surveillance__isnull=False)),
+                           ):
 
-        all_pags = [{
-            'site': x['site'],
-            'sourcesite': x['sourcesite'],
-            'count': x['count'], 'pass_count': x['passc'], 'fail_count': x['failc'], 'surveillance_count': x['surveillance'],
-        } for x in the_pags]
+            if (pag["sourcesite"], pag["site"]) not in all_pags:
+                all_pags[(pag["sourcesite"], pag["site"])] = {
+                    'site': pag['site'],
+                    'sourcesite': pag['sourcesite'],
+                    'count': 0,
+                    'surveillance_num': 0,
+                    'surveillance_dom': 0,
+                    'pass_count': 0,
+                    'fail_count': 0,
+                }
+            all_pags[(pag["sourcesite"], pag["site"])]["count"] += pag["count"]
+            all_pags[(pag["sourcesite"], pag["site"])]["pass_count"] += pag["passc"]
+            all_pags[(pag["sourcesite"], pag["site"])]["fail_count"] += pag["failc"]
+            all_pags[(pag["sourcesite"], pag["site"])]["surveillance_num"] += pag["surveillance_num"]
+            all_pags[(pag["sourcesite"], pag["site"])]["surveillance_dom"] += pag["surveillance_dom"]
 
 
         api_o["get"] = {
             "total_sequences": models.PublishedArtifactGroup.objects.filter(is_latest=True, is_suppressed=False).count(),
-            "site_qc": all_pags,
+            "site_qc": sorted(all_pags.values(), key=lambda x: x.get('count'), reverse=True),
         }
     return wrap_api_v2(request, f)
 
