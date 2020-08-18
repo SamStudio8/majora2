@@ -76,7 +76,7 @@ class InstituteForm(forms.Form):
     code = forms.CharField(max_length=10, disabled=True, required=False)
 
     gisaid_opted = forms.BooleanField(required=False, label="GISAID Opt-in", help_text="Check this box to opt-in to COG-UK automated submissions to GISAID")
-    gisaid_user = forms.CharField(max_length=100, required=False, label="GISAID username", help_text="Submissions will be send on behalf of this user")
+    gisaid_user = forms.CharField(max_length=100, required=False, label="GISAID username", help_text="Submissions will be sent on behalf of this user")
     gisaid_mail = forms.EmailField(required=False, label="E-mail address", help_text="E-mail address to share with GISAID curators")
     gisaid_lab_name = forms.CharField(max_length=512, required=False, label="Originating lab name(s)", help_text="The name or names of originating labs you would like to credit")
     gisaid_lab_addr = forms.CharField(max_length=512, required=False, label="Originating lab address(es)", help_text="Use the broadest address that encompasses all the originating labs")
