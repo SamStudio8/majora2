@@ -20,6 +20,9 @@ import json
 import uuid
 import datetime
 
+import logging
+logger = logging.getLogger('majora')
+
 MINIMUM_CLIENT_VERSION = "0.24.0"
 
 @csrf_exempt
@@ -58,6 +61,7 @@ def wrap_api_v2(request, f, permission=None):
         response_uuid = uuid.uuid4()
     )
     treq.save()
+
     api_o["request"] = str(treq.response_uuid)
 
     # Bounce non-POST
@@ -104,6 +108,7 @@ def wrap_api_v2(request, f, permission=None):
             content_object = treq, #TODO just use the request for now
         )
         tflex.save()
+    logger.info("request=%s user=%s route=%s from=%s at=%s" % (treq.response_uuid, user.username if user else "anonymous", request.path, remote_addr, str(treq.timestamp).replace(" ", "_")))
 
     # Bounce non-admin escalations to other users
     if json_data.get("sudo_as"):

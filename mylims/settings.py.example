@@ -229,3 +229,31 @@ MARKDOWNIFY_WHITELIST_TAGS = [
     'strong',
     'ul'
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': 'majora[{levelname}]: {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'syslog': {
+            'level': 'INFO',
+            'class': 'logging.handlers.SysLogHandler',
+            'facility': 'local3',
+            'address': '/dev/log',
+            'formatter': 'verbose'
+       },
+    },
+    'loggers': {
+        'majora': {
+            'handlers': ['syslog'],
+            'format': 'verbose',
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
