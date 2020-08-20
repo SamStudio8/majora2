@@ -93,7 +93,7 @@ class ProfileAPIKeyTest(TestCase):
         profile = models.Profile(user=user, institute=hoot, is_site_approved=True)
         profile.save()
 
-        self.user = user
+        self.user_0g1a = user
 
         # Create an API key def
         kd = models.ProfileAPIKeyDefinition(
@@ -106,6 +106,8 @@ class ProfileAPIKeyTest(TestCase):
         kd.save()
         self.kd = kd
 
-    def test_profile_apikey_is_available(self):
-        self.assertCountEqual([self.kd], self.user.profile.get_available_api_keys())
+    def test_profile_0g1a_apikey_is_available(self):
+        self.assertCountEqual([self.kd], self.user_0g1a.profile.get_available_api_keys())
 
+    def test_profile_0g1a_has_no_apikeys(self):
+        self.assertCountEqual([], self.user_0g1a.profile.get_generated_api_keys())
