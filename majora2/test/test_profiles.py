@@ -104,3 +104,8 @@ class ProfileAPIKeyTest(TestCase):
                                             is_write_key=False,
         )
         kd.save()
+        self.kd = kd
+
+    def test_profile_apikey_is_available(self):
+        self.assertCountEqual([self.kd], self.user.profile.get_available_api_keys())
+
