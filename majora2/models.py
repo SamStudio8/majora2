@@ -1547,6 +1547,16 @@ class Profile(models.Model):
         if action:
             return action.timestamp
 
+    def get_active_api_keys(self):
+        return [k for k in self.api_keys.all() if k.is_active]
+
+    def get_generated_api_keys(self):
+        return self.api_keys.all()
+
+    def get_available_api_keys(self):
+        return ProfileAPIKeyDefinition.objects.filter(Q(permission__isnull=True) | Q(permission__in=self.user.user_permissions.all())).exclude(id__in=self.get_generated_api_keys().values('key_definition__id'))
+
+
 #TODO samstudio8 - future versions of the agreement model might consider
 # properties of the user model that determine applicability to sign an agreement
 # eg: not showing scottish users agreements for english data
@@ -1579,7 +1589,7 @@ class ProfileAPIKeyDefinition(models.Model):
     lifespan = models.DurationField()
 
 class ProfileAPIKey(models.Model):
-    profile = models.ForeignKey('Profile', on_delete=models.PROTECT)
+    profile = models.ForeignKey('Profile', on_delete=models.PROTECT, related_name="api_keys")
     key_definition = models.ForeignKey('ProfileAPIKeyDefinition', on_delete=models.PROTECT)
     key = models.CharField(max_length=128, default=uuid.uuid4)
     validity_start = models.DateTimeField(null=True, blank=True)
@@ -1594,6 +1604,10 @@ class ProfileAPIKey(models.Model):
         if now < self.validity_start or now > self.validity_end:
             return True
         return False
+
+    @property
+    def is_active(self):
+        return not self.is_expired
 
 #TODO How to properly link models?
 #TODO MajoraCoreObject could be inherited by artifact, group etc.
