@@ -5,6 +5,9 @@ from django.test import Client, TestCase
 from django.contrib.auth.models import User
 from django.urls import reverse
 
+from django_otp import DEVICE_ID_SESSION_KEY
+from django_otp.plugins.otp_static.models import StaticDevice
+
 from majora2 import models
 
 class BasicUserTest(TestCase):
@@ -39,6 +42,50 @@ class BasicUserTest(TestCase):
         can_login = self.c.login(username='approved_user', password='badpass')
         self.assertFalse(can_login)
 
+class BasicOTPTest(TestCase):
+    def setUp(self):
+        # Create an institute and user profile
+        hoot = models.Institute(code="HOOT", name="Hypothetical University of Hooting")
+        hoot.save()
+
+        # Create a fully approved profile user with otp
+        user = User.objects.create(username='otp_user', email='otp_user@example.org')
+        user.set_password('password')
+        user.is_active = True
+        user.save()
+        profile = models.Profile(user=user, institute=hoot, is_site_approved=True)
+        profile.save()
+        self.user_otp = user
+
+        # Create a fully approved profile user with no otp
+        user = User.objects.create(username='no_otp_user', email='no_otp_user@example.org')
+        user.set_password('password')
+        user.is_active = True
+        user.save()
+        profile = models.Profile(user=user, institute=hoot, is_site_approved=True)
+        profile.save()
+        self.user_notp = user
+
+        # Log the users in and mock an OTP (https://github.com/Bouke/django-two-factor-auth/issues/244)
+        self.c_otp = Client()
+        self.c_notp = Client()
+
+        self.c_otp.login(username='otp_user', password='password')
+        self.c_notp.login(username='no_otp_user', password='password')
+
+        device = StaticDevice.objects.get_or_create(user=self.user_otp)[0]
+        device.save()
+        session = self.c_otp.session
+        session[DEVICE_ID_SESSION_KEY] = device.persistent_id
+        session.save()
+
+    def test_otp_can_list_api_keys(self):
+        response = self.c_otp.get(reverse('api_keys'), secure=True)
+        self.assertContains(response, 'API Keys', status_code=200)
+
+    def test_notp_cannot_list_api_keys(self):
+        response = self.c_notp.get(reverse('api_keys'), secure=True)
+        self.assertContains(response, 'Permission Denied', status_code=403)
 
 class ProfileTest(TestCase):
     def setUp(self):
@@ -109,9 +156,6 @@ class ProfileAPIKeyTest(TestCase):
         self.kd = kd
 
         # Log the user in and mock an OTP (https://github.com/Bouke/django-two-factor-auth/issues/244)
-        from django_otp import DEVICE_ID_SESSION_KEY
-        from django_otp.plugins.otp_static.models import StaticDevice
-
         self.c.login(username='profiled_user_11', password='password')
         device = StaticDevice.objects.get_or_create(user=user)[0]
         device.save()
