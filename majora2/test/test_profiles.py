@@ -45,6 +45,7 @@ class ProfileTest(TestCase):
         # Create an institute
         hoot = models.Institute(code="HOOT", name="Hypothetical University of Hooting")
         hoot.save()
+        self.org = hoot
 
         # Create a user awaiting site approval
         user = User.objects.create(username='profiled_user_00', email='profile_00@example.org')
@@ -53,6 +54,7 @@ class ProfileTest(TestCase):
         user.save()
         profile = models.Profile(user=user, institute=hoot, is_site_approved=False)
         profile.save()
+        self.user_00 = user
 
         # Create a user awaiting syadmin approval
         user = User.objects.create(username='profiled_user_01', email='profile_10@example.org')
@@ -70,6 +72,10 @@ class ProfileTest(TestCase):
         profile = models.Profile(user=user, institute=hoot, is_site_approved=True)
         profile.save()
 
+    def test_profile_institute(self):
+        self.assertEqual(self.org.code, self.user_00.profile.institute.code)
+        self.assertEqual(self.org.name, self.user_00.profile.institute.name)
+
 
 class ProfileAPIKeyTest(TestCase):
     def setUp(self):
@@ -78,7 +84,6 @@ class ProfileAPIKeyTest(TestCase):
         # Create an institute and user profile
         hoot = models.Institute(code="HOOT", name="Hypothetical University of Hooting")
         hoot.save()
-        self.org = hoot
 
         # Create a fully approved profile user
         user = User.objects.create(username='profiled_user_11', email='profile_11@example.org')
@@ -99,7 +104,3 @@ class ProfileAPIKeyTest(TestCase):
                                             is_write_key=False,
         )
         kd.save()
-
-    def test_profile_institute(self):
-        self.assertEqual(self.org.code, self.user.profile.institute.code)
-        self.assertEqual(self.org.name, self.user.profile.institute.name)
