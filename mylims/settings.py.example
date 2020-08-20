@@ -206,6 +206,7 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         'rest_framework_csv.renderers.CSVRenderer',
     ],
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 
 MARKDOWNIFY_WHITELIST_TAGS = [
