@@ -1,7 +1,9 @@
 import datetime
+from urllib.parse import urlencode
 
 from django.test import Client, TestCase
 from django.contrib.auth.models import User
+from django.urls import reverse
 
 from majora2 import models
 
@@ -106,8 +108,28 @@ class ProfileAPIKeyTest(TestCase):
         kd.save()
         self.kd = kd
 
+        # Log the user in and mock an OTP (https://github.com/Bouke/django-two-factor-auth/issues/244)
+        from django_otp import DEVICE_ID_SESSION_KEY
+        from django_otp.plugins.otp_static.models import StaticDevice
+
+        self.c.login(username='profiled_user_11', password='password')
+        device = StaticDevice.objects.get_or_create(user=user)[0]
+        device.save()
+        session = self.c.session
+        session[DEVICE_ID_SESSION_KEY] = device.persistent_id
+        session.save()
+
     def test_profile_0g1a_apikey_is_available(self):
-        self.assertCountEqual([self.kd], self.user_0g1a.profile.get_available_api_keys())
+        self.assertEqual(1, len(self.user_0g1a.profile.get_available_api_keys()))
 
     def test_profile_0g1a_has_no_apikeys(self):
-        self.assertCountEqual([], self.user_0g1a.profile.get_generated_api_keys())
+        self.assertEqual(0, len(self.user_0g1a.profile.get_generated_api_keys()))
+
+    def test_profile_0g1a_can_activate_to_1g1a(self):
+        response = self.c.post('/keys/activate/', {'key_name': self.kd.key_name}, secure=True)
+
+        self.assertEqual(0, len(self.user_0g1a.profile.get_available_api_keys()))
+        self.assertEqual(1, len(self.user_0g1a.profile.get_generated_api_keys()))
+
+        self.user_0g1a.profile.get_generated_api_keys()[0].delete() # destroy the key
+
