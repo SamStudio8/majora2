@@ -25,6 +25,7 @@ from django.contrib.auth.decorators import login_required
 from django_otp.decorators import otp_required
 
 from .account_views import django_2fa_mixin_hack
+from tatl.models import TatlVerb
 
 @login_required
 def barcode(request, uuid):
@@ -42,8 +43,11 @@ def detail_artifact(request, artifact_uuid):
     otp = django_2fa_mixin_hack(request)
     if otp:
         return otp
+    artifact = get_object_or_404(models.MajoraArtifact, id=artifact_uuid)
+
+    TatlVerb(request=request.treq, verb="RETRIEVE", content_object=artifact).save()
     return render(request, 'detail_artifact.html', {
-        "artifact": get_object_or_404(models.MajoraArtifact, id=artifact_uuid)
+        "artifact": artifact,
     })
 
 @login_required
