@@ -66,7 +66,10 @@ class TatlRequestLogMiddleware:
                 # DRF
                 treq.is_api = True
 
-        treq.view_name = request.resolver_match.view_name
+        try:
+            treq.view_name = request.resolver_match.view_name
+        except:
+            treq.view_name = ""
         treq.response_time = timezone.now() - treq.timestamp
         treq.status_code = response.status_code
 
@@ -78,7 +81,7 @@ class TatlRequestLogMiddleware:
             treq.user.username if treq.user else "anonymous",
             treq.view_name,
             remote_addr,
-            str(request.treq.timestamp).replace(" ", "_"),
+            str(treq.timestamp).replace(" ", "_"),
             1 if treq.is_api else 0,
         ))
 

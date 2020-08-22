@@ -21,7 +21,7 @@ def _format_tuple(x):
     else:
         return (x.kind, str(x.id), x.dice_name)
 
-def handle_testmetadata(form, user=None, api_o=None):
+def handle_testmetadata(form, user=None, api_o=None, request=None):
 
     artifact = form.cleaned_data.get("artifact")
     group = form.cleaned_data.get("group")
@@ -46,7 +46,7 @@ def handle_testmetadata(form, user=None, api_o=None):
     mr.save()
     return mr, created
 
-def handle_testsequencing(form, user=None, api_o=None):
+def handle_testsequencing(form, user=None, api_o=None, request=None):
 
     sequencing_id = form.cleaned_data.get("sequencing_id")
     if sequencing_id:
@@ -144,7 +144,7 @@ def handle_testsequencing(form, user=None, api_o=None):
     return p, sequencing_created
 
 
-def handle_testlibrary(form, user=None, api_o=None):
+def handle_testlibrary(form, user=None, api_o=None, request=None):
     library_name = form.cleaned_data["library_name"]
     library, library_created = models.LibraryArtifact.objects.get_or_create(
                 dice_name=library_name)
@@ -176,7 +176,7 @@ def handle_testlibrary(form, user=None, api_o=None):
     library.save()
     return library, library_created
 
-def handle_testlibraryrecord(form, user=None, api_o=None):
+def handle_testlibraryrecord(form, user=None, api_o=None, request=None):
 
     biosample = form.cleaned_data.get("central_sample_id") # will return a biosample object
     library = form.cleaned_data.get("library_name") # will actually return a library object
@@ -203,7 +203,7 @@ def handle_testlibraryrecord(form, user=None, api_o=None):
 
 
 
-def handle_testsample(form, user=None, api_o=None):
+def handle_testsample(form, user=None, api_o=None, request=None):
     biosample_source_id = form.cleaned_data.get("biosample_source_id")
     if biosample_source_id:
         # Get or create the BiosampleSource
@@ -217,7 +217,7 @@ def handle_testsample(form, user=None, api_o=None):
         if source_created:
             if api_o:
                 api_o["new"].append(_format_tuple(source))
-                TatlVerb(request=request.treq, verb="CREATE", content_object=p).save()
+                TatlVerb(request=request.treq, verb="CREATE", content_object=source).save()
         else:
             if api_o:
                 api_o["ignored"].append(source.dice_name)
@@ -346,7 +346,7 @@ def handle_testsample(form, user=None, api_o=None):
 
     return sample, sample_created
 
-def handle_testdigitalresource(form, user=None, api_o=None):
+def handle_testdigitalresource(form, user=None, api_o=None, request=None):
 
     res_updated = False
     node = form.cleaned_data["node_name"]

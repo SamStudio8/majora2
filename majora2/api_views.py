@@ -727,7 +727,7 @@ def add_biosample(request):
                 if form.is_valid():
                     del initial["submitting_org"]
                     form.cleaned_data.update(initial)
-                    sample, sample_created = form_handlers.handle_testsample(form, user=user, api_o=api_o)
+                    sample, sample_created = form_handlers.handle_testsample(form, user=user, api_o=api_o, request=request)
                     if not sample:
                         api_o["ignored"].append(sample_id)
                         api_o["errors"] += 1
@@ -763,7 +763,7 @@ def add_library(request):
             form = forms.TestLibraryForm(json_data, initial=initial)
             if form.is_valid():
                 form.cleaned_data.update(initial)
-                library, library_created = form_handlers.handle_testlibrary(form, user=user, api_o=api_o)
+                library, library_created = form_handlers.handle_testlibrary(form, user=user, api_o=api_o, request=request)
                 if not library:
                     api_o["ignored"].append(library_name)
                     api_o["errors"] += 1
@@ -831,7 +831,7 @@ def add_library(request):
                 form = forms.TestLibraryBiosampleForm(biosample, initial=initial)
                 if form.is_valid():
                     form.cleaned_data.update(initial)
-                    record, record_created = form_handlers.handle_testlibraryrecord(form, user=user, api_o=api_o)
+                    record, record_created = form_handlers.handle_testlibraryrecord(form, user=user, api_o=api_o, request=request)
                     if not record:
                         api_o["ignored"].append(sample_id)
                         api_o["errors"] += 1
@@ -879,7 +879,7 @@ def add_sequencing(request):
                 form = forms.TestSequencingForm(run, initial=initial)
                 if form.is_valid():
                     form.cleaned_data.update(initial)
-                    sequencing, sequencing_created = form_handlers.handle_testsequencing(form, user=user, api_o=api_o)
+                    sequencing, sequencing_created = form_handlers.handle_testsequencing(form, user=user, api_o=api_o, request=request)
                 else:
                     api_o["errors"] += 1
                     api_o["messages"].append(form.errors.get_json_data())
@@ -910,7 +910,7 @@ def add_digitalresource(request):
             form = forms.TestFileForm(json_data, initial=initial)
             if form.is_valid():
                 form.cleaned_data.update(initial)
-                mfile, created = form_handlers.handle_testdigitalresource(form, user=user, api_o=api_o)
+                mfile, created = form_handlers.handle_testdigitalresource(form, user=user, api_o=api_o, request=request)
                 if not mfile:
                     api_o["ignored"].append(json_data.get("path"))
                     api_o["errors"] += 1
