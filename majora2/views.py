@@ -57,8 +57,14 @@ def detail_artifact_dice(request, artifact_dice):
 
 @login_required
 def group_artifact(request, group_uuid):
+    otp = django_2fa_mixin_hack(request)
+    if otp:
+        return otp
+
     group = get_object_or_404(models.MajoraArtifactGroup, id=group_uuid)
     f = models.Favourite.objects.filter(user=request.user.id, group=group_uuid)
+
+    TatlVerb(request=request.treq, verb="RETRIEVE", content_object=group).save()
     return render(request, 'list_artifact.html', {
         "group": group,
         "favourite": f,
@@ -71,14 +77,18 @@ def group_artifact_dice(request, group_dice):
 
 @login_required
 def detail_process(request, process_uuid):
+    process = get_object_or_404(models.MajoraArtifactProcess, id=process_uuid)
+    TatlVerb(request=request.treq, verb="RETRIEVE", content_object=process).save()
     return render(request, 'detail_process.html', {
-        "process": get_object_or_404(models.MajoraArtifactProcess, id=process_uuid)
+        "process": process
     })
 
 @login_required
 def group_process(request, group_uuid):
     group = get_object_or_404(models.MajoraArtifactProcessGroup, id=group_uuid)
     f = models.Favourite.objects.filter(user=request.user.id, pgroup=group_uuid).first()
+
+    TatlVerb(request=request.treq, verb="RETRIEVE", content_object=group).save()
     return render(request, 'list_process.html', {
         "group": group,
         "favourite": f,
