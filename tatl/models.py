@@ -14,6 +14,10 @@ class TatlPageRequest(models.Model):
     view_name = models.CharField(max_length=128)
     view_path = models.CharField(max_length=128)
 
+    params = models.TextField(default="{}")
+    payload = models.TextField(default="{}")
+
+
 class TatlRequest(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="requests")
     substitute_user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="su_requests")
