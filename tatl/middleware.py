@@ -1,7 +1,7 @@
 import json
 import logging
 
-from .models import TatlPageRequest
+from .models import TatlRequest
 
 from django.utils import timezone
 from django.urls import resolve
@@ -31,7 +31,7 @@ class TatlRequestLogMiddleware:
         if not body or len(body) == 0:
             body = "{}"
 
-        treq = TatlPageRequest(
+        treq = TatlRequest(
             user = remote_user,
             timestamp = start_ts,
             remote_addr = remote_addr,

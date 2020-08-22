@@ -24,11 +24,18 @@ class TatlPageRequest(models.Model):
 class TatlRequest(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="requests")
     substitute_user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="su_requests")
-    route = models.CharField(max_length=128)
-    payload = models.TextField()
     remote_addr = models.CharField(max_length=48, blank=True, null=True)
+
+    view_path = models.CharField(max_length=128)
+    view_name = models.CharField(max_length=128)
+
+    params = models.TextField(default="{}")
+    payload = models.TextField(default="{}")
+
     timestamp = models.DateTimeField()
     response_time = models.DurationField(blank=True, null=True)
+
+    status_code = models.PositiveSmallIntegerField()
     response_uuid = models.UUIDField(blank=True, null=True, unique=True) #TODO I want this to be the UUID but its not trivial now
 
 class TatlTask(models.Model):
