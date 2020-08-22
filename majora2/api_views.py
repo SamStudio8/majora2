@@ -58,7 +58,7 @@ def wrap_api_v2(request, f, permission=None):
         payload = json_data,
         timestamp = timezone.now(),
         remote_addr = remote_addr,
-        response_uuid = uuid.uuid4()
+        response_uuid = request.treq.id,
     )
     treq.save()
 
