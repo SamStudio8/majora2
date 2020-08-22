@@ -20,6 +20,7 @@ import json
 import uuid
 import datetime
 
+from tatl.models import TatlVerb
 
 MINIMUM_CLIENT_VERSION = "0.24.0"
 
@@ -795,6 +796,7 @@ def add_library(request):
                         dice_name=sample_id
                 )
                 if created:
+                    TatlVerb(request=request.treq, verb="CREATE", content_object=biosample).save()
                     api_o["new"].append(form_handlers._format_tuple(biosample))
                     api_o["warnings"] += 1
                     sample_forced = True

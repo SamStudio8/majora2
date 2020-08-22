@@ -8,6 +8,8 @@ from . import signals
 from . import util
 from . import fixed_data
 
+from tatl.models import TatlVerb
+
 def _format_tuple(x):
     if hasattr(x, "process_kind"):
         return (x.kind, str(x.id), "")
@@ -78,6 +80,7 @@ def handle_testsequencing(form, user=None, api_o=None):
     if sequencing_created:
         if api_o:
             api_o["new"].append(_format_tuple(p))
+            TatlVerb(request=request.treq, verb="CREATE", content_object=p).save()
 
         # Try and infer a date from the library name...
         _dt = util.try_date(run_name)
@@ -94,6 +97,7 @@ def handle_testsequencing(form, user=None, api_o=None):
     else:
         if api_o:
             api_o["updated"].append(_format_tuple(p))
+            TatlVerb(request=request.treq, verb="UPDATE", content_object=p).save()
     p.save()
 
 
@@ -135,6 +139,8 @@ def handle_testsequencing(form, user=None, api_o=None):
         if api_o:
             api_o["new"].append(_format_tuple(dgroup))
             api_o["new"].append(_format_tuple(a))
+            TatlVerb(request=request.treq, verb="CREATE", content_object=dgroup).save()
+            TatlVerb(request=request.treq, verb="CREATE", content_object=a).save()
     return p, sequencing_created
 
 
@@ -151,6 +157,7 @@ def handle_testlibrary(form, user=None, api_o=None):
     if library_created:
         if api_o:
             api_o["new"].append(_format_tuple(library))
+            TatlVerb(request=request.treq, verb="CREATE", content_object=library).save()
 
         # Try and infer a date from the library name...
         _dt = util.try_date(library_name)
@@ -165,6 +172,7 @@ def handle_testlibrary(form, user=None, api_o=None):
     else:
         if api_o:
             api_o["updated"].append(_format_tuple(library))
+            TatlVerb(request=request.treq, verb="UPDATE", content_object=library).save()
     library.save()
     return library, library_created
 
@@ -190,6 +198,7 @@ def handle_testlibraryrecord(form, user=None, api_o=None):
     pool_rec.save()
     if api_o and created:
         api_o["updated"].append(_format_tuple(biosample))
+        TatlVerb(request=request.treq, verb="UPDATE", content_object=biosample).save()
     return pool_rec, created
 
 
@@ -208,6 +217,7 @@ def handle_testsample(form, user=None, api_o=None):
         if source_created:
             if api_o:
                 api_o["new"].append(_format_tuple(source))
+                TatlVerb(request=request.treq, verb="CREATE", content_object=p).save()
         else:
             if api_o:
                 api_o["ignored"].append(source.dice_name)
@@ -251,9 +261,11 @@ def handle_testsample(form, user=None, api_o=None):
     if sample_created:
         if api_o:
             api_o["new"].append(_format_tuple(sample))
+            TatlVerb(request=request.treq, verb="CREATE", content_object=sample).save()
     else:
         if api_o:
             api_o["updated"].append(_format_tuple(sample))
+            TatlVerb(request=request.treq, verb="UPDATE", content_object=sample).save()
 
     try:
         submitted_by = form.cleaned_data.get("submitting_org").name
@@ -433,16 +445,21 @@ def handle_testdigitalresource(form, user=None, api_o=None):
 
         if pag_created and api_o:
             api_o["new"].append(_format_tuple(pag))
+            TatlVerb(request=request.treq, verb="CREATE", content_object=pag).save()
             if form.cleaned_data.get("bridge_artifact"):
                 api_o["updated"].append(_format_tuple(b))
+                TatlVerb(request=request.treq, verb="UPDATE", content_object=b).save()
 
         if res and not created and api_o:
             api_o["updated"].append(_format_tuple(res))
+            TatlVerb(request=request.treq, verb="UPDATE", content_object=res).save()
 
 
 
     if created and api_o:
         api_o["new"].append(_format_tuple(res))
+        TatlVerb(request=request.treq, verb="CREATE", content_object=res).save()
     elif res_updated:
         api_o["updated"].append(_format_tuple(res))
+        TatlVerb(request=request.treq, verb="UPDATE", content_object=res).save()
     return res, created
