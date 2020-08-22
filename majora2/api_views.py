@@ -74,6 +74,7 @@ def wrap_api_v2(request, f, permission=None):
         if key.key_definition.permission.codename != permission.split('.')[1]:
             return HttpResponseBadRequest()
 
+    request.is_api = True
     request.treq.user = user
     request.treq.save()
 
