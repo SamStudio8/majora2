@@ -8,14 +8,8 @@ from django.urls import resolve
 class TatlRequestLogMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-        # One-time configuration and initialization.
 
     def __call__(self, request):
-        # Code to be executed for each request before
-        # the view (and later middleware) are called.
-
-        response = self.get_response(request)
-
         # Infer source IP
         # https://stackoverflow.com/questions/4581789/how-do-i-get-user-ip-address-in-django
         remote_addr = None
@@ -25,6 +19,7 @@ class TatlRequestLogMiddleware:
         else:
             remote_addr = request.META.get('REMOTE_ADDR')
 
+        # This middleware runs after the auth middleware so everything is in scope
         remote_user = request.user if request.user.is_authenticated else None
 
         body = request.body
@@ -35,11 +30,21 @@ class TatlRequestLogMiddleware:
             user = remote_user,
             timestamp = timezone.now(),
             remote_addr = remote_addr,
-            view_name = request.resolver_match.view_name,
+            view_name = "",
             view_path = request.path,
             payload = json.dumps(json.loads(body)),
             params = json.dumps(request.GET.dict()),
         )
         treq.save()
+
+        # Add the TREQ to the request scope
+        request.treq = treq
+
+        #### PRE CORE  /\
+        response = self.get_response(request)
+        #### POST CORE \/
+
+        # Fill in post-core
+        treq.view_name = request.resolver_match.view_name
 
         return response
