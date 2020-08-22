@@ -21,7 +21,7 @@ class TatlRequest(models.Model):
     response_time = models.DurationField(blank=True, null=True)
 
     status_code = models.PositiveSmallIntegerField()
-    response_uuid = models.UUIDField(blank=True, null=True, unique=True) #TODO I want this to be the UUID but its not trivial now
+    response_uuid = models.UUIDField(default=uuid.uuid4, blank=True, null=True, unique=True) #TODO I want this to be the UUID but its not trivial now
 
 class TatlTask(models.Model):
     celery_uuid = models.UUIDField(unique=True)

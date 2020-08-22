@@ -58,7 +58,7 @@ class TatlRequestLogMiddleware:
 
         # Emit syslog
         logger.info("request=%s user=%s view=%s addr=%s at=%s" % (
-            treq.id,
+            treq.response_uuid,
             treq.user.username if treq.user else "anonymous",
             treq.view_name,
             remote_addr,

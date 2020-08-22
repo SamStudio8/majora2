@@ -41,7 +41,7 @@ def wrap_api_v2(request, f, permission=None):
     }
 
     json_data = json.loads(request.body)
-    api_o["request"] = str(request.treq.id)
+    api_o["request"] = str(request.treq.response_uuid)
 
     # Bounce non-POST
     if request.method != "POST":

@@ -52,9 +52,9 @@ class MajoraCeleryListingMixin(object):
             context = {}
             for param in self.majora_required_params:
                 context[param] = request.query_params[param]
-            celery_task = self.celery_task.delay(queryset, context=context, user=request.user.pk, response_uuid=request.treq.id)
+            celery_task = self.celery_task.delay(queryset, context=context, user=request.user.pk, response_uuid=request.treq.response_uuid)
             if celery_task:
-                api_o["response_uuid"] = request.treq.id
+                api_o["response_uuid"] = request.treq.response_uuid
                 api_o["errors"] = 0
                 api_o["test"] = request.query_params
                 api_o["expected_n"] = len(queryset)
