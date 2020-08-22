@@ -1,3 +1,5 @@
+import json
+
 from .models import TatlPageRequest
 
 from django.utils import timezone
@@ -25,12 +27,18 @@ class TatlRequestLogMiddleware:
 
         remote_user = request.user if request.user.is_authenticated else None
 
+        body = request.body
+        if not body or len(body) == 0:
+            body = "{}"
+
         treq = TatlPageRequest(
             user = remote_user,
             timestamp = timezone.now(),
             remote_addr = remote_addr,
             view_name = request.resolver_match.view_name,
             view_path = request.path,
+            payload = json.dumps(json.loads(body)),
+            params = json.dumps(request.GET.dict()),
         )
         treq.save()
 
