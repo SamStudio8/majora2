@@ -30,17 +30,18 @@ class TaskOwnerReadPermission(permissions.BasePermission):
 
 class DataviewReadPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if not view.mdv_code:
+        mdv_code = request.query_params.get("mdv")
+        if not mdv_code:
             return False
         else:
             try:
-                mdv = models.MajoraDataview.objects.get(code_name=view.mdv_code)
+                mdv = models.MajoraDataview.objects.get(code_name=mdv_code)
             except models.MajoraDataview.DoesNotExist:
                 return False
 
         p = models.MajoraDataviewUserPermission.objects.filter(
                 profile__user=request.user,
-                dataview__code_name=view.mdv_code,
+                dataview__code_name=mdv_code,
                 is_revoked=False,
                 validity_start__lt=timezone.now(),
                 validity_end__gt=timezone.now()
@@ -51,7 +52,7 @@ class DataviewReadPermission(permissions.BasePermission):
                 substitute_user = None,
                 used_permission = "majora2.v3.DataviewReadPermission",
                 timestamp = timezone.now(),
-                request=view.treq,
+                request=request.treq,
                 content_object=mdv,
                 #extra_context = json.dumps({
                 #}),
@@ -89,8 +90,8 @@ class APIKeyPermission(permissions.BasePermission):
                 substitute_user = None,
                 used_permission = permission,
                 timestamp = timezone.now(),
-                request=view.treq,
-                content_object = view.treq, #TODO just use the request for now
+                request=request.treq,
+                content_object = request.treq, #TODO just use the request for now
                 #extra_context = json.dumps({
                 #}),
             )

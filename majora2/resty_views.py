@@ -22,51 +22,6 @@ from tatl.models import TatlRequest, TatlPermFlex
 import uuid
 import json
 
-# Honestly, this was so much fucking easier when it was my own code ffs
-class MajoraDispatchMixin(object):
-    def dispatch(self, request, *args, **kwargs):
-        self.response_uuid = uuid.uuid4()
-        start_ts = timezone.now()
-
-        # Best effort grab source IP
-        # https://stackoverflow.com/questions/4581789/how-do-i-get-user-ip-address-in-django
-        remote_addr = None
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            remote_addr = x_forwarded_for.split(',')[0]
-        else:
-            remote_addr = request.META.get('REMOTE_ADDR')
-
-        treq = TatlRequest(
-            user = None,
-            substitute_user = None,
-            route = request.path,
-            timestamp = start_ts,
-            remote_addr = remote_addr,
-            response_uuid = self.response_uuid,
-        )
-        treq.save()
-
-        self.treq = treq
-        ret = super().dispatch(request, *args, **kwargs)
-        return ret
-
-    def initialize_request(self, request, *args, **kwargs):
-        request = super().initialize_request(request, *args, **kwargs)
-        self.treq.route = request.resolver_match.view_name # Overwrite URL route for v3
-        self.treq.payload = json.dumps(request.data)
-        self.treq.user = request.user
-        self.treq.save()
-
-        self.mdv_code = request.query_params.get("mdv")
-        return request
-
-    def finalize_response(self, request, response, *args, **kwargs):
-        response = super().finalize_response(request, response, *args, **kwargs)
-        self.treq.response_time = timezone.now() - self.treq.timestamp
-        self.treq.save()
-        return response
-
 class RequiredParamRetrieveMixin(object):
 
     def _check_param(self, request):
@@ -97,9 +52,9 @@ class MajoraCeleryListingMixin(object):
             context = {}
             for param in self.majora_required_params:
                 context[param] = request.query_params[param]
-            celery_task = self.celery_task.delay(queryset, context=context, user=request.user.pk, response_uuid=self.response_uuid)
+            celery_task = self.celery_task.delay(queryset, context=context, user=request.user.pk, response_uuid=request.treq.id)
             if celery_task:
-                api_o["response_uuid"] = self.response_uuid
+                api_o["response_uuid"] = request.treq.id
                 api_o["errors"] = 0
                 api_o["test"] = request.query_params
                 api_o["expected_n"] = len(queryset)
@@ -151,7 +106,6 @@ class BiosampleView(
 
 
 class TaskView(
-               MajoraDispatchMixin,
                APIView):
     renderer_classes = [JSONRenderer]
 
@@ -186,7 +140,6 @@ class TaskView(
 
 #TODO How to handle errors properly here? Just let them 500 for now
 class RestyDataview(
-                    MajoraDispatchMixin,
                     #MajoraUUID4orDiceNameLookupMixin,
                     RequiredParamRetrieveMixin,
                     MajoraCeleryListingMixin,
@@ -202,11 +155,13 @@ class RestyDataview(
     majora_required_params = ["mdv"]
 
     def get_serializer_class(self):
-        mdv = models.MajoraDataview.objects.get(code_name=self.mdv_code)
+        mdv_code = self.request.query_params.get("mdv")
+        mdv = models.MajoraDataview.objects.get(code_name=mdv_code)
         return apps.get_model("majora2", mdv.entry_point).get_resty_serializer()
 
     def get_queryset(self):
-        mdv = models.MajoraDataview.objects.get(code_name=self.mdv_code)
+        mdv_code = self.request.query_params.get("mdv")
+        mdv = models.MajoraDataview.objects.get(code_name=mdv_code)
         return apps.get_model("majora2", mdv.entry_point).objects.all()
 
 #TODO We'll start with PAG as the default entry point for Dataviews but in future
