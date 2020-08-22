@@ -66,12 +66,13 @@ class TatlRequestLogMiddleware:
         treq.save()
 
         # Emit syslog
-        logger.info("request=%s user=%s view=%s addr=%s at=%s" % (
+        logger.info("request=%s user=%s view=%s addr=%s at=%s api=%d" % (
             treq.response_uuid,
             treq.user.username if treq.user else "anonymous",
             treq.view_name,
             remote_addr,
-            str(request.treq.timestamp).replace(" ", "_"))
-        )
+            str(request.treq.timestamp).replace(" ", "_"),
+            1 if treq.is_api else 0,
+        ))
 
         return response
