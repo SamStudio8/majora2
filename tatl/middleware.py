@@ -55,6 +55,9 @@ class TatlRequestLogMiddleware:
             remote_user = request.user if request.user.is_authenticated else None
         if remote_user:
             treq.user = remote_user
+            if hasattr(request, "auth"):
+                # DRF
+                treq.is_api = True
 
         treq.view_name = request.resolver_match.view_name
         treq.response_time = timezone.now() - treq.timestamp
