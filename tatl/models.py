@@ -23,6 +23,8 @@ class TatlRequest(models.Model):
     status_code = models.PositiveSmallIntegerField()
     response_uuid = models.UUIDField(default=uuid.uuid4, blank=True, null=True, unique=True) #TODO I want this to be the UUID but its not trivial now
 
+    is_api = models.BooleanField(default=False)
+
 class TatlTask(models.Model):
     celery_uuid = models.UUIDField(unique=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="tasks")
