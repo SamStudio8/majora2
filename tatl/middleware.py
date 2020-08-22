@@ -1,5 +1,7 @@
 from .models import TatlPageRequest
+
 from django.utils import timezone
+from django.urls import resolve
 
 class TatlRequestLogMiddleware:
     def __init__(self, get_response):
@@ -27,6 +29,8 @@ class TatlRequestLogMiddleware:
             user = remote_user,
             timestamp = timezone.now(),
             remote_addr = remote_addr,
+            view_name = request.resolver_match.view_name,
+            view_path = request.path,
         )
         treq.save()
 

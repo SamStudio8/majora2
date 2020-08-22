@@ -10,6 +10,8 @@ class TatlPageRequest(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="page_requests")
     remote_addr = models.CharField(max_length=48, blank=True, null=True)
     timestamp = models.DateTimeField()
+    view_name = models.CharField(max_length=128)
+    view_path = models.CharField(max_length=128)
 
 class TatlRequest(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="requests")
