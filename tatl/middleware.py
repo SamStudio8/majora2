@@ -50,6 +50,12 @@ class TatlRequestLogMiddleware:
         response = self.get_response(request)
         #### POST CORE \/
 
+        # Check the user hasn't been added by some other middleware (e.g. DRF)
+        if not remote_user:
+            remote_user = request.user if request.user.is_authenticated else None
+        if remote_user:
+            treq.user = remote_user
+
         treq.view_name = request.resolver_match.view_name
         treq.response_time = timezone.now() - treq.timestamp
         treq.status_code = response.status_code
