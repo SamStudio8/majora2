@@ -27,9 +27,16 @@ class TatlRequestLogMiddleware:
         # This middleware runs after the auth middleware so everything is in scope
         remote_user = request.user if request.user.is_authenticated else None
 
+        payload = "{}"
         body = request.body
         if not body or len(body) == 0:
             body = "{}"
+        else:
+            try:
+                payload = json.dumps(json.loads(body))
+            except json.JSONDecodeError:
+                # This will currently drop non-JSON payloads (i.e. login forms)
+                pass
 
         treq = TatlRequest(
             user = remote_user,
@@ -37,7 +44,7 @@ class TatlRequestLogMiddleware:
             remote_addr = remote_addr,
             view_name = "",
             view_path = request.path,
-            payload = json.dumps(json.loads(body)),
+            payload = payload,
             params = json.dumps(request.GET.dict()),
             status_code = 0,
         )
