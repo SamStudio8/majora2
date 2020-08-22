@@ -6,6 +6,11 @@ from django.conf import settings
 
 
 # Create your models here.
+class TatlPageRequest(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="page_requests")
+    remote_addr = models.CharField(max_length=48, blank=True, null=True)
+    timestamp = models.DateTimeField()
+
 class TatlRequest(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="requests")
     substitute_user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="su_requests")
