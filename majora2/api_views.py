@@ -20,8 +20,6 @@ import json
 import uuid
 import datetime
 
-import logging
-logger = logging.getLogger('majora')
 
 MINIMUM_CLIENT_VERSION = "0.24.0"
 
@@ -42,27 +40,8 @@ def wrap_api_v2(request, f, permission=None):
         "ignored": [],
     }
 
-    # https://stackoverflow.com/questions/4581789/how-do-i-get-user-ip-address-in-django
-    remote_addr = None
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        remote_addr = x_forwarded_for.split(',')[0]
-    else:
-        remote_addr = request.META.get('REMOTE_ADDR')
-
     json_data = json.loads(request.body)
-    treq = TatlRequest(
-        user = None,
-        substitute_user = None,
-        route = request.path,
-        payload = json_data,
-        timestamp = timezone.now(),
-        remote_addr = remote_addr,
-        response_uuid = request.treq.id,
-    )
-    treq.save()
-
-    api_o["request"] = str(treq.response_uuid)
+    api_o["request"] = str(request.treq.id)
 
     # Bounce non-POST
     if request.method != "POST":
@@ -95,8 +74,8 @@ def wrap_api_v2(request, f, permission=None):
         if key.key_definition.permission.codename != permission.split('.')[1]:
             return HttpResponseBadRequest()
 
-    treq.user = user
-    treq.save()
+    request.treq.user = user
+    request.treq.save()
 
     if permission:
         tflex = TatlPermFlex(
@@ -105,18 +84,17 @@ def wrap_api_v2(request, f, permission=None):
             used_permission = permission,
             timestamp = timezone.now(),
             request=treq,
-            content_object = treq, #TODO just use the request for now
+            content_object = request.treq, #TODO just use the request for now
         )
         tflex.save()
-    logger.info("request=%s user=%s route=%s from=%s at=%s" % (treq.response_uuid, user.username if user else "anonymous", request.path, remote_addr, str(treq.timestamp).replace(" ", "_")))
 
     # Bounce non-admin escalations to other users
     if json_data.get("sudo_as"):
         if user.is_staff:
             try:
                 user = models.Profile.objects.get(user__username=json_data["sudo_as"]).user
-                treq.substitute_user = user
-                treq.save()
+                request.treq.substitute_user = user
+                request.treq.save()
 
                 if permission:
                     tflex.substitute_user = user
@@ -149,8 +127,7 @@ def wrap_api_v2(request, f, permission=None):
     api_o["success"] = api_o["errors"] == 0
 
     end_ts = timezone.now()
-    treq.response_time = end_ts - start_ts
-    treq.save()
+    request.treq.save()
 
     return HttpResponse(json.dumps(api_o), content_type="application/json")
 

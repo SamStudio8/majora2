@@ -1,9 +1,12 @@
 import json
+import logging
 
 from .models import TatlPageRequest
 
 from django.utils import timezone
 from django.urls import resolve
+
+logger = logging.getLogger('majora')
 
 class TatlRequestLogMiddleware:
     def __init__(self, get_response):
@@ -52,5 +55,14 @@ class TatlRequestLogMiddleware:
         treq.status_code = response.status_code
 
         treq.save()
+
+        # Emit syslog
+        logger.info("request=%s user=%s view=%s addr=%s at=%s" % (
+            treq.id,
+            treq.user.username if treq.user else "anonymous",
+            treq.view_name,
+            remote_addr,
+            str(request.treq.timestamp).replace(" ", "_"))
+        )
 
         return response
