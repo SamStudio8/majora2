@@ -1,0 +1,33 @@
+from .models import TatlPageRequest
+from django.utils import timezone
+
+class TatlRequestLogMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        # One-time configuration and initialization.
+
+    def __call__(self, request):
+        # Code to be executed for each request before
+        # the view (and later middleware) are called.
+
+        response = self.get_response(request)
+
+        # Infer source IP
+        # https://stackoverflow.com/questions/4581789/how-do-i-get-user-ip-address-in-django
+        remote_addr = None
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            remote_addr = x_forwarded_for.split(',')[0]
+        else:
+            remote_addr = request.META.get('REMOTE_ADDR')
+
+        remote_user = request.user if request.user.is_authenticated else None
+
+        treq = TatlPageRequest(
+            user = remote_user,
+            timestamp = timezone.now(),
+            remote_addr = remote_addr,
+        )
+        treq.save()
+
+        return response
