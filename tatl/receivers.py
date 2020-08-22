@@ -8,9 +8,26 @@ from celery.signals import after_task_publish,task_success,task_prerun,task_post
 from django_slack import slack_message
 
 import json
+import logging
 
 from . import models
 from majora2.models import Profile
+
+logger = logging.getLogger('majora')
+
+@receiver(post_save, sender=models.TatlVerb)
+def syslog_verb(sender, instance, **kwargs):
+    # Emit syslog
+    logger.info("[VERB] request=%s user=%s verb=%s object_model=%s object_uuid=%s addr=%s at=%s api=%d" % (
+        instance.request.response_uuid,
+        instance.request.user.username if instance.request.user else "anonymous",
+        instance.verb,
+        instance.content_object._meta.model.__name__,
+        instance.content_object.id,
+        instance.request.remote_addr,
+        str(instance.request.timestamp).replace(" ", "_"),
+        1 if instance.request.is_api else 0,
+    ))
 
 @receiver(post_save, sender=models.TatlPermFlex)
 def announce_perm_flex(sender, instance, **kwargs):
