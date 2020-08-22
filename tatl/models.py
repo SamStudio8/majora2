@@ -17,6 +17,9 @@ class TatlPageRequest(models.Model):
     params = models.TextField(default="{}")
     payload = models.TextField(default="{}")
 
+    response_time = models.DurationField(blank=True, null=True)
+    status_code = models.PositiveSmallIntegerField()
+
 
 class TatlRequest(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="requests")

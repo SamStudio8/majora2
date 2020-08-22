@@ -10,6 +10,8 @@ class TatlRequestLogMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        start_ts = timezone.now()
+
         # Infer source IP
         # https://stackoverflow.com/questions/4581789/how-do-i-get-user-ip-address-in-django
         remote_addr = None
@@ -28,12 +30,13 @@ class TatlRequestLogMiddleware:
 
         treq = TatlPageRequest(
             user = remote_user,
-            timestamp = timezone.now(),
+            timestamp = start_ts,
             remote_addr = remote_addr,
             view_name = "",
             view_path = request.path,
             payload = json.dumps(json.loads(body)),
             params = json.dumps(request.GET.dict()),
+            status_code = 0,
         )
         treq.save()
 
@@ -44,7 +47,10 @@ class TatlRequestLogMiddleware:
         response = self.get_response(request)
         #### POST CORE \/
 
-        # Fill in post-core
         treq.view_name = request.resolver_match.view_name
+        treq.response_time = timezone.now() - treq.timestamp
+        treq.status_code = response.status_code
+
+        treq.save()
 
         return response
