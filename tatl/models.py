@@ -1,12 +1,13 @@
+import uuid
+
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
 from django.db import models
 from django.conf import settings
 
-
-# Create your models here.
 class TatlPageRequest(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="page_requests")
     remote_addr = models.CharField(max_length=48, blank=True, null=True)
     timestamp = models.DateTimeField()
