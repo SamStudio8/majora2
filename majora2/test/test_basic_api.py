@@ -64,9 +64,22 @@ class BasicAPITest(TestCase):
             "username": self.user.username,
             "token": self.key.key,
             "biosamples": [
+                {
+                    "adm1": "UK-ENG",
+                    "adm2": "BIRMINGHAM",
+                    "central_sample_id": "HOOT-00001",
+                    "collection_date": "2020-08-24",
+                    "is_surveillance": False,
+                },
             ],
             "client_name": "pytest",
             "client_version": 1,
         }
         response = self.c.post(reverse('api.artifact.biosample.add'), payload, secure=True, content_type="application/json")
         self.assertEqual(200, response.status_code)
+
+        self.assertEqual(1, models.BiosampleArtifact.objects.count())
+
+        bs = models.BiosampleArtifact.objects.all()[0]
+        self.assertEqual(payload["biosamples"][0]["central_sample_id"], bs.dice_name)
+
