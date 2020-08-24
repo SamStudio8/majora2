@@ -79,6 +79,56 @@ class BasicAPITest(TestCase):
         response = self.c.post(reverse('api.artifact.biosample.add'), payload, secure=True, content_type="application/json")
         self.assertEqual(400, response.status_code)
 
+    def test_biosample_bad_json_revoked_key(self):
+        self.key.was_revoked = True
+        self.key.save()
+
+        payload = {
+            "username": self.user.username,
+            "token": self.key.key,
+            "client_name": "pytest",
+            "client_version": 1,
+        }
+        response = self.c.post(reverse('api.artifact.biosample.add'), payload, secure=True, content_type="application/json")
+        self.assertEqual(400, response.status_code)
+
+        self.key.is_revoked = False
+        self.key.save()
+
+    def test_biosample_bad_json_early_key(self):
+        v = self.key.validity_start
+        self.key.validity_start = datetime.datetime.now() + datetime.timedelta(minutes=10) # key valid in 10mins
+        self.key.save()
+
+        payload = {
+            "username": self.user.username,
+            "token": self.key.key,
+            "client_name": "pytest",
+            "client_version": 1,
+        }
+        response = self.c.post(reverse('api.artifact.biosample.add'), payload, secure=True, content_type="application/json")
+        self.assertEqual(400, response.status_code)
+
+        self.key.validity_start = v
+        self.key.save()
+
+    def test_biosample_bad_json_late_key(self):
+        v = self.key.validity_end
+        self.key.validity_end = datetime.datetime.now() - datetime.timedelta(minutes=10) # key expired 10mins ago
+        self.key.save()
+
+        payload = {
+            "username": self.user.username,
+            "token": self.key.key,
+            "client_name": "pytest",
+            "client_version": 1,
+        }
+        response = self.c.post(reverse('api.artifact.biosample.add'), payload, secure=True, content_type="application/json")
+        self.assertEqual(400, response.status_code)
+
+        self.key.validity_end = v
+        self.key.save()
+
 
     def test_biosample_add(self):
         payload = {
