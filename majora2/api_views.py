@@ -85,7 +85,7 @@ def wrap_api_v2(request, f, permission=None):
             substitute_user = None,
             used_permission = permission,
             timestamp = timezone.now(),
-            request=treq,
+            request=request.treq,
             content_object = request.treq, #TODO just use the request for now
         )
         tflex.save()
