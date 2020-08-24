@@ -1,4 +1,5 @@
 import datetime
+import uuid
 
 from django.test import Client, TestCase
 from django.contrib.auth.models import User
@@ -49,7 +50,7 @@ class BasicAPITest(TestCase):
         response = self.c.post(reverse('api_keys_activate'), {'key_name': self.kd.key_name}, secure=True)
         self.key = self.user.profile.get_generated_api_keys()[0]
 
-    def test_biosample_bad_json(self):
+    def test_biosample_bad_json_content_type(self):
         payload = {
             "username": self.user.username,
             "token": self.key.key,
@@ -58,6 +59,26 @@ class BasicAPITest(TestCase):
         }
         response = self.c.post(reverse('api.artifact.biosample.add'), payload, secure=True)
         self.assertEqual(400, response.status_code)
+
+    def test_biosample_bad_json_no_username(self):
+        payload = {
+            "token": self.key.key,
+            "client_name": "pytest",
+            "client_version": 1,
+        }
+        response = self.c.post(reverse('api.artifact.biosample.add'), payload, secure=True, content_type="application/json")
+        self.assertEqual(400, response.status_code)
+
+    def test_biosample_bad_json_bad_key(self):
+        payload = {
+            "username": self.user.username,
+            "token": uuid.uuid4(),
+            "client_name": "pytest",
+            "client_version": 1,
+        }
+        response = self.c.post(reverse('api.artifact.biosample.add'), payload, secure=True, content_type="application/json")
+        self.assertEqual(400, response.status_code)
+
 
     def test_biosample_add(self):
         payload = {
