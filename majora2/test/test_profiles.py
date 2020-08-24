@@ -1,5 +1,4 @@
 import datetime
-from urllib.parse import urlencode
 
 from django.test import Client, TestCase
 from django.contrib.auth.models import User
@@ -170,7 +169,7 @@ class ProfileAPIKeyTest(TestCase):
         self.assertEqual(0, len(self.user_0g1a.profile.get_generated_api_keys()))
 
     def test_profile_0g1a_can_activate_to_1g1a(self):
-        response = self.c.post('/keys/activate/', {'key_name': self.kd.key_name}, secure=True)
+        response = self.c.post(reverse('api_keys_activate'), {'key_name': self.kd.key_name}, secure=True)
 
         self.assertEqual(0, len(self.user_0g1a.profile.get_available_api_keys()))
         self.assertEqual(1, len(self.user_0g1a.profile.get_generated_api_keys()))

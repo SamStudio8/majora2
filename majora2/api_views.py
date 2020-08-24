@@ -41,7 +41,11 @@ def wrap_api_v2(request, f, permission=None):
         "ignored": [],
     }
 
-    json_data = json.loads(request.body)
+    try:
+        json_data = json.loads(request.body)
+    except:
+        return HttpResponseBadRequest()
+
     api_o["request"] = str(request.treq.response_uuid)
 
     # Bounce non-POST
