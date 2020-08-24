@@ -79,7 +79,7 @@ def sample_sequence_count_dashboard(request):
 
     consensus_spark = util.make_spark(models.DigitalResourceArtifact.objects.filter(current_kind="consensus", created__when__isnull=False, created__when__gte=timezone.now().date()-datetime.timedelta(days=30)).annotate(date=TruncDay('created__when')).values("date").annotate(count=Count('id')).order_by("date"), days=30)
 
-    request_sparks = util.make_spark(tmodels.TatlRequest.objects.filter(timestamp__gte=timezone.now().date()-datetime.timedelta(days=30)).annotate(date=TruncDay('timestamp')).values("route", "date").annotate(count=Count('id')).order_by("date"), days=30, many="route")
+    request_sparks = util.make_spark(tmodels.TatlRequest.objects.filter(is_api=True, timestamp__gte=timezone.now().date()-datetime.timedelta(days=30)).annotate(date=TruncDay('timestamp')).values("view_path", "date").annotate(count=Count('id')).order_by("date"), days=30, many="view_path")
 
     pags_by_site = models.PublishedArtifactGroup.objects.filter(is_latest=True, is_suppressed=False).values(site=F('owner__profile__institute__name')).annotate(count=Count('pk'), public=Count('pk', filter=Q(is_public=True)), private=Count('pk', filter=Q(is_public=False))).order_by('-count')
     good_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc", is_pass=True, pag__is_latest=True, pag__is_suppressed=False)
@@ -111,9 +111,9 @@ def req_metrics(request):
 
     def average_metrics(endpoint, dt):
         if dt:
-            r = TatlRequest.objects.filter(response_time__isnull=False, route=endpoint, timestamp__gte=timezone.now()-dt).aggregate(count=Count('id'), avg=Avg('response_time'))
+            r = TatlRequest.objects.filter(response_time__isnull=False, view_name=endpoint, timestamp__gte=timezone.now()-dt).aggregate(count=Count('id'), avg=Avg('response_time'))
         else:
-            r = TatlRequest.objects.filter(response_time__isnull=False, route=endpoint).aggregate(count=Count('id'), avg=Avg('response_time'))
+            r = TatlRequest.objects.filter(response_time__isnull=False, view_name=endpoint).aggregate(count=Count('id'), avg=Avg('response_time'))
 
         total_ms = 0.0
         if r["avg"]:
@@ -125,7 +125,7 @@ def req_metrics(request):
             "count": r["count"],
         }
 
-    for endpoint in TatlRequest.objects.all().values_list('route', flat=True).distinct():
+    for endpoint in TatlRequest.objects.all().values_list('view_name', flat=True).distinct():
         reqmetrics[endpoint] = {
             "15m": average_metrics(endpoint, datetime.timedelta(minutes=15)),
             "1h": average_metrics(endpoint, datetime.timedelta(hours=1)),
