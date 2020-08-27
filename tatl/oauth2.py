@@ -16,3 +16,7 @@ class ApplicationSpecificOAuth2Validator(OAuth2Validator):
                 request.user = app_pass.profile.user
                 return True
         return False
+
+    def validate_scopes(self, client_id, scopes, client, request, *args, **kwargs):
+        #TODO Implement check to limit access to Scopes to match the current permission interface
+        return True
