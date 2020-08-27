@@ -1,6 +1,8 @@
-from oauth2_provider.oauth2_validators import OAuth2Validator
-
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth.models import Permission
+
+from oauth2_provider.oauth2_validators import OAuth2Validator
+from oauth2_provider.scopes import BaseScopes
 
 from majora2.models import ProfileAppPassword
 
@@ -17,6 +19,17 @@ class ApplicationSpecificOAuth2Validator(OAuth2Validator):
                 return True
         return False
 
-    def validate_scopes(self, client_id, scopes, client, request, *args, **kwargs):
-        #TODO Implement check to limit access to Scopes to match the current permission interface
-        return True
+    #def validate_scopes(self, client_id, scopes, client, request, *args, **kwargs):
+    #    #TODO Implement check to limit access to Scopes to match the current permission interface
+    #    return True
+
+class PermissionScopes(BaseScopes):
+    def get_all_scopes(self):
+        return { "%s.%s" % (p.content_type.app_label, p.codename): p.name for p in Permission.objects.filter(content_type__app_label="majora2")}
+
+    def get_available_scopes(self, application=None, request=None, *args, **kwargs):
+        return list(self.get_all_scopes().keys())
+
+    def get_default_scopes(self, application=None, request=None, *args, **kwargs):
+        return []
+
