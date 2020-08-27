@@ -150,7 +150,7 @@ class RestyDataview(
     #NOTE Although DataviewReadPermission implies APIKeyPermission, the latter
     # actually checks the API Key being used is suitable for the permission requested
     # so we need to check both here
-    permission_classes = [DataviewReadPermission & TokenHasScope]
+    permission_classes = [permissions.IsAuthenticated & DataviewReadPermission & TokenHasScope]
     majora_api_permission = "majora2.can_read_dataview_via_api" #TODO Integrate with model
     required_scopes = ['majora2.can_read_dataview_via_api']
 
