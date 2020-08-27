@@ -67,6 +67,16 @@
                 {% endif %}
             </td>
         </tr>
+        <tr>
+            <th>Data Views</th>
+            <td>
+                {% if not request.user.is_verified %}
+                    <a class="badge badge-danger" href="{% url 'two_factor:setup' %}">Enable 2FA to manage your agreements</a>
+                {% else %}
+                    <a class="badge badge-info" href="{% url 'list_profile_mdv' %}">List Dataviews</a>
+                {% endif %}
+            </td>
+        </tr>
         </tbody>
     </table>
 
