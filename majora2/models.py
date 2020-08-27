@@ -8,11 +8,13 @@ from django.db.models import Q
 
 from django.utils import timezone
 
-
 from django.contrib.auth.models import Permission
 
 from polymorphic.models import PolymorphicModel
 from .submodels import *
+
+from oauth2_provider.settings import oauth2_settings
+OAUTH_APPLICATION_MODEL = oauth2_settings.APPLICATION_MODEL
 
 class MajoraArtifact(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # 
@@ -1587,6 +1589,17 @@ class ProfileAgreement(models.Model):
     is_terminated = models.BooleanField(default=False)
     terminated_reason = models.CharField(max_length=24, blank=True, null=True)
     terminated_timestamp = models.DateTimeField(blank=True, null=True)
+
+class ProfileAppPassword(models.Model):
+    profile = models.ForeignKey('Profile', on_delete=models.PROTECT, related_name="app_passwords")
+    application = models.ForeignKey(OAUTH_APPLICATION_MODEL, on_delete=models.PROTECT)
+    password = models.CharField(max_length=64)
+
+    validity_start = models.DateTimeField(null=True, blank=True)
+    validity_end = models.DateTimeField(null=True, blank=True)
+
+    #was_revoked = models.BooleanField(default=False)
+    #revoked_reason = models.CharField(max_length=24, blank=True, null=True)
 
 class ProfileAPIKeyDefinition(models.Model):
     key_name = models.CharField(max_length=48, unique=True)

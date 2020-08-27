@@ -260,3 +260,13 @@ LOGGING = {
         },
     },
 }
+
+# There is probably a proper way to make sure these are set to import in majora2/models.py but whatever
+# https://github.com/jazzband/django-oauth-toolkit/issues/240#issuecomment-403928239
+OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL = 'oauth2_provider.AccessToken'
+OAUTH2_PROVIDER_APPLICATION_MODEL = 'oauth2_provider.Application'
+OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL = 'oauth2_provider.RefreshToken'
+
+OAUTH2_PROVIDER = {
+    'OAUTH2_VALIDATOR_CLASS': 'tatl.oauth2.ApplicationSpecificOAuth2Validator'
+}
