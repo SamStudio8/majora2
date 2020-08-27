@@ -19,6 +19,8 @@ from majora2 import resty_serializers as serializers
 from majora2.authentication import TatlTokenAuthentication, APIKeyPermission, TaskOwnerReadPermission, DataviewReadPermission
 from tatl.models import TatlRequest, TatlPermFlex
 
+from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope, TokenHasScope
+
 import uuid
 import json
 
@@ -148,8 +150,9 @@ class RestyDataview(
     #NOTE Although DataviewReadPermission implies APIKeyPermission, the latter
     # actually checks the API Key being used is suitable for the permission requested
     # so we need to check both here
-    permission_classes = [APIKeyPermission & DataviewReadPermission]
+    permission_classes = [DataviewReadPermission & TokenHasScope]
     majora_api_permission = "majora2.can_read_dataview_via_api" #TODO Integrate with model
+    required_scopes = ['majora2.can_read_dataview_via_api']
 
     celery_task = tasks.task_get_mdv_v3
     majora_required_params = ["mdv"]
