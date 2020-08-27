@@ -1556,6 +1556,14 @@ class Profile(models.Model):
     def get_available_api_keys(self):
         return ProfileAPIKeyDefinition.objects.filter(Q(permission__isnull=True) | Q(permission__in=self.user.user_permissions.all())).exclude(id__in=self.get_generated_api_keys().values('key_definition__id'))
 
+    @property
+    def tatl_page_requests(self):
+        return self.user.requests.filter(is_api=False).order_by('-timestamp')[:25]
+
+    @property
+    def tatl_api_requests(self):
+        return self.user.requests.filter(is_api=True).order_by('-timestamp')[:25]
+
 
 #TODO samstudio8 - future versions of the agreement model might consider
 # properties of the user model that determine applicability to sign an agreement
