@@ -1851,6 +1851,17 @@ class MajoraDataviewUserPermission(models.Model):
     revoked_reason = models.CharField(max_length=24, blank=True, null=True)
     revoked_timestamp = models.DateTimeField(blank=True, null=True)
 
+    @property
+    def is_expired(self):
+        now = timezone.now()
+        if now < self.validity_start or now > self.validity_end:
+            return True
+        return False
+
+    @property
+    def is_active(self):
+        return not self.is_expired
+
 class MajoraDataviewSerializerField(models.Model):
     dataview = models.ForeignKey('MajoraDataview', on_delete=models.CASCADE, related_name="fields")
     model_name = models.CharField(max_length=64)

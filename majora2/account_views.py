@@ -250,6 +250,21 @@ def list_user_names(request):
     return HttpResponseBadRequest() # bye
 
 @login_required
+def list_dataviews(request):
+    otp = django_2fa_mixin_hack(request)
+    if otp:
+        return otp
+
+    generated = models.MajoraDataviewUserPermission.objects.filter(profile=request.user.profile)
+    available = []
+
+    return render(request, 'dataviews.html', {
+        'user': request.user,
+        'available': available,
+        'generated': generated,
+    })
+
+@login_required
 def api_keys(request):
     otp = django_2fa_mixin_hack(request)
     if otp:

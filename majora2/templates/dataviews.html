@@ -1,0 +1,105 @@
+{% include 'header.html' %}
+{% load humanize %}
+<div class="mast" style="margin-bottom:0">
+    <div class="container">
+        <div class="row">
+        <div class="col-md-6">
+            <span class="badge badge-warning">User</span>
+            <span class="uuid-mast" style="margin-top:0; padding-top:0;">{{ user.id }}</span>
+        </div>
+        <div class="col-md-6 text-right">
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-md-12">
+            <h1>{{ user.username }}</h1>
+        </div>
+        </div>
+    </div>
+</div>
+<div class="mast2">
+</div>
+
+<div class="container">
+<div class="row">
+    <div class="col-md-12">
+        <h1>Data Views</h1>
+        This is a list of Data Views you have been granted access to.
+        </br>
+        </br>
+        <table class="table table-borderless">
+            <thead class="table-dark">
+            <tr>
+                <th>Name (Code)</th>
+                <th>Fields</th>
+                <th class="text-right">Expiry</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for dv in generated %}
+            <tr class="table-{% if dv.is_expired or dv.is_revoked %}danger{%else%}success{% endif %}">
+                <td><code>{{ dv.dataview.code_name }}</code></br><b>{{ dv.dataview.name }}</b></br>{{ dv.dataview.entry_point }}</td>
+                <td><ul>
+                    {% for field in dv.dataview.fields.all %}
+                    <li>{{ field.model_name }} : {{ field.model_field }}</li>
+                    {% endfor %}
+                </ul></td>
+
+
+                <td class="text-right">
+                {{ dv.validity_end | naturaltime }}</br>
+                <form class="" action="" method="post">
+                {% csrf_token %}
+                    <button disabled=True type="submit" class="btn btn-sm btn-warning"><b>Renew</b></button>
+                </div>
+                </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td>No keys to list...</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</div>
+</div>
+</div>
+
+{% include 'footer.html' %}
+
+
+<script>
+//Tooltip tip from https://stackoverflow.com/questions/37381640/tooltips-highlight-animation-with-clipboard-js-click
+$( document ).ready(function() {
+$('button').tooltip({
+  trigger: 'click',
+  placement: 'bottom'
+});
+
+function setTooltip(btn, message) {
+  $(btn).tooltip('hide')
+    .attr('data-original-title', message)
+    .tooltip('show');
+}
+
+function hideTooltip(btn) {
+  setTimeout(function() {
+    $(btn).tooltip('hide');
+  }, 1000);
+}
+
+var clipboard = new ClipboardJS('.copy-btn');
+
+clipboard.on('success', function(e) {
+  setTooltip(e.trigger, 'Copied!');
+  hideTooltip(e.trigger);
+});
+
+clipboard.on('error', function(e) {
+  setTooltip(e.trigger, 'Failed!');
+  hideTooltip(e.trigger);
+});
+});
+</script>
