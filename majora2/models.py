@@ -1566,6 +1566,10 @@ class Profile(models.Model):
     def tatl_api_requests(self):
         return self.user.requests.filter(is_api=True).order_by('-timestamp')[:25]
 
+    @property
+    def oauth2_grant_requests(self):
+        return self.user.oauth2_provider_grant.order_by('-created')[:25]
+
 
 #TODO samstudio8 - future versions of the agreement model might consider
 # properties of the user model that determine applicability to sign an agreement
