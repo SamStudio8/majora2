@@ -5,7 +5,24 @@ from oauth2_provider.scopes import BaseScopes
 
 from majora2.models import ProfileAppPassword
 
+from oauth2_provider.models import get_grant_model
+Grant = get_grant_model()
+
 class ApplicationSpecificOAuth2Validator(OAuth2Validator):
+
+    def validate_code(self, client_id, code, client, request, *args, **kwargs):
+        try:
+            grant = Grant.objects.get(code=code, application=client)
+            if not grant.is_expired():
+                # Additionally check that this user has 2FA enabled
+                if len(grant.user.totpdevice_set.all()) > 0:
+                    request.scopes = grant.scope.split(" ")
+                    request.user = grant.user
+                    return True
+            return False
+
+        except Grant.DoesNotExist:
+            return False
 
     def validate_user(self, username, password, client, request, *args, **kwargs):
 
