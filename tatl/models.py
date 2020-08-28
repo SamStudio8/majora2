@@ -65,10 +65,13 @@ class TatlPermFlex(models.Model):
     request = models.ForeignKey('TatlRequest', on_delete=models.PROTECT, related_name="action", blank=True, null=True)
 
 class OAuth2CodeOnlyApplication(AbstractApplication):
-    def allows_grant_type(self, *grant_types):
-        GRANT_TYPES = (
-            (GRANT_AUTHORIZATION_CODE, _("Authorization code")),
-        )
-        return self.authorization_grant_type in GRANT_TYPES
+    GRANT_AUTHORIZATION_CODE = "authorization-code"
+    GRANT_TYPES = (
+        (GRANT_AUTHORIZATION_CODE, _("Authorization code")),
+    )
+
+    authorization_grant_type = models.CharField(
+        max_length=32, choices=GRANT_TYPES
+    )
 
 from . import receivers
