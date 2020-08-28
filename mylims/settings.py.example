@@ -272,3 +272,4 @@ OAUTH2_PROVIDER = {
     'OAUTH2_VALIDATOR_CLASS': 'tatl.oauth2.ApplicationSpecificOAuth2Validator',
     'SCOPES_BACKEND_CLASS': 'tatl.oauth2.PermissionScopes',
 }
+OAUTH2_PROVIDER_APPLICATION_MODEL='tatl.OAuth2CodeOnlyApplication'

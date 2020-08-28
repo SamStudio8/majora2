@@ -1,6 +1,5 @@
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import Permission
-
 from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.scopes import BaseScopes
 

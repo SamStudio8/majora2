@@ -5,6 +5,9 @@ from django.contrib.contenttypes.models import ContentType
 
 from django.db import models
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
+
+from oauth2_provider.models import AbstractApplication
 
 class TatlRequest(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="requests")
@@ -60,5 +63,12 @@ class TatlPermFlex(models.Model):
     timestamp = models.DateTimeField()
 
     request = models.ForeignKey('TatlRequest', on_delete=models.PROTECT, related_name="action", blank=True, null=True)
+
+class OAuth2CodeOnlyApplication(AbstractApplication):
+    def allows_grant_type(self, *grant_types):
+        GRANT_TYPES = (
+            (GRANT_AUTHORIZATION_CODE, _("Authorization code")),
+        )
+        return self.authorization_grant_type in GRANT_TYPES
 
 from . import receivers
