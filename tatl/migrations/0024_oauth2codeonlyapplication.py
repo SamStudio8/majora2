@@ -13,6 +13,10 @@ class Migration(migrations.Migration):
         ('tatl', '0023_auto_20200822_1820'),
     ]
 
+    run_before = [
+        ('oauth2_provider', '0001_initial'),
+    ]
+
     operations = [
         migrations.CreateModel(
             name='OAuth2CodeOnlyApplication',
