@@ -57,27 +57,33 @@ def wrap_api_v2(request, f, permission=None):
         return HttpResponseBadRequest()
 
     profile = None
-    try:
-        # Check new key validity
-        key = models.ProfileAPIKey.objects.get(key=json_data["token"], profile__user__username=json_data["username"], was_revoked=False, validity_start__lt=timezone.now(), validity_end__gt=timezone.now())
-        profile = key.profile
-    except:
-        return HttpResponseBadRequest()
-        #api_o["messages"].append("That key does not exist, has expired or was revoked")
-        #api_o["errors"] += 1
-        #bad = True
-    user = profile.user
 
-    if permission:
-        # Check permission has been granted to user
-        if not user.has_perm(permission):
-            return HttpResponseBadRequest()
 
-        # Check permission has been granted to key
-        if not key.key_definition.permission:
+    if hasattr(request, "tatl_oauth") and request.tatl_oauth:
+        profile = request.user.profile
+        user = request.user
+    else:
+        try:
+            # Check new key validity
+            key = models.ProfileAPIKey.objects.get(key=json_data["token"], profile__user__username=json_data["username"], was_revoked=False, validity_start__lt=timezone.now(), validity_end__gt=timezone.now())
+            profile = key.profile
+        except:
             return HttpResponseBadRequest()
-        if key.key_definition.permission.codename != permission.split('.')[1]:
-            return HttpResponseBadRequest()
+            #api_o["messages"].append("That key does not exist, has expired or was revoked")
+            #api_o["errors"] += 1
+            #bad = True
+        user = profile.user
+
+        if permission:
+            # Check permission has been granted to user
+            if not user.has_perm(permission):
+                return HttpResponseBadRequest()
+
+            # Check permission has been granted to key
+            if not key.key_definition.permission:
+                return HttpResponseBadRequest()
+            if key.key_definition.permission.codename != permission.split('.')[1]:
+                return HttpResponseBadRequest()
 
     request.treq.is_api = True
     request.treq.user = user
