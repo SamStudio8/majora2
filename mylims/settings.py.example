@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'markdownify',
     'oauth2_provider',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
