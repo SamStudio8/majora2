@@ -78,6 +78,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django_otp.middleware.OTPMiddleware',
     'tatl.middleware.TempOAuth2TokenMiddleware',
     'tatl.middleware.TatlRequestLogMiddleware',
@@ -277,3 +278,10 @@ OAUTH2_PROVIDER = {
     'REQUEST_APPROVAL_PROMPT': 'auto',
 }
 OAUTH2_PROVIDER_APPLICATION_MODEL='tatl.OAuth2CodeOnlyApplication'
+
+# Enable CORS headers on API and OAuth endpoints
+CORS_ALLOWED_ORIGINS = []
+CORS_ALLOWED_ORIGIN_REGEXES = []
+CORS_ALLOW_ALL_ORIGINS = True # This is dangerous but we limit the CORS URLs to the token interface below
+CORS_URLS_REGEX = r'^/o/token/$'
+CORS_URLS_ALLOW_ALL_REGEX = r'^/o/token/$'
