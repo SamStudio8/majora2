@@ -18,7 +18,7 @@ def structify_pags(api_o):
     return api_o
 
 @shared_task
-def task_get_sequencing(request, api_o, json_data, user=None):
+def task_get_sequencing(request, api_o, json_data, user=None, **kwargs):
     run_names = json_data.get("run_name")
     if not run_names:
         api_o["messages"].append("'run_name' key missing or empty")

@@ -352,7 +352,7 @@ def get_sequencing(request):
         if len(run_names) == 1 and run_names[0] == "*":
             if user.is_staff:
                 from . import tasks
-                celery_task = tasks.task_get_sequencing.delay(None, api_o, json_data, user=None)
+                celery_task = tasks.task_get_sequencing.delay(None, api_o, json_data, user=user.pk if user else None, response_uuid=api_o["request"])
                 if celery_task:
                     api_o["tasks"].append(celery_task.id)
                     api_o["messages"].append("Call api.majora.task.get with the appropriate task ID later...")
