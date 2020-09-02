@@ -6,6 +6,9 @@ from oauth2_provider.scopes import BaseScopes
 from majora2.models import ProfileAppPassword
 
 from oauth2_provider.models import get_grant_model
+from oauthlib.oauth2 import AccessDeniedError
+
+
 Grant = get_grant_model()
 
 class ApplicationSpecificOAuth2Validator(OAuth2Validator):
@@ -19,6 +22,8 @@ class ApplicationSpecificOAuth2Validator(OAuth2Validator):
                     request.scopes = grant.scope.split(" ")
                     request.user = grant.user
                     return True
+                else:
+                    raise AccessDeniedError(description="The requesting user has not enabled 2FA", request=request)
             return False
 
         except Grant.DoesNotExist:
