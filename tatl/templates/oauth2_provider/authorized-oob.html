@@ -8,8 +8,12 @@ Majora OAuth2.0 Code Granted
 
 {% block content %}
     <div class="block-center">
-        {% if not error %}
-            <div class="text-center">
+        <div class="text-center">
+        {% if error %}
+            <h2>Application NOT authorized</h2>
+            Your request failed with the following error state:
+            <code>{{ error }}</code>
+        {% else %}
             <h2>Application authorized</h2>
             <b>DO NOT CLOSE THIS PAGE YET</b>
             </div>
@@ -24,15 +28,12 @@ Majora OAuth2.0 Code Granted
             This one-use grant code is valid for a very short period of time.</br>
             Your application will trade this in for a longer lived access code.
 
-            <hr>
-
-            For additional scrutiny, your request included an additional code.</br>
-            Ensure this matches that set by the originating application.
-            <input style="margin-top:10px" class="form-control" type="text" value="{{ state }}" readonly />
-
-        {% else %}
-            <h2>Error: {{ error.error }}</h2>
-            <p>{{ error.description }}</p>
         {% endif %}
+        <hr>
+
+        For additional scrutiny, your request included an additional code.</br>
+        Ensure this matches that set by the originating application.
+        <input style="margin-top:10px" class="form-control" type="text" value="{{ state }}" readonly />
+        </div>
     </div>
 {% endblock %}

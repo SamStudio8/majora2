@@ -10,4 +10,5 @@ def oauth2_callback(request):
     return render(request, 'oauth2_provider/authorized-oob.html', {
         "code": request.GET.get("code"),
         "state": request.GET.get("state"),
+        "error": request.GET.get("error"),
     })
