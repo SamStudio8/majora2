@@ -60,7 +60,7 @@ class MajoraCeleryListingMixin(object):
                 api_o["errors"] = 0
                 api_o["test"] = request.query_params
                 api_o["expected_n"] = len(queryset)
-                api_o["tasks"] = celery_task.id
+                api_o["tasks"] = [celery_task.id]
                 api_o["messages"] = "Call api.majora.task.get with the appropriate task ID later..."
             else:
                 api_o["errors"] = 1
@@ -113,7 +113,7 @@ class TaskView(
 
     #permission_classes = [APIKeyPermission & TaskOwnerReadPermission]
     #majora_api_permission = "majora2.can_read_dataview_via_api"
-    permission_classes = [TaskOwnerReadPermission]
+    permission_classes = [permissions.IsAuthenticated & TaskOwnerReadPermission]
 
     def get(self, request, tid, format=None):
         task_id = tid
