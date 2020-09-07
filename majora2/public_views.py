@@ -18,7 +18,7 @@ class OrderListJson(BaseDatatableView):
     model = models.PublishedArtifactGroup
 
     columns = ["id", "published_name", "published_date", "seqsite", "GISAID", "ENA", "qc_basic", "qc_high"]
-    order_columns = ["id", "published_name", "published_date", "", "", "", "", ""]
+    order_columns = ["id", "published_name", "published_date", "-", "-", "-", "-", "-"]
     max_display_length = 25
 
     def render_column(self, row, column):
