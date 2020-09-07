@@ -76,6 +76,10 @@ class TatlRequestLogMiddleware:
         treq.response_time = timezone.now() - treq.timestamp
         treq.status_code = response.status_code
 
+        # If all else fails
+        if treq.view_name.startswith("api.v") and not treq.is_api:
+            treq.is_api = True
+
         treq.save()
 
         # Emit syslog
@@ -116,6 +120,10 @@ class TempOAuth2TokenMiddleware(MiddlewareMixin):
     """
 
     def process_request(self, request):
+        # cowardly refuse to handle the v3 API endpoints
+        if "api" in request.path and "v3" in request.path:
+            return
+
         # do something only if request contains a Bearer token
         if request.META.get("HTTP_AUTHORIZATION", "").startswith("Bearer"):
             if not hasattr(request, "user") or request.user.is_anonymous:
