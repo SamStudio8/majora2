@@ -29,17 +29,6 @@ class ApplicationSpecificOAuth2Validator(OAuth2Validator):
         except Grant.DoesNotExist:
             return False
 
-    def validate_user(self, username, password, client, request, *args, **kwargs):
-
-        app_pass = ProfileAppPassword.objects.filter(profile__user__username=username, application=client).first()
-        if not app_pass:
-            return False
-        else:
-            if check_password(password, app_pass.password) and app_pass.profile.user.is_active:
-                request.user = app_pass.profile.user
-                return True
-        return False
-
     #def validate_scopes(self, client_id, scopes, client, request, *args, **kwargs):
     #    #TODO Implement check to limit access to Scopes to match the current permission interface
     #    return True
