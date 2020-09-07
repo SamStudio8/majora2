@@ -5,11 +5,32 @@ from oauth2_provider.scopes import BaseScopes
 
 from majora2.models import ProfileAppPassword
 
-from oauth2_provider.models import get_grant_model
+from oauthlib import oauth2
 from oauthlib.oauth2 import AccessDeniedError
-
+from oauth2_provider.models import get_grant_model
+from oauth2_provider.oauth2_backends import OAuthLibCore
 
 Grant = get_grant_model()
+
+# Hacked OAuthLibCore to pass a scopes definition for the current user through to the validator
+class TatlOAuthLibCore(OAuthLibCore):
+    def validate_authorization_request(self, request):
+        """
+        A wrapper method that calls validate_authorization_request on `server_class` instance.
+        :param request: The current django.http.HttpRequest object
+        """
+        try:
+            uri, http_method, body, headers = self._extract_params(request)
+            headers["tatl.scopes"] = ["%s.%s" % (p.content_type.app_label, p.codename) for p in Permission.objects.filter(content_type__app_label="majora2", user=request.user)] if request.user else []
+            scopes, credentials = self.server.validate_authorization_request(
+                uri, http_method=http_method, body=body, headers=headers)
+
+            return scopes, credentials
+        except oauth2.FatalClientError as error:
+            raise FatalClientError(error=error)
+        except oauth2.OAuth2Error as error:
+            raise OAuthToolkitError(error=error)
+
 
 class ApplicationSpecificOAuth2Validator(OAuth2Validator):
 
@@ -29,9 +50,17 @@ class ApplicationSpecificOAuth2Validator(OAuth2Validator):
         except Grant.DoesNotExist:
             return False
 
-    #def validate_scopes(self, client_id, scopes, client, request, *args, **kwargs):
-    #    #TODO Implement check to limit access to Scopes to match the current permission interface
-    #    return True
+    def validate_scopes(self, client_id, scopes, client, request, *args, **kwargs):
+        if "tatl.scopes" not in request.headers:
+            if not request.user:
+                return False
+            user_scopes = ["%s.%s" % (p.content_type.app_label, p.codename) for p in Permission.objects.filter(content_type__app_label="majora2", user=request.user)]
+        else:
+            #TODO Actually all of that sodding time it would seem that we didn't need to fucking do this
+            user_scopes = request.headers["tatl.scopes"]
+
+        # Check whether user is allowed to grant these permissions
+        return set(scopes).issubset(set(user_scopes))
 
 class PermissionScopes(BaseScopes):
     def get_all_scopes(self):
