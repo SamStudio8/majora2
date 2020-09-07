@@ -127,9 +127,14 @@ class TempOAuth2TokenMiddleware(MiddlewareMixin):
         # do something only if request contains a Bearer token
         if request.META.get("HTTP_AUTHORIZATION", "").startswith("Bearer"):
             if not hasattr(request, "user") or request.user.is_anonymous:
-                user = authenticate(request=request)
-                if user:
-                    request.user = request._cached_user = user
+
+                # borrowed from the oauth2_provider backend
+                from oauth2_provider.oauth2_backends import get_oauthlib_core
+                OAuthLibCore = get_oauthlib_core()
+
+                valid, r = OAuthLibCore.verify_request(request, scopes=[])
+                if valid:
+                    request.user = request._cached_user = r.user
                     request.tatl_oauth = True
 
     def process_response(self, request, response):

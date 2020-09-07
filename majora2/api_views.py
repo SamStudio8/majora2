@@ -25,7 +25,7 @@ from tatl.models import TatlVerb
 MINIMUM_CLIENT_VERSION = "0.24.0"
 
 @csrf_exempt
-def wrap_api_v2(request, f, permission=None):
+def wrap_api_v2(request, f, permission=None, oauth_permission=None):
     from tatl.models import TatlRequest, TatlPermFlex
 
     start_ts = timezone.now()
@@ -59,9 +59,21 @@ def wrap_api_v2(request, f, permission=None):
     profile = None
 
 
+    oauth = False
     if hasattr(request, "tatl_oauth") and request.tatl_oauth:
-        profile = request.user.profile
-        user = request.user
+        oauth = True
+
+        # borrowed from the oauth2_provider backend
+        from oauth2_provider.oauth2_backends import get_oauthlib_core
+        OAuthLibCore = get_oauthlib_core()
+
+        # now check the request for the right scopes
+        valid, r = OAuthLibCore.verify_request(request, scopes=oauth_permission.split(" ") if oauth_permission else [])
+        if valid:
+            profile = request.user.profile
+            user = request.user
+        else:
+            return HttpResponseBadRequest()
     else:
         try:
             # Check new key validity
@@ -89,7 +101,7 @@ def wrap_api_v2(request, f, permission=None):
     request.treq.user = user
     request.treq.save()
 
-    if permission:
+    if permission and not oauth:
         tflex = TatlPermFlex(
             user = user,
             substitute_user = None,
@@ -752,7 +764,7 @@ def add_biosample(request):
                 api_o["errors"] += 1
                 api_o["messages"].append(str(e))
 
-    return wrap_api_v2(request, f)
+    return wrap_api_v2(request, f, oauth_permission="majora2.add_biosampleartifact majora2.change_biosampleartifact majora2.add_biosamplesource majora2.change_biosamplesource majora2.add_biosourcesamplingprocess majora2.change_biosourcesamplingprocess")
 
 def add_library(request):
     def f(request, api_o, json_data, user=None):
@@ -853,7 +865,7 @@ def add_library(request):
                 api_o["errors"] += 1
                 api_o["messages"].append(str(e))
 
-    return wrap_api_v2(request, f)
+    return wrap_api_v2(request, f, oauth_permission="majora2.add_biosampleartifact majora2.change_biosampleartifact majora2.add_libraryartifact majora2.change_libraryartifact majora2.add_librarypoolingprocess majora2.change_librarypoolingprocess")
 
 def add_sequencing(request):
     def f(request, api_o, json_data, user=None):
@@ -897,7 +909,7 @@ def add_sequencing(request):
                 api_o["errors"] += 1
                 api_o["messages"].append(str(e))
 
-    return wrap_api_v2(request, f)
+    return wrap_api_v2(request, f, oauth_permission="majora2.update_libraryartifact majora2.add_dnasequencingprocess majora2.change_dnasequencingprocess")
 
 def add_digitalresource(request):
     def f(request, api_o, json_data, user=None):
