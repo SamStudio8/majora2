@@ -73,7 +73,10 @@ def wrap_api_v2(request, f, permission=None, oauth_permission=None):
             profile = request.user.profile
             user = request.user
         else:
-            return HttpResponseBadRequest()
+            api_o["messages"].append("Your token is valid but does not have all of the scopes to perform this action: %s" % oauth_permission)
+            api_o["errors"] += 1
+            bad = True
+            return HttpResponse(json.dumps(api_o), content_type="application/json")
     else:
         try:
             # Check new key validity

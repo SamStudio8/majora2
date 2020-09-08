@@ -9,6 +9,7 @@ from oauthlib import oauth2
 from oauthlib.oauth2 import AccessDeniedError
 from oauth2_provider.models import get_grant_model
 from oauth2_provider.oauth2_backends import OAuthLibCore
+from oauth2_provider.exceptions import FatalClientError, OAuthToolkitError
 
 Grant = get_grant_model()
 
