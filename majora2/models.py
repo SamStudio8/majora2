@@ -1,5 +1,6 @@
 import uuid
 import os
+import builtins
 
 from django.db import models
 from django.conf import settings
@@ -1863,6 +1864,12 @@ class MajoraDataview(models.Model):
     def __str__(self):
         return "MDV %s" % (self.code_name)
 
+    def get_filters(self):
+        filters = {}
+        for f in self.filters.all():
+            filters[ f.filter_field + '__' + f.filter_op ] = f.get_filter_value()
+        return filters
+
 #TODO This looks a lot like the API key, which is also tied to a profile
 # but I think it makes sense to keep them separate for now?
 class MajoraDataviewUserPermission(models.Model):
@@ -1892,7 +1899,27 @@ class MajoraDataviewSerializerField(models.Model):
     model_name = models.CharField(max_length=64)
     model_field = models.CharField(max_length=64) #TODO can we ref the actual model?
 
-#TODO Filter on fields and stuff
+#TODO We don't need to do anything smart right now, we shall just support a list of combined filters
+class MajoraDataviewFilterField(models.Model):
+    dataview = models.ForeignKey('MajoraDataview', on_delete=models.CASCADE, related_name="filters")
+    filter_field = models.CharField(max_length=64)
+    filter_type = models.CharField(max_length=8, choices=[
+        ("str", "str"),
+        ("int", "int"),
+        ("float", "float"),
+        ("bool", "bool"),
+    ])
+    filter_value = models.CharField(max_length=128)
+    filter_op = models.CharField(max_length=10, default="exact") #TODO implement proper choices lookup based on Field lookups
+
+    def get_filter_value(self):
+        type_ = getattr(builtins, self.filter_type)
+
+        # Catch pesky bool case, thanks https://stackoverflow.com/questions/2678770/how-do-i-store-values-of-arbitrary-type-in-a-single-django-model
+        if self.filter_type == "bool":
+            return type_(int(self.filter_value))
+        else:
+            return type_(self.filter_value)
 
 
 from . import receivers
