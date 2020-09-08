@@ -77,7 +77,7 @@ class TatlRequestLogMiddleware:
         treq.status_code = response.status_code
 
         # If all else fails
-        if treq.view_name.startswith("api.v") and not treq.is_api:
+        if treq.view_name.startswith("api.") and not treq.is_api:
             treq.is_api = True
 
         treq.save()
