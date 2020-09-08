@@ -9,6 +9,7 @@ from majora2 import models as models
 
 import sys
 import json
+import datetime
 
 class Command(BaseCommand):
     help = "Grant dataview access to a user"
@@ -34,7 +35,7 @@ class Command(BaseCommand):
                 profile = user.profile,
                 dataview = mdv,
                 validity_start = timezone.now(),
-                #validity_end = 
+                validity_end = timezone.now() + datetime.timedelta(days=30)
         )
         p.save()
         treq = tmodels.TatlPermFlex(
@@ -46,6 +47,7 @@ class Command(BaseCommand):
             extra_context = json.dumps({
                 "dataview": mdv.code_name,
                 "dataview_permission": p.id,
+                "validity_end": p.validity_end.strftime("%Y-%m-%d %H:%M:%S"),
             }),
         )
         treq.save()
