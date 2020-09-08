@@ -18,25 +18,31 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         su = User.objects.get(is_superuser=True)
         try:
-            permission = Permission.objects.get(codename=options["permission"])
-        except:
-            print("No permission with that name.")
-            sys.exit(1)
-
-        try:
             user = User.objects.get(username=options["user"])
         except:
             print("No user with that username.")
             sys.exit(1)
 
-        user.user_permissions.add(permission)
-        user.save()
-        treq = models.TatlPermFlex(
-            user = su,
-            substitute_user = None,
-            used_permission = "tatl.management.commands.grant_permission",
-            timestamp = timezone.now(),
-            content_object = user,
-            extra_context = json.dumps({ "permission": permission.codename }),
-        )
-        treq.save()
+        valid_permissions = []
+        for p in options["permission"].split("&"):
+            p = p.split('.')[-1]
+            try:
+                permission = Permission.objects.get(codename=p)
+            except:
+                print("No permission with name %s" % p)
+                continue
+
+            valid_permissions.append(permission.codename)
+            user.user_permissions.add(permission)
+
+        if len(valid_permissions) > 0:
+            user.save()
+            treq = models.TatlPermFlex(
+                user = su,
+                substitute_user = None,
+                used_permission = "tatl.management.commands.grant_permission",
+                timestamp = timezone.now(),
+                content_object = user,
+                extra_context = json.dumps({ "permissions": valid_permissions }),
+            )
+            treq.save()

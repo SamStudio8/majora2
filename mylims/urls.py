@@ -19,9 +19,12 @@ from django.contrib.auth import views as auth_views
 
 from two_factor.urls import urlpatterns as tf_urls
 
+from tatl.views import oauth2_callback
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    path('o/callback/', oauth2_callback, name='tatl_oauth2_callback'),
 
     #path('accounts/login/', auth_views.LoginView.as_view(
     #    template_name='admin/login.html',

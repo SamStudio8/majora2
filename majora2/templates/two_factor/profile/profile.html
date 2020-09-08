@@ -18,7 +18,7 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-4">
         <h2 class="text-center">API Requests</h2>
         <table class="table table-sm">
             <thead class="thead-dark">
@@ -37,7 +37,7 @@
             </tbody>
         </table>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-4">
         <h2 class="text-center">Page Requests</h2>
         <table class="table table-sm">
             <thead class="thead-dark">
@@ -51,6 +51,25 @@
                 <tr>
                     <td>{{ rq.view_name }}</td>
                     <td>{{ rq.timestamp }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-4">
+        <h2 class="text-center">OAuth2 Grants</h2>
+        <table class="table table-sm">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Application</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rq in user.profile.oauth2_grant_requests %}
+                <tr>
+                    <td>{{ rq.application }}</td>
+                    <td>{{ rq.created }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

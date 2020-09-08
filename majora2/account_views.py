@@ -15,11 +15,10 @@ from . import util
 from . import forms
 from . import signals
 from tatl import signals as tsignals
+from tatl.util import django_2fa_mixin_hack
 
 import json
 import uuid
-
-from two_factor.utils import default_device
 
 def generate_username(cleaned_data):
     proposed_username = "%s%s%s" % (settings.USER_PREFIX, cleaned_data["last_name"].replace(' ', '').lower(), cleaned_data["first_name"][0].lower())
@@ -35,31 +34,6 @@ def generate_username(cleaned_data):
         proposed_username = "%s%d" % (proposed_username, potentially_existing_profiles.count()+1)
     return proposed_username
 
-def django_2fa_mixin_hack(request):
-    raise_anonymous = False
-    if not request.user or not request.user.is_authenticated or \
-            (not request.user.is_verified() and default_device(request.user)):
-        # If the user has not authenticated raise or redirect to the login
-        # page. Also if the user just enabled two-factor authentication and
-        # has not yet logged in since should also have the same result. If
-        # the user receives a 'you need to enable TFA' by now, he gets
-        # confuses as TFA has just been enabled. So we either raise or
-        # redirect to the login page.
-        if raise_anonymous:
-            raise PermissionDenied()
-        else:
-            return redirect_to_login(request.get_full_path(), reverse('two_factor:login'))
-    device = default_device(request.user)
-
-    if not request.user.is_verified():
-        if device:
-            return redirect_to_login(request.get_full_path(), reverse('two_factor:login'))
-        else:
-            return render(
-                request,
-                'two_factor/core/otp_required.html',
-                status=403,
-            )
 
 @sensitive_post_parameters('password', 'password2')
 def form_register(request):

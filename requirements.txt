@@ -22,3 +22,5 @@ django-rest-polymorphic
 djangorestframework-csv
 django-markdownify
 rest_condition
+django-oauth-toolkit
+django-cors-headers

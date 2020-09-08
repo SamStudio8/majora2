@@ -68,6 +68,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'markdownify',
+    'oauth2_provider',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -76,7 +78,9 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django_otp.middleware.OTPMiddleware',
+    'tatl.middleware.TempOAuth2TokenMiddleware',
     'tatl.middleware.TatlRequestLogMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -199,7 +203,7 @@ REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
-        'majora2.authentication.TatlTokenAuthentication',
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
     ],
 
     'DEFAULT_RENDERER_CLASSES': [
@@ -259,3 +263,25 @@ LOGGING = {
         },
     },
 }
+
+# There is probably a proper way to make sure these are set to import in majora2/models.py but whatever
+# https://github.com/jazzband/django-oauth-toolkit/issues/240#issuecomment-403928239
+OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL = 'oauth2_provider.AccessToken'
+OAUTH2_PROVIDER_APPLICATION_MODEL = 'oauth2_provider.Application'
+OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL = 'oauth2_provider.RefreshToken'
+
+OAUTH2_PROVIDER = {
+    'OAUTH2_VALIDATOR_CLASS': 'tatl.oauth2.ApplicationSpecificOAuth2Validator',
+    'SCOPES_BACKEND_CLASS': 'tatl.oauth2.PermissionScopes',
+    'ALLOWED_REDIRECT_URI_SCHEMES': ["https"],
+    'REQUEST_APPROVAL_PROMPT': 'auto',
+    'OAUTH2_BACKEND_CLASS': 'tatl.oauth2.TatlOAuthLibCore',
+}
+OAUTH2_PROVIDER_APPLICATION_MODEL='tatl.OAuth2CodeOnlyApplication'
+
+# Enable CORS headers on API and OAuth endpoints
+CORS_ALLOWED_ORIGINS = []
+CORS_ALLOWED_ORIGIN_REGEXES = []
+CORS_ALLOW_ALL_ORIGINS = True # This is dangerous but we limit the CORS URLs to the token interface below
+CORS_URLS_REGEX = r'^/o/token/$'
+CORS_URLS_ALLOW_ALL_REGEX = r'^/o/token/$'

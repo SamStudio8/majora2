@@ -1,0 +1,53 @@
+{% extends "oauth2_provider/base.html" %}
+{% load instance %}
+
+{% load i18n %}
+{% block content %}
+    <div class="block-center">
+        {% if not error %}
+            <h2 class="text-center">Authorize an application?</h2>
+            An application named <b>{{ application.name }}</b> is requesting access to your Majora ({% instance_name %}) account.
+            You must review the permissions listed below and determine whether to grant access.
+            <hr>
+
+            <div class="text-center">
+            <h4>Permissions requested</h4>
+            </div>
+            <ul>
+                {% for scope in scopes_descriptions %}
+                    <li>{{ scope }}</li>
+                {% endfor %}
+            </ul>
+            <hr>
+
+
+            <form id="authorizationForm" method="post">
+                {% csrf_token %}
+                {% for field in form %}
+                    {% if field.is_hidden %}
+                        {{ field }}
+                    {% endif %}
+                {% endfor %}
+
+                {{ form.errors }}
+                {{ form.non_field_errors }}
+
+                <div class="text-center">
+                <div class="control-group">
+                    <div class="controls">
+                        <input type="submit" class="btn btn-large btn-danger" value="Cancel"/>
+                        <input type="submit" class="btn btn-large btn-success" name="allow" value="Authorize"/>
+                    </div>
+                    <span style="font-size: 0.8em"><b>App ID</b> {{ application.id }} - <b>Owner</b> {{ application.user.username }}</span>
+                    </br>
+                    <span style="font-size: 0.8em">If you are surprised to be here, do not authorize this application.</span>
+                </div>
+                </div>
+            </form>
+
+        {% else %}
+            <h2>Error: {{ error.error }}</h2>
+            <p>{{ error.description }}</p>
+        {% endif %}
+    </div>
+{% endblock %}

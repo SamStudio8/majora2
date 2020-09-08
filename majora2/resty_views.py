@@ -19,6 +19,8 @@ from majora2 import resty_serializers as serializers
 from majora2.authentication import TatlTokenAuthentication, APIKeyPermission, TaskOwnerReadPermission, DataviewReadPermission
 from tatl.models import TatlRequest, TatlPermFlex
 
+from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope, TokenHasScope
+
 import uuid
 import json
 
@@ -56,10 +58,10 @@ class MajoraCeleryListingMixin(object):
             if celery_task:
                 api_o["response_uuid"] = request.treq.response_uuid
                 api_o["errors"] = 0
-                api_o["test"] = request.query_params
+                api_o["params"] = request.query_params
                 api_o["expected_n"] = len(queryset)
-                api_o["tasks"] = celery_task.id
-                api_o["messages"] = "Call api.majora.task.get with the appropriate task ID later..."
+                api_o["tasks"] = [celery_task.id]
+                api_o["messages"] = ["This is an experimental API and can change at any time.", "Call api.majora.task.get with the appropriate task ID later..."]
             else:
                 api_o["errors"] = 1
                 api_o["messages"] = "Could not add requested task to Celery..."
@@ -111,7 +113,7 @@ class TaskView(
 
     #permission_classes = [APIKeyPermission & TaskOwnerReadPermission]
     #majora_api_permission = "majora2.can_read_dataview_via_api"
-    permission_classes = [TaskOwnerReadPermission]
+    permission_classes = [permissions.IsAuthenticated & TaskOwnerReadPermission]
 
     def get(self, request, tid, format=None):
         task_id = tid
@@ -148,8 +150,9 @@ class RestyDataview(
     #NOTE Although DataviewReadPermission implies APIKeyPermission, the latter
     # actually checks the API Key being used is suitable for the permission requested
     # so we need to check both here
-    permission_classes = [APIKeyPermission & DataviewReadPermission]
+    permission_classes = [permissions.IsAuthenticated & DataviewReadPermission & TokenHasScope]
     majora_api_permission = "majora2.can_read_dataview_via_api" #TODO Integrate with model
+    required_scopes = ['majora2.can_read_dataview_via_api']
 
     celery_task = tasks.task_get_mdv_v3
     majora_required_params = ["mdv"]
