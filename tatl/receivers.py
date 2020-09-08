@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
 
+
 from celery.signals import after_task_publish,task_success,task_prerun,task_postrun
 from django_slack import slack_message
 
@@ -12,6 +13,8 @@ import logging
 
 from . import models
 from majora2.models import Profile
+
+from oauth2_provider.signals import app_authorized
 
 logger = logging.getLogger('majora')
 
@@ -50,6 +53,13 @@ def announce_perm_flex(sender, instance, **kwargs):
                 ext,
             ),
         }])
+
+@receiver(app_authorized)
+def handle_app_authorized(sender, request, token, **kwargs):
+    if token.user:
+        request.treq.user = token.user
+        request.treq.save()
+    models.TatlVerb(request=request.treq, verb="OAUTHORIZE", content_object=token.application).save()
 
 @task_prerun.connect()
 def task_prerun(signal=None, sender=None, task_id=None, task=None, args=None, **kwargs):
@@ -96,3 +106,4 @@ def task_postrun_slack(signal=None, sender=None, task_id=None, task=None, args=N
             "footer_icon": "https://avatars.slack-edge.com/2019-05-03/627972616934_a621b7d3a28c2b6a7bd1_512.jpg",
             "ts": int(timezone.now().timestamp()),
         }])
+
