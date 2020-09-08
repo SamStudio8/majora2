@@ -1589,7 +1589,7 @@ class ProfileAgreementDefinition(models.Model):
 class ProfileAgreement(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # 
     agreement = models.ForeignKey('ProfileAgreementDefinition', on_delete=models.PROTECT)
-    profile = models.ForeignKey('Profile', on_delete=models.PROTECT)
+    profile = models.ForeignKey('Profile', on_delete=models.PROTECT, related_name="agreements")
     signature_timestamp = models.DateTimeField()
     is_terminated = models.BooleanField(default=False)
     terminated_reason = models.CharField(max_length=24, blank=True, null=True)
