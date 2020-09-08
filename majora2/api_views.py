@@ -912,7 +912,7 @@ def add_sequencing(request):
                 api_o["errors"] += 1
                 api_o["messages"].append(str(e))
 
-    return wrap_api_v2(request, f, oauth_permission="majora2.update_libraryartifact majora2.add_dnasequencingprocess majora2.change_dnasequencingprocess")
+    return wrap_api_v2(request, f, oauth_permission="majora2.change_libraryartifact majora2.add_dnasequencingprocess majora2.change_dnasequencingprocess")
 
 def add_digitalresource(request):
     def f(request, api_o, json_data, user=None):
