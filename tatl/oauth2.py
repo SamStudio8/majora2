@@ -21,7 +21,8 @@ class TatlOAuthLibCore(OAuthLibCore):
         """
         try:
             uri, http_method, body, headers = self._extract_params(request)
-            headers["tatl.scopes"] = ["%s.%s" % (p.content_type.app_label, p.codename) for p in Permission.objects.filter(content_type__app_label="majora2", user=request.user)] if request.user else []
+            headers["tatl.scopes"] = request.user.get_all_permissions() if request.user else []
+
             scopes, credentials = self.server.validate_authorization_request(
                 uri, http_method=http_method, body=body, headers=headers)
 
@@ -54,7 +55,7 @@ class ApplicationSpecificOAuth2Validator(OAuth2Validator):
         if "tatl.scopes" not in request.headers:
             if not request.user:
                 return False
-            user_scopes = ["%s.%s" % (p.content_type.app_label, p.codename) for p in Permission.objects.filter(content_type__app_label="majora2", user=request.user)]
+            user_scopes = request.user.get_all_permissions()
         else:
             #TODO Actually all of that sodding time it would seem that we didn't need to fucking do this
             user_scopes = request.headers["tatl.scopes"]
