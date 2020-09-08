@@ -1912,6 +1912,10 @@ class MajoraDataviewFilterField(models.Model):
     filter_value = models.CharField(max_length=128)
     filter_op = models.CharField(max_length=10, default="exact") #TODO implement proper choices lookup based on Field lookups
 
+    @property
+    def filter_field_nice(self):
+        return self.filter_field.replace('__', ' > ')
+
     def get_filter_value(self):
         type_ = getattr(builtins, self.filter_type)
 

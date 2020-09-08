@@ -14,22 +14,24 @@
 <table class="table datatable">
     <thead class="table-dark">
         <tr>
-            <th>Code</th>
-            <th>Name</th>
-            <th>Entry Point</th>
+            <th>MDV</th>
             <th>Fields</th>
+            <th>Filters</th>
             <th>Users</th>
         </tr>
     </thead>
     <tbody>
         {% for dv in dataviews %}
         <tr>
-            <td>{{ dv.code_name }}</td>
-            <td>{{ dv.name }}</td>
-            <td>{{ dv.entry_point }}</td>
+            <td>{{ dv.code_name }}</br>{{ dv.name }}</br>{{ dv.entry_point }}</td>
             <td><ul>
                 {% for field in dv.fields.all %}
                 <li>{{ field.model_name }} : {{ field.model_field }}</li>
+                {% endfor %}
+            </ul></td>
+            <td><ul>
+                {% for field in dv.filters.all %}
+                <li>{{ field.filter_field_nice }} <code>{{ field.filter_op }}</code> {{ field.filter_value }}</li>
                 {% endfor %}
             </ul></td>
             <td><ul>
