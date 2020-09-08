@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        migrations.swappable_dependency(settings.OAUTH2_PROVIDER_APPLICATION_MODEL),
+        ('tatl', '0024_oauth2codeonlyapplication'),
         ('majora2', '0122_auto_20200820_2020'),
     ]
 
