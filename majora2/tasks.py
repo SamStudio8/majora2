@@ -10,6 +10,8 @@ from django.db.models import Q
 
 import datetime
 
+from tatl.models import TatlVerb, TatlRequest
+
 @shared_task
 def structify_pags(api_o):
     # Return everything?
@@ -137,7 +139,14 @@ def task_get_pag_by_qc_v3(pag_ids, context={}):
 @shared_task
 def task_get_mdv_v3(ids, context={}, **kwargs):
     from django.apps import apps
+
     mdv = models.MajoraDataview.objects.get(code_name=context["mdv"])
+
+    treq = None
+    if kwargs.get("response_uuid"):
+        treq = TatlRequest.objects.get(response_uuid=kwargs.get("response_uuid"))
+        TatlVerb(request=treq, verb="RETRIEVE", content_object=mdv).save()
+
     model = apps.get_model("majora2", mdv.entry_point)
     queryset = model.objects.filter(id__in=ids)
 
@@ -146,5 +155,6 @@ def task_get_mdv_v3(ids, context={}, **kwargs):
     api_o = {
         "data": serializer.data,
     }
+
 
     return api_o
