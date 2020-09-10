@@ -18,11 +18,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         su = User.objects.get(is_superuser=True)
 
-        try:
-            user = User.objects.get(username=options["user"])
-        except:
-            print("No user with that username.")
-            sys.exit(1)
+        if options["user"] == '*':
+            users = User.objects.all()
+        else:
+            try:
+                users = [User.objects.get(username=options["user"])]
+            except:
+                print("No user with that username.")
+                sys.exit(1)
 
         try:
             group = Group.objects.get(name=options["group"])
@@ -30,18 +33,18 @@ class Command(BaseCommand):
             print("No group with that name.")
             sys.exit(1)
 
+        for user in users:
+            if user not in group.user_set.all():
+                sys.stderr.write("[NOTE] User %s added to group %s\n" % (user.username, group.name))
+                group.user_set.add(user)
 
-        if user not in group.user_set.all():
-            sys.stderr.write("[NOTE] User %s added to group %s\n" % (user.username, group.name))
-            group.user_set.add(user)
-
-            group.save()
-            treq = models.TatlPermFlex(
-                user = su,
-                substitute_user = None,
-                used_permission = "tatl.management.commands.grant_group",
-                timestamp = timezone.now(),
-                content_object = user,
-                extra_context = json.dumps({ "permissions_group": group.name, "permissions": [p.codename for p in group.permissions.all()] }),
-            )
-            treq.save()
+                group.save()
+                treq = models.TatlPermFlex(
+                    user = su,
+                    substitute_user = None,
+                    used_permission = "tatl.management.commands.grant_group",
+                    timestamp = timezone.now(),
+                    content_object = user,
+                    extra_context = json.dumps({ "permissions_group": group.name, "permissions": [p.codename for p in group.permissions.all()] }),
+                )
+                treq.save()
