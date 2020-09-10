@@ -42,17 +42,20 @@ def announce_perm_flex(sender, instance, **kwargs):
             except Exception as e:
                 pass
 
-        slack_message('slack/permflex', {
-            "channel": settings.SLACK_CHANNEL_TATL,
-        }, [{
-            "text": "User `%s` flexed their `%s` permission on `%s` at %s %s" % (
-                instance.user,
-                instance.used_permission,
-                str(instance.content_object),
-                str(instance.timestamp),
-                ext,
-            ),
-        }])
+        try:
+            slack_message('slack/permflex', {
+                "channel": settings.SLACK_CHANNEL_TATL,
+            }, [{
+                "text": "User `%s` flexed their `%s` permission on `%s` at %s %s" % (
+                    instance.user,
+                    instance.used_permission,
+                    str(instance.content_object),
+                    str(instance.timestamp),
+                    ext,
+                ),
+            }])
+        except:
+            pass
 
 @receiver(app_authorized)
 def handle_app_authorized(sender, request, token, **kwargs):
