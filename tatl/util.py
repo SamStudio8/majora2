@@ -1,4 +1,5 @@
 from two_factor.utils import default_device
+from django.shortcuts import render, reverse
 
 def django_2fa_mixin_hack(request):
     raise_anonymous = False
