@@ -1803,6 +1803,11 @@ class DNASequencingProcess(MajoraArtifactProcess):
     end_time = models.DateTimeField(blank=True, null=True)
     duration = models.DurationField(blank=True, null=True)
 
+    @classmethod
+    def get_resty_serializer(cls):
+        from . import resty_serializers
+        return resty_serializers.RestyDNASequencingProcessSerializer
+
     @property
     def process_kind(self):
         return 'Sequencing'

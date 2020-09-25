@@ -64,6 +64,8 @@ class RestyBiosourceSamplingProcessSerializer(DynamicDataviewModelSerializer):
     adm1 = serializers.CharField(source='collection_location_adm1')
     adm2 = serializers.CharField(source='collection_location_adm2')
     biosources = serializers.SerializerMethodField()
+    submission_org_code = serializers.SerializerMethodField()
+    sequencing_uuid = serializers.SerializerMethodField()
 
     class Meta:
         model = models.BiosourceSamplingProcess
@@ -80,17 +82,30 @@ class RestyBiosourceSamplingProcessSerializer(DynamicDataviewModelSerializer):
                 'adm2',
                 'private_collection_location_adm2',
                 'coguk_supp',
+                'submission_org',
+                'submission_org_code',
                 'biosources',
+                'sequencing_uuid',
         )
         extra_kwargs = {
                 'private_collection_location_adm2': {'write_only': True},
         }
+
+    def get_sequencing_uuid(self, obj):
+        return str(obj.id)
+
+    def get_submission_org_code(self, obj):
+        return obj.submission_org.code if obj.submission_org else None
 
     def get_biosources(self, obj):
         source_ids = obj.records.filter(biosourcesamplingprocessrecord__isnull=False).values_list('in_group', flat=True)
         return RestyBiosampleSourceSerializer(models.BiosampleSource.objects.filter(id__in=source_ids), many=True, context=self.context).data
 
 class RestyDNASequencingProcessSerializer(DynamicDataviewModelSerializer):
+    libraries = serializers.SerializerMethodField()
+    sequencing_org_code = serializers.SerializerMethodField()
+    sequencing_submission_date = serializers.SerializerMethodField()
+
     class Meta:
         model = models.DNASequencingProcess
         fields = BaseRestyProcessSerializer.Meta.fields + (
@@ -99,7 +114,26 @@ class RestyDNASequencingProcessSerializer(DynamicDataviewModelSerializer):
             'instrument_model',
             'flowcell_type',
             'flowcell_id',
+            'libraries',
+            'start_time',
+            'end_time',
+            'duration',
+            'sequencing_org_code',
+            'sequencing_submission_date',
         )
+
+    def get_sequencing_submission_date(self, obj):
+        return obj.when.strftime("%Y-%m-%d") if obj.when else None
+
+    def get_sequencing_org_code(self, obj):
+        try:
+            return obj.who.profile.institute.code if obj.who.profile.institute else None
+        except:
+            return None
+
+    def get_libraries(self, obj):
+        return RestyLibraryArtifactSerializer([a.in_artifact for a in obj.records.filter(in_artifact__libraryartifact__isnull=False)], many=True, context=self.context).data
+
 class RestyProcessSerializer(PolymorphicSerializer):
     resource_type_field_name = 'process_model'
     model_serializer_mapping = {
@@ -139,17 +173,21 @@ class RestyProcessRecordSerializer(PolymorphicSerializer):
     }
 
 class BaseRestyArtifactSerializer(DynamicDataviewModelSerializer):
+    published_as = serializers.SerializerMethodField()
+
     class Meta:
         model = models.MajoraArtifact
         #majora_children = {
         #      "created": (RestyProcessSerializer, {})
         #}
-        fields = ('id', 'dice_name', 'artifact_kind')
+        fields = ('id', 'dice_name', 'artifact_kind', 'published_as')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['created'] = RestyProcessSerializer(context=self.context)
 
+    def get_published_as(self, obj):
+        return ",".join([pag.published_name for pag in obj.groups.filter(Q(PublishedArtifactGroup___is_latest=True))])
 
 class RestyBiosampleArtifactSerializer(BaseRestyArtifactSerializer):
     class Meta:
@@ -163,6 +201,26 @@ class RestyBiosampleArtifactSerializer(BaseRestyArtifactSerializer):
                 #'root_sample_id': {'write_only': True},
                 #'sender_sample_id': {'write_only': True}
         }
+
+class RestyLibraryArtifactSerializer(BaseRestyArtifactSerializer):
+    biosamples = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.LibraryArtifact
+        fields = BaseRestyArtifactSerializer.Meta.fields + (
+                'layout_config',
+                'layout_read_length',
+                'layout_insert_length',
+                'seq_kit',
+                'seq_protocol',
+                'biosamples',
+        )
+
+    def get_biosamples(self, obj):
+        if obj.created:
+            return RestyBiosampleArtifactSerializer([a.in_artifact for a in obj.created.records.filter(in_artifact__biosampleartifact__isnull=False)], many=True, context=self.context).data
+        return {}
+
 
 class RestyDigitalResourceArtifactSerializer(BaseRestyArtifactSerializer):
     class Meta:

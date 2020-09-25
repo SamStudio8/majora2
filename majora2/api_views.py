@@ -668,7 +668,7 @@ def add_qc(request):
                 dec_rec.save()
 
         api_o["test_results"] = str(test_data)
-    return wrap_api_v2(request, f)
+    return wrap_api_v2(request, f, oauth_permission="majora2.add_pagqualityreport majora2.change_pagqualityreport")
 
 def add_metrics(request):
     def f(request, api_o, json_data, user=None):
@@ -948,7 +948,7 @@ def add_digitalresource(request):
             api_o["errors"] += 1
             api_o["messages"].append(str(e))
 
-    return wrap_api_v2(request, f)
+    return wrap_api_v2(request, f, oauth_permission="majora2.add_digitalresourceartifact majora2.change_digitalresourceartifact")
 
 
 def add_tag(request):
@@ -1032,7 +1032,7 @@ def add_pag_accession(request):
                 pag.save()
                 api_o["messages"].append("PAG marked as public")
 
-    return wrap_api_v2(request, f)
+    return wrap_api_v2(request, f, oauth_permission="majora2.add_temporaryaccessionrecord majora2.change_temporaryaccessionrecord")
 
 def get_outbound_summary(request):
     def f(request, api_o, json_data, user=None):
