@@ -734,6 +734,36 @@ def add_metrics(request):
     return wrap_api_v2(request, f)
 
 
+def register_biosample(request):
+    def f(request, api_o, json_data, user=None):
+        biosamples = json_data.get("biosamples", {})
+        if not biosamples:
+            api_o["messages"].append("'biosamples' key missing or empty")
+            api_o["errors"] += 1
+
+        for sample_id in biosamples:
+            # Make dummy sample
+            biosample, created = models.BiosampleArtifact.objects.get_or_create(
+                    central_sample_id=sample_id,
+                    dice_name=sample_id
+            )
+            if created:
+                TatlVerb(request=request.treq, verb="CREATE", content_object=biosample).save()
+                api_o["new"].append(form_handlers._format_tuple(biosample))
+                api_o["warnings"] += 1
+                sample_forced = True
+            if not biosample.created:
+                sample_p = models.BiosourceSamplingProcess()
+                sample_p.save()
+                sampling_rec = models.BiosourceSamplingProcessRecord(
+                    process=sample_p,
+                    out_artifact=biosample,
+                )
+                sampling_rec.save()
+                biosample.created = sample_p # Set the sample collection process
+                biosample.save()
+
+    return wrap_api_v2(request, f, permission="majora2.force_add_biosampleartifact", oauth_permission="majora2.force_add_biosampleartifact majora2.add_biosampleartifact majora2.change_biosampleartifact majora2.add_biosourcesamplingprocess majora2.change_biosourcesamplingprocess")
 
 def add_biosample(request):
     def f(request, api_o, json_data, user=None):

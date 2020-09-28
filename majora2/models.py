@@ -1098,6 +1098,11 @@ class BiosampleArtifact(MajoraArtifact):
     secondary_accession = models.CharField(max_length=256, blank=True, null=True)
     taxonomy_identifier = models.CharField(max_length=24, blank=True, null=True)
 
+    class Meta:
+        permissions = [
+            ("force_add_biosampleartifact", "Can forcibly add a biosample artifact to Majora"),
+        ]
+
     @property
     def artifact_kind(self):
         return 'Biosample'
