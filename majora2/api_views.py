@@ -734,7 +734,7 @@ def add_metrics(request):
     return wrap_api_v2(request, f)
 
 
-def register_biosample(request):
+def addempty_biosample(request):
     def f(request, api_o, json_data, user=None):
         biosamples = json_data.get("biosamples", {})
         if not biosamples:
@@ -750,8 +750,9 @@ def register_biosample(request):
             if created:
                 TatlVerb(request=request.treq, verb="CREATE", content_object=biosample).save()
                 api_o["new"].append(form_handlers._format_tuple(biosample))
+            else:
+                api_o["ignored"].append(form_handlers._format_tuple(biosample))
                 api_o["warnings"] += 1
-                sample_forced = True
             if not biosample.created:
                 sample_p = models.BiosourceSamplingProcess()
                 sample_p.save()
