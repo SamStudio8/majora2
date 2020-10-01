@@ -204,6 +204,7 @@ class RestyBiosampleArtifactSerializer(BaseRestyArtifactSerializer):
 
 class RestyLibraryArtifactSerializer(BaseRestyArtifactSerializer):
     biosamples = serializers.SerializerMethodField()
+    library_name = serializers.CharField(source="dice_name")
 
     class Meta:
         model = models.LibraryArtifact
