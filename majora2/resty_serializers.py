@@ -209,6 +209,7 @@ class RestyLibraryArtifactSerializer(BaseRestyArtifactSerializer):
     class Meta:
         model = models.LibraryArtifact
         fields = BaseRestyArtifactSerializer.Meta.fields + (
+                'library_name',
                 'layout_config',
                 'layout_read_length',
                 'layout_insert_length',
