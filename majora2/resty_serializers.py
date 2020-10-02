@@ -65,7 +65,6 @@ class RestyBiosourceSamplingProcessSerializer(DynamicDataviewModelSerializer):
     adm2 = serializers.CharField(source='collection_location_adm2')
     biosources = serializers.SerializerMethodField()
     submission_org_code = serializers.SerializerMethodField()
-    sequencing_uuid = serializers.SerializerMethodField()
 
     class Meta:
         model = models.BiosourceSamplingProcess
@@ -85,14 +84,10 @@ class RestyBiosourceSamplingProcessSerializer(DynamicDataviewModelSerializer):
                 'submission_org',
                 'submission_org_code',
                 'biosources',
-                'sequencing_uuid',
         )
         extra_kwargs = {
                 'private_collection_location_adm2': {'write_only': True},
         }
-
-    def get_sequencing_uuid(self, obj):
-        return str(obj.id)
 
     def get_submission_org_code(self, obj):
         return obj.submission_org.code if obj.submission_org else None
@@ -105,6 +100,7 @@ class RestyDNASequencingProcessSerializer(DynamicDataviewModelSerializer):
     libraries = serializers.SerializerMethodField()
     sequencing_org_code = serializers.SerializerMethodField()
     sequencing_submission_date = serializers.SerializerMethodField()
+    sequencing_uuid = serializers.CharField(source="id")
 
     class Meta:
         model = models.DNASequencingProcess
@@ -120,6 +116,7 @@ class RestyDNASequencingProcessSerializer(DynamicDataviewModelSerializer):
             'duration',
             'sequencing_org_code',
             'sequencing_submission_date',
+            'sequencing_uuid',
         )
 
     def get_sequencing_submission_date(self, obj):
