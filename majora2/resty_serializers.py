@@ -33,6 +33,11 @@ class DynamicDataviewModelSerializer(serializers.ModelSerializer):
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
 
+class RestyMetaRecord(serializers.ModelSerializer):
+    class Meta:
+        model = models.MajoraMetaRecord
+        fields = ('meta_tag', 'meta_name', 'value')
+
 class BaseRestyProcessSerializer(DynamicDataviewModelSerializer):
     who = serializers.CharField(source='who.username')
     class Meta:
@@ -182,6 +187,7 @@ class BaseRestyArtifactSerializer(DynamicDataviewModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['created'] = RestyProcessSerializer(context=self.context)
+        self.fields['metadata'] = RestyMetaRecord(many=True, context=self.context)
 
     def get_published_as(self, obj):
         return ",".join([pag.published_name for pag in obj.groups.filter(Q(PublishedArtifactGroup___is_latest=True))])
