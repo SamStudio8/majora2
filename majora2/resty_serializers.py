@@ -15,12 +15,15 @@ class DynamicDataviewModelSerializer(serializers.ModelSerializer):
         # Instantiate the superclass normally
         super(DynamicDataviewModelSerializer, self).__init__(*args, **kwargs)
         if hasattr(self.Meta, "majora_children"):
+            # This ensures the correct context is passed through to downstream serializers
             for f, s in self.Meta.majora_children.items():
                 self.fields[f] = s[0](context=self.context, **s[1])
 
         try:
-            mdv = models.MajoraDataview.objects.get(code_name=self.context.get("mdv"))
-            fields = mdv.fields.filter(model_name=self.Meta.model.__name__).values_list('model_field', flat=True)
+            if not self.context.get("mdv__" + self.Meta.model.__name__):
+                mdv = models.MajoraDataview.objects.get(code_name=self.context.get("mdv"))
+                self.context["mdv__" + self.Meta.model.__name__] = mdv.fields.filter(model_name=self.Meta.model.__name__).values_list('model_field', flat=True)
+            fields = self.context.get("mdv__" + self.Meta.model.__name__)
             #TODO Implement extra language here? '*' '-field' etc.
         except:
             fields = []
@@ -33,16 +36,29 @@ class DynamicDataviewModelSerializer(serializers.ModelSerializer):
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
 
+        self.read_only_fields = self.fields
+
 class RestyMetaRecord(serializers.ModelSerializer):
     class Meta:
         model = models.MajoraMetaRecord
         fields = ('meta_tag', 'meta_name', 'value')
+        read_only_fields = fields
 
 class BaseRestyProcessSerializer(DynamicDataviewModelSerializer):
     who = serializers.CharField(source='who.username')
+    #records = serializers.SerializerMethodField()
     class Meta:
         model = models.MajoraArtifactProcess
         fields = ('id', 'when', 'who', 'process_kind', 'records')
+        read_only_fields = fields
+
+    #def get_records(self, obj):
+    #    return RestyProcessRecordSerializer(obj.records.all(), many=True, context=self.context)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.context["backward"] = True
+        #self.fields['records'] = RestyProcessRecordSerializer(many=True, context=self.context)
+     
 
 class RestyCOGUK_BiosourceSamplingProcessSupplement(DynamicDataviewModelSerializer):
     class Meta:
@@ -50,10 +66,12 @@ class RestyCOGUK_BiosourceSamplingProcessSupplement(DynamicDataviewModelSerializ
         fields = (
             'is_surveillance',
         )
+        read_only_fields = fields
 class RestyGroupSerializer(DynamicDataviewModelSerializer):
     class Meta:
         model = models.MajoraArtifactGroup
         fields = ('id', 'dice_name', 'group_kind', 'physical')
+        read_only_fields = fields
 
 
 class RestyBiosampleSourceSerializer(DynamicDataviewModelSerializer):
@@ -64,6 +82,7 @@ class RestyBiosampleSourceSerializer(DynamicDataviewModelSerializer):
                 'source_type',
                 'biosample_source_id',
         )
+        read_only_fields = fields
 class RestyBiosourceSamplingProcessSerializer(DynamicDataviewModelSerializer):
     adm0 = serializers.CharField(source='collection_location_country')
     adm1 = serializers.CharField(source='collection_location_adm1')
@@ -90,9 +109,10 @@ class RestyBiosourceSamplingProcessSerializer(DynamicDataviewModelSerializer):
                 'submission_org_code',
                 'biosources',
         )
-        extra_kwargs = {
-                'private_collection_location_adm2': {'write_only': True},
-        }
+        #extra_kwargs = {
+        #        'private_collection_location_adm2': {'write_only': True},
+        #}
+        read_only_fields = fields
 
     def get_submission_org_code(self, obj):
         return obj.submission_org.code if obj.submission_org else None
@@ -123,6 +143,7 @@ class RestyDNASequencingProcessSerializer(DynamicDataviewModelSerializer):
             'sequencing_submission_date',
             'sequencing_uuid',
         )
+        read_only_fields = fields
 
     def get_sequencing_submission_date(self, obj):
         return obj.when.strftime("%Y-%m-%d") if obj.when else None
@@ -151,14 +172,18 @@ class BaseRestyProcessRecordSerializer(DynamicDataviewModelSerializer):
         #}
         fields = (
         )
+        read_only_fields = fields
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['process'] = RestyProcessSerializer(context=self.context)
+        if not self.context.get("backward"):
+            self.fields['process'] = RestyProcessSerializer(context=self.context)
 
-class RestyLibraryPoolingProcessRecord(BaseRestyProcessRecordSerializer):
+class RestyLibraryPoolingProcessRecordSerializer(BaseRestyProcessRecordSerializer):
+    #biosample = serializers.SerializerMethodField()
     class Meta:
         model = models.LibraryPoolingProcessRecord
         fields = BaseRestyProcessRecordSerializer.Meta.fields + (
+                #'biosample',
                 'barcode',
                 'library_strategy',
                 'library_source',
@@ -166,12 +191,16 @@ class RestyLibraryPoolingProcessRecord(BaseRestyProcessRecordSerializer):
                 'library_primers',
                 'library_protocol',
         )
+        read_only_fields = fields
+
+    #def get_biosample(self, obj):
+    #    return RestyArtifactSerializer(obj.in_artifact, context=self.context).data
 
 class RestyProcessRecordSerializer(PolymorphicSerializer):
     resource_type_field_name = 'processrecord_model'
     model_serializer_mapping = {
         models.MajoraArtifactProcessRecord: BaseRestyProcessRecordSerializer,
-        models.LibraryPoolingProcessRecord: RestyLibraryPoolingProcessRecord,
+        models.LibraryPoolingProcessRecord: RestyLibraryPoolingProcessRecordSerializer,
     }
 
 class BaseRestyArtifactSerializer(DynamicDataviewModelSerializer):
@@ -183,11 +212,12 @@ class BaseRestyArtifactSerializer(DynamicDataviewModelSerializer):
         #      "created": (RestyProcessSerializer, {})
         #}
         fields = ('id', 'dice_name', 'artifact_kind', 'published_as')
+        read_only_fields = fields
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['created'] = RestyProcessSerializer(context=self.context)
         self.fields['metadata'] = RestyMetaRecord(many=True, context=self.context)
+        self.fields['created'] = RestyProcessSerializer(context=self.context)
 
     def get_published_as(self, obj):
         return ",".join([pag.published_name for pag in obj.groups.filter(Q(PublishedArtifactGroup___is_latest=True))])
@@ -200,14 +230,16 @@ class RestyBiosampleArtifactSerializer(BaseRestyArtifactSerializer):
                 'sender_sample_id',
                 'root_sample_id',
         )
+        read_only_fields = fields
         extra_kwargs = {
                 #'root_sample_id': {'write_only': True},
                 #'sender_sample_id': {'write_only': True}
         }
 
 class RestyLibraryArtifactSerializer(BaseRestyArtifactSerializer):
-    biosamples = serializers.SerializerMethodField()
     library_name = serializers.CharField(source="dice_name")
+    records = serializers.SerializerMethodField()
+    biosamples = serializers.SerializerMethodField()
 
     class Meta:
         model = models.LibraryArtifact
@@ -218,13 +250,15 @@ class RestyLibraryArtifactSerializer(BaseRestyArtifactSerializer):
                 'layout_insert_length',
                 'seq_kit',
                 'seq_protocol',
+                'records',
                 'biosamples',
         )
+        read_only_fields = fields
 
+    def get_records(self, obj):
+        return RestyLibraryPoolingProcessRecordSerializer(obj.created.records.filter(in_artifact__biosampleartifact__isnull=False).order_by('id'), many=True, context=self.context).data
     def get_biosamples(self, obj):
-        if obj.created:
-            return RestyBiosampleArtifactSerializer([a.in_artifact for a in obj.created.records.filter(in_artifact__biosampleartifact__isnull=False)], many=True, context=self.context).data
-        return {}
+        return RestyBiosampleArtifactSerializer([x.in_artifact for x in obj.created.records.filter(in_artifact__biosampleartifact__isnull=False).order_by('id')], many=True, context=self.context).data
 
 
 class RestyDigitalResourceArtifactSerializer(BaseRestyArtifactSerializer):
@@ -238,6 +272,7 @@ class RestyDigitalResourceArtifactSerializer(BaseRestyArtifactSerializer):
                 'current_extension',
                 'current_kind',
         )
+        read_only_fields = fields
 
 class RestyArtifactSerializer(PolymorphicSerializer):
     resource_type_field_name = 'artifact_model'
@@ -266,6 +301,7 @@ class RestyPublishedArtifactGroupSerializer(DynamicDataviewModelSerializer):
                 "process_records",
         )
 
+        read_only_fields = fields
     #def __init__(self, *args, **kwargs):
     #    super().__init__(*args, **kwargs)
     #    self.fields['artifacts'] = RestyArtifactSerializer(source="tagged_artifacts", many=True, context=self.context)
