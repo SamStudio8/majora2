@@ -5,6 +5,7 @@ from celery import shared_task, current_task
 from . import models
 from . import serializers
 from . import resty_serializers
+from . import util
 
 from django.db.models import Q
 
@@ -150,13 +151,7 @@ def task_get_mdv_v3(ids, context={}, **kwargs):
     model = apps.get_model("majora2", mdv.entry_point)
     queryset = model.objects.filter(id__in=ids)
 
-
-    mdv_fields = {}
-    for f in mdv.fields.all():
-        if f.model_name not in mdv_fields:
-            mdv_fields[f.model_name] = []
-        mdv_fields[f.model_name].append(f.model_field)
-    context["mdv_fields"] = mdv_fields
+    context["mdv_fields"] = util.get_mdv_fields(context["mdv"])
     serializer = model.get_resty_serializer()(queryset, many=True, context=context)
 
     api_o = {

@@ -6,6 +6,17 @@ from django.utils import timezone
 from dateutil.parser import parse
 from django.db.models import prefetch_related_objects
 
+def get_mdv_fields(mdv_codename):
+    mdv = models.MajoraDataview.objects.filter(code_name=mdv_codename).first()
+    mdv_fields = {}
+
+    if mdv:
+        for f in mdv.fields.all():
+            if f.model_name not in mdv_fields:
+                mdv_fields[f.model_name] = []
+            mdv_fields[f.model_name].append(f.model_field)
+    return mdv_fields
+
 def get_mag(root, path, sep="/", artifact=False, by_hard_path=False):
 
     try:
