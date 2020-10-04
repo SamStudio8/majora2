@@ -144,7 +144,7 @@ class RestyDNASequencingProcessSerializer(DynamicDataviewModelSerializer):
             return None
 
     def get_libraries(self, obj):
-        return RestyLibraryArtifactSerializer([a.in_artifact for a in obj.records.filter(in_artifact__libraryartifact__isnull=False)], many=True, context=self.context).data
+        return RestyLibraryArtifactSerializer([a.in_artifact for a in obj.records.filter(in_artifact__libraryartifact__isnull=False).prefetch_related('in_artifact')], many=True, context=self.context).data
 
 class RestyProcessSerializer(PolymorphicSerializer):
     resource_type_field_name = 'process_model'
@@ -202,7 +202,7 @@ class BaseRestyArtifactSerializer(DynamicDataviewModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['metadata'] = RestyMetaRecord(many=True, context=self.context)
+        #self.fields['metadata'] = RestyMetaRecord(many=True, context=self.context)
         self.fields['created'] = RestyProcessSerializer(context=self.context)
 
     def get_published_as(self, obj):
