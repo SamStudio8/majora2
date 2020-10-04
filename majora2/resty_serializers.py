@@ -20,7 +20,7 @@ class DynamicDataviewModelSerializer(serializers.ModelSerializer):
                 self.fields[f] = s[0](context=self.context, **s[1])
 
         try:
-            fields = self.context.get('mdv_fields', {}).get(self.Meta.model.__name__)
+            fields = self.context.get('mdv_fields', {}).get(self.Meta.model.__name__, [])
             #TODO Implement extra language here? '*' '-field' etc.
         except:
             fields = []
