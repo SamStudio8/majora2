@@ -20,10 +20,7 @@ class DynamicDataviewModelSerializer(serializers.ModelSerializer):
                 self.fields[f] = s[0](context=self.context, **s[1])
 
         try:
-            if not self.context.get("mdv__" + self.Meta.model.__name__):
-                mdv = models.MajoraDataview.objects.get(code_name=self.context.get("mdv"))
-                self.context["mdv__" + self.Meta.model.__name__] = mdv.fields.filter(model_name=self.Meta.model.__name__).values_list('model_field', flat=True)
-            fields = self.context.get("mdv__" + self.Meta.model.__name__)
+            fields = self.context.get('mdv_fields', {}).get(self.Meta.model.__name__)
             #TODO Implement extra language here? '*' '-field' etc.
         except:
             fields = []
@@ -256,9 +253,11 @@ class RestyLibraryArtifactSerializer(BaseRestyArtifactSerializer):
         read_only_fields = fields
 
     def get_records(self, obj):
-        return RestyLibraryPoolingProcessRecordSerializer(obj.created.records.filter(in_artifact__biosampleartifact__isnull=False).order_by('id'), many=True, context=self.context).data
+        if obj.created:
+           return RestyLibraryPoolingProcessRecordSerializer(obj.created.records.filter(in_artifact__biosampleartifact__isnull=False).order_by('id'), many=True, context=self.context).data
     def get_biosamples(self, obj):
-        return RestyBiosampleArtifactSerializer([x.in_artifact for x in obj.created.records.filter(in_artifact__biosampleartifact__isnull=False).order_by('id')], many=True, context=self.context).data
+        if obj.created:
+            return RestyBiosampleArtifactSerializer([x.in_artifact for x in obj.created.records.filter(in_artifact__biosampleartifact__isnull=False).order_by('id')], many=True, context=self.context).data
 
 
 class RestyDigitalResourceArtifactSerializer(BaseRestyArtifactSerializer):
