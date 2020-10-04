@@ -257,7 +257,7 @@ class RestyLibraryArtifactSerializer(BaseRestyArtifactSerializer):
            return RestyLibraryPoolingProcessRecordSerializer(obj.created.records.filter(in_artifact__biosampleartifact__isnull=False).order_by('id'), many=True, context=self.context).data
     def get_biosamples(self, obj):
         if obj.created:
-            return RestyBiosampleArtifactSerializer([x.in_artifact for x in obj.created.records.filter(in_artifact__biosampleartifact__isnull=False).order_by('id')], many=True, context=self.context).data
+            return RestyBiosampleArtifactSerializer([x.in_artifact for x in obj.created.records.filter(in_artifact__biosampleartifact__isnull=False).order_by('id').select_related('in_artifact__created')], many=True, context=self.context).data
 
 
 class RestyDigitalResourceArtifactSerializer(BaseRestyArtifactSerializer):
