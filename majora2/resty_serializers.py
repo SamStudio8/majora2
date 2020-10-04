@@ -109,7 +109,7 @@ class RestyBiosourceSamplingProcessSerializer(DynamicDataviewModelSerializer):
         return obj.submission_org.code if obj.submission_org else None
 
     def get_biosources(self, obj):
-        return RestyBiosampleSourceSerializer([x.in_group for x in obj.records.filter(in_group__biosamplesource__isnull=False).order_by('id').select_related('in_group')], many=True, context=self.context).data
+        return RestyBiosampleSourceSerializer([x.in_group for x in obj.records.filter(in_group__biosamplesource__isnull=False).order_by('id').prefetch_related('in_group')], many=True, context=self.context).data
 
 class RestyDNASequencingProcessSerializer(DynamicDataviewModelSerializer):
     libraries = serializers.SerializerMethodField()
