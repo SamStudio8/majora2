@@ -156,9 +156,6 @@ class RestyProcessSerializer(PolymorphicSerializer):
 class BaseRestyProcessRecordSerializer(DynamicDataviewModelSerializer):
     class Meta:
         model = models.MajoraArtifactProcessRecord
-        #majora_children = {
-        #    "process": (RestyProcessSerializer, {})
-        #}
         fields = (
         )
     def __init__(self, *args, **kwargs):
@@ -167,11 +164,9 @@ class BaseRestyProcessRecordSerializer(DynamicDataviewModelSerializer):
             self.fields['process'] = RestyProcessSerializer(context=self.context)
 
 class RestyLibraryPoolingProcessRecordSerializer(BaseRestyProcessRecordSerializer):
-    #biosample = serializers.SerializerMethodField()
     class Meta:
         model = models.LibraryPoolingProcessRecord
         fields = BaseRestyProcessRecordSerializer.Meta.fields + (
-                #'biosample',
                 'barcode',
                 'library_strategy',
                 'library_source',
@@ -179,9 +174,6 @@ class RestyLibraryPoolingProcessRecordSerializer(BaseRestyProcessRecordSerialize
                 'library_primers',
                 'library_protocol',
         )
-
-    #def get_biosample(self, obj):
-    #    return RestyArtifactSerializer(obj.in_artifact, context=self.context).data
 
 class RestyProcessRecordSerializer(PolymorphicSerializer):
     resource_type_field_name = 'processrecord_model'
@@ -196,9 +188,6 @@ class BaseRestyArtifactSerializer(DynamicDataviewModelSerializer):
 
     class Meta:
         model = models.MajoraArtifact
-        #majora_children = {
-        #    "majora_metadata": (RestyMetaRecord, {"many": True})
-        #}
         fields = ('id', 'dice_name', 'artifact_kind', 'published_as', 'metadata')
 
     def __init__(self, *args, **kwargs):
@@ -292,19 +281,15 @@ class RestyPublishedArtifactGroupSerializer(DynamicDataviewModelSerializer):
                 'published_name',
                 'published_date',
                 'is_public',
-                #"artifacts",
                 "process_records",
         )
 
-    #def __init__(self, *args, **kwargs):
-    #    super().__init__(*args, **kwargs)
-    #    self.fields['artifacts'] = RestyArtifactSerializer(source="tagged_artifacts", many=True, context=self.context)
-
     def get_process_records(self, obj):
+        self.context["backward"] = False
+
         ids = obj.tagged_artifacts.values_list('id', flat=True)
-        models.MajoraArtifactProcessRecord.objects.filter(Q(in_artifact__id__in=ids) | Q(out_artifact__id__in=ids))
         wide_ids = []
         for d in models.MajoraArtifactProcessRecord.objects.filter(Q(in_artifact__id__in=ids) | Q(out_artifact__id__in=ids)).values('in_artifact', 'out_artifact', 'in_group', 'out_group'):
             wide_ids.extend(d.values())
-        return RestyProcessRecordSerializer(models.MajoraArtifactProcessRecord.objects.filter(Q(in_artifact__id__in=wide_ids) | Q(out_artifact__id__in=wide_ids)), many=True, context=self.context).data
+        return RestyProcessRecordSerializer(models.MajoraArtifactProcessRecord.objects.filter(Q(in_artifact__id__in=wide_ids) | Q(out_artifact__id__in=wide_ids)).prefetch_related('process'), many=True, context=self.context).data
 
