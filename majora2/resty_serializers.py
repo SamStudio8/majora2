@@ -144,7 +144,7 @@ class RestyDNASequencingProcessSerializer(DynamicDataviewModelSerializer):
             return None
 
     def get_libraries(self, obj):
-        return RestyLibraryArtifactSerializer([a.in_artifact for a in obj.records.filter(in_artifact__libraryartifact__isnull=False).prefetch_related('in_artifact')], many=True, context=self.context).data
+        return RestyLibraryArtifactSerializer([a.in_artifact for a in obj.records.filter(in_artifact__libraryartifact__isnull=False).prefetch_related('in_artifact__metadata')], many=True, context=self.context).data
 
 class RestyProcessSerializer(PolymorphicSerializer):
     resource_type_field_name = 'process_model'
@@ -192,21 +192,24 @@ class RestyProcessRecordSerializer(PolymorphicSerializer):
 
 class BaseRestyArtifactSerializer(DynamicDataviewModelSerializer):
     published_as = serializers.SerializerMethodField()
+    metadata = serializers.SerializerMethodField()
 
     class Meta:
         model = models.MajoraArtifact
         #majora_children = {
-        #      "created": (RestyProcessSerializer, {})
+        #    "majora_metadata": (RestyMetaRecord, {"many": True})
         #}
-        fields = ('id', 'dice_name', 'artifact_kind', 'published_as')
+        fields = ('id', 'dice_name', 'artifact_kind', 'published_as', 'metadata')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        #self.fields['metadata'] = RestyMetaRecord(many=True, context=self.context)
         self.fields['created'] = RestyProcessSerializer(context=self.context)
 
     def get_published_as(self, obj):
         return ",".join([pag.published_name for pag in obj.groups.filter(Q(PublishedArtifactGroup___is_latest=True))])
+
+    def get_metadata(self, obj):
+        return RestyMetaRecord(obj.metadata.all(), many=True).data
 
 class RestyBiosampleArtifactSerializer(BaseRestyArtifactSerializer):
     class Meta:
