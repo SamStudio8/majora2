@@ -35,10 +35,10 @@ class DynamicDataviewModelSerializer(serializers.ModelSerializer):
 
         self.read_only_fields = self.fields
 
-class RestyMetaRecord(serializers.ModelSerializer):
-    class Meta:
-        model = models.MajoraMetaRecord
-        fields = ('meta_tag', 'meta_name', 'value')
+#class RestyMetaRecord(serializers.ModelSerializer):
+#    class Meta:
+#        model = models.MajoraMetaRecord
+#        fields = ('meta_tag', 'meta_name', 'value')
 
 class BaseRestyProcessSerializer(DynamicDataviewModelSerializer):
     who = serializers.CharField(source='who.username')
@@ -209,7 +209,12 @@ class BaseRestyArtifactSerializer(DynamicDataviewModelSerializer):
         return ",".join([pag.published_name for pag in obj.groups.filter(Q(PublishedArtifactGroup___is_latest=True))])
 
     def get_metadata(self, obj):
-        return RestyMetaRecord(obj.metadata.all(), many=True).data
+        meta = {}
+        for record in obj.metadata.all():
+            if record.meta_tag not in meta:
+                meta[record.meta_tag] = {}
+            meta[record.meta_tag][record.meta_name] = record.value
+        return meta
 
 class RestyBiosampleArtifactSerializer(BaseRestyArtifactSerializer):
     class Meta:
