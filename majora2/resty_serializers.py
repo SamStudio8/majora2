@@ -270,6 +270,7 @@ class RestyArtifactSerializer(PolymorphicSerializer):
 
 class RestyPublishedArtifactGroupSerializer(DynamicDataviewModelSerializer):
     process_records = serializers.SerializerMethodField()
+    accessions = serializers.SerializerMethodField()
 
     class Meta:
         model = models.PublishedArtifactGroup
@@ -282,7 +283,16 @@ class RestyPublishedArtifactGroupSerializer(DynamicDataviewModelSerializer):
                 'published_date',
                 'is_public',
                 "process_records",
+                'accessions',
         )
+
+    def get_accessions(self, obj):
+        return {
+            a.service: {
+                "accession": a.primary_accession,
+                "secondary_accession": a.secondary_accession,
+            } for a in obj.accessions.all()
+        }
 
     def get_process_records(self, obj):
         self.context["backward"] = False
