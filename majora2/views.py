@@ -176,7 +176,7 @@ def search(request):
     elif group:
         return redirect(reverse('group_artifact', kwargs={'group_uuid': group.id}))
     else:
-        return HttpResponseBadRequest("Invalid request.")
+        return HttpResponseBadRequest("Sorry, I've searched everywhere and that identifier does not appear in Majora.")
 
 
 @login_required
