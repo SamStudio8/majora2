@@ -351,17 +351,21 @@ def handle_testdigitalresource(form, user=None, api_o=None, request=None):
     res_updated = False
     node = form.cleaned_data["node_name"]
 
-    # Get the directory
-    parent = node
     path = form.cleaned_data["path"]
     lpath = path.split( form.cleaned_data["sep"] )[1:-1]
-    for i, dir_name in enumerate(lpath):
-        dir_g, created = models.DigitalResourceGroup.objects.get_or_create(
-                current_name=dir_name,
-                root_group=node,
-                parent_group=parent,
-                physical=True)
-        parent = dir_g
+
+    # Get the directory
+    parent = util.get_mag(node.node_name, path, sep=form.cleaned_data["sep"], artifact=False, by_hard_path=True)
+    if not parent:
+        parent = node
+        for i, dir_name in enumerate(lpath):
+            dir_g, created = models.DigitalResourceGroup.objects.get_or_create(
+                    #group_path=form.cleaned_data["sep"].join(lpath),
+                    current_name=dir_name,
+                    root_group=node,
+                    parent_group=parent,
+                    physical=True)
+            parent = dir_g
 
     if form.cleaned_data.get("artifact_uuid"):
         res, created = models.DigitalResourceArtifact.objects.get_or_create(
