@@ -862,7 +862,7 @@ class DigitalResourceArtifact(MajoraArtifact):
     #current_node = models.ForeignKey('Node')
     current_path = models.CharField(max_length=1024, blank=True, null=True) # TODO quick fix to get files quickly
 
-    current_name = models.CharField(max_length=512)
+    current_name = models.CharField(max_length=512, db_index=True)
     current_hash = models.CharField(max_length=64)
     current_size = models.BigIntegerField(default=0)
     ghost = models.BooleanField(default=False) # is deleted
