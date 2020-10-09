@@ -17,7 +17,7 @@ def get_mdv_fields(mdv_codename):
             mdv_fields[f.model_name].append(f.model_field)
     return mdv_fields
 
-def get_mag(root, path, sep="/", artifact=False, by_hard_path=False):
+def get_mag(root, path, sep="/", artifact=False, by_hard_path=False, prefetch=True):
 
     try:
         node = models.DigitalResourceNode.objects.get(node_name=root)
@@ -43,7 +43,9 @@ def get_mag(root, path, sep="/", artifact=False, by_hard_path=False):
             return None
         a = [dir_g]
         #prefetch_related_objects(a, 'children', 'groups', 'out_glinks', 'parent_group', 'root_group')
-        prefetch_related_objects(a, 'children__tagged_artifacts', 'groups__tagged_artifacts', 'out_glinks', 'parent_group', 'root_group')
+
+        if prefetch:
+            prefetch_related_objects(a, 'children__tagged_artifacts', 'groups__tagged_artifacts', 'out_glinks', 'parent_group', 'root_group')
         return a[0]
     else:
         parent = node
@@ -59,7 +61,8 @@ def get_mag(root, path, sep="/", artifact=False, by_hard_path=False):
             except:
                 return None
         a = [dir_g]
-        prefetch_related_objects(a, 'children__tagged_artifacts', 'groups__tagged_artifacts', 'out_glinks', 'parent_group', 'root_group')
+        if prefetch:
+            prefetch_related_objects(a, 'children__tagged_artifacts', 'groups__tagged_artifacts', 'out_glinks', 'parent_group', 'root_group')
         return a[0]
 
 

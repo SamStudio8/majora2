@@ -355,8 +355,10 @@ def handle_testdigitalresource(form, user=None, api_o=None, request=None):
     lpath = path.split( form.cleaned_data["sep"] )[1:-1]
 
     # Get the directory
-    parent = util.get_mag(node.node_name, path, sep=form.cleaned_data["sep"], artifact=False, by_hard_path=True)
+    parent = util.get_mag(node.node_name, path, sep=form.cleaned_data["sep"], artifact=True, by_hard_path=True, prefetch=False)
     if not parent:
+        if api_o:
+            api_o["messages"].append("MAG not found from hard path")
         parent = node
         for i, dir_name in enumerate(lpath):
             dir_g, created = models.DigitalResourceGroup.objects.get_or_create(
@@ -457,7 +459,6 @@ def handle_testdigitalresource(form, user=None, api_o=None, request=None):
         if res and not created and api_o:
             api_o["updated"].append(_format_tuple(res))
             TatlVerb(request=request.treq, verb="UPDATE", content_object=res).save()
-
 
 
     if created and api_o:
