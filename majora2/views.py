@@ -64,11 +64,14 @@ def group_artifact(request, group_uuid):
     group = get_object_or_404(models.MajoraArtifactGroup, id=group_uuid)
     f = models.Favourite.objects.filter(user=request.user.id, group=group_uuid)
 
-    TatlVerb(request=request.treq, verb="RETRIEVE", content_object=group).save()
-    return render(request, 'list_artifact.html', {
-        "group": group,
-        "favourite": f,
-    })
+    if group.tagged_artifacts.count() > 100 or group.child_artifacts.count() > 100:
+        return HttpResponseBadRequest("Sorry, this group contains more than 100 artifacts and cannot be displayed at this time.")
+    else:
+        TatlVerb(request=request.treq, verb="RETRIEVE", content_object=group).save()
+        return render(request, 'list_artifact.html', {
+            "group": group,
+            "favourite": f,
+        })
 
 @login_required
 def group_artifact_dice(request, group_dice):
