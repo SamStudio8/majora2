@@ -1392,6 +1392,15 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
             if record.in_group and record.in_group.kind == "Biosample Source":
                 biosample_sources.append(record.in_group.as_struct())
 
+        is_surveillance = ""
+        if hasattr(self, "coguk_supp"):
+            if self.coguk_supp.is_surveillance:
+                is_surveillance = "Y"
+            elif self.coguk_supp.is_surveillance is False:
+                is_surveillance = "N"
+            else:
+                is_surveillance = ""
+
         return {
             "collection_date": self.collection_date.strftime("%Y-%m-%d") if self.collection_date else None,
             "received_date": self.received_date.strftime("%Y-%m-%d") if self.received_date else None,
@@ -1408,6 +1417,8 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
             "adm1": self.collection_location_adm1,
             "adm2": self.collection_location_adm2,
             "adm2_private": self.private_collection_location_adm2,
+
+            "is_surveillance": is_surveillance,
 
             "biosample_sources": biosample_sources,
         }
