@@ -393,13 +393,24 @@ def handle_testdigitalresource(form, user=None, api_o=None, request=None):
     res.save()
 
     if len(form.cleaned_data.get("source_group")) > 0 or len(form.cleaned_data.get("source_artifact")) > 0:
-        bio, b_created = models.AbstractBioinformaticsProcess.objects.get_or_create(
+        try:
+            bio, b_created = models.AbstractBioinformaticsProcess.objects.get_or_create(
                 #id = form.cleaned_data["pipe_id"],
                 hook_name = form.cleaned_data["pipe_hook"],
                 pipe_kind = form.cleaned_data["pipe_kind"],
                 pipe_name = form.cleaned_data["pipe_name"],
                 pipe_version = form.cleaned_data["pipe_version"],
-        )
+            )
+        except:
+            api_o["messages"].append("Race condition caught trying to add another ABP. Dropping to GET. End users can ignore this message.")
+            bio, b_created = models.AbstractBioinformaticsProcess.objects.get_or_create(
+                #id = form.cleaned_data["pipe_id"],
+                hook_name = form.cleaned_data["pipe_hook"],
+                pipe_kind = form.cleaned_data["pipe_kind"],
+                pipe_name = form.cleaned_data["pipe_name"],
+                pipe_version = form.cleaned_data["pipe_version"],
+            )
+            
         bio.who = user
         bio.when = timezone.now()
         bio.save()
