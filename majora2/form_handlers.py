@@ -334,6 +334,7 @@ def handle_testsample(form, user=None, api_o=None, request=None):
     supp.is_care_home_resident = form.cleaned_data.get("is_care_home_resident")
     supp.anonymised_care_home_code = form.cleaned_data.get("anonymised_care_home_code")
     supp.admitted_with_covid_diagnosis = form.cleaned_data.get("admitted_with_covid_diagnosis")
+    supp.collection_pillar = form.cleaned_data.get("collection_pillar")
 
     supp.save()
     sample_p.save()
