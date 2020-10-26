@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'majora2',
     'django.contrib.admin',
     'tatl',
+    'deku',
     'django_slack',
     'crispy_forms',
     'django_celery_results',
