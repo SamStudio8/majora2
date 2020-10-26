@@ -601,11 +601,11 @@ class TestSampleForm(forms.Form):
     anonymised_care_home_code = forms.CharField(max_length=10, required=False)
     admitted_with_covid_diagnosis = forms.NullBooleanField()
 
-    collection_pillar = forms.ChoiceField(choices=[
+    collection_pillar = forms.TypedChoiceField(choices=[
             (None, None),
-            (1, 1),
-            (2, 2),
-        ], required=False)
+            ("1", 1),
+            ("2", 2),
+        ], coerce=int, empty_value=None, required=False)
 
 
     def __init__(self, *args, **kwargs):
