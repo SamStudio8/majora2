@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 
 from . import models as dmodels
@@ -16,7 +16,7 @@ def list_all_profiles(request):
         return HttpResponseBadRequest() # bye
 
     if not request.user.has_perm("majora2.change_profile"):
-        return HttpResponseBadRequest() # bye
+        return HttpResponseForbidden() # bye
 
     # Render the list regardless of what the form did
     active_site_profiles = models.Profile.objects.filter(is_site_approved=True)
