@@ -30,79 +30,31 @@
             {% endif %}
         </td>
         <td>
-            {% if sample.created.coguk_supp.is_hcw %}
-            <span class="badge badge-success">Y</span>
-            {% elif sample.created.coguk_supp.is_hcw == False %}
-            <span class="badge badge-danger">N</span>
-            {% else %}
-            <span class="badge badge-dark">?</span>
-            {% endif %}
+            <span class="badge badge-danger">Restricted</span>
         </td>
         <td>
-            {% if sample.created.coguk_supp.is_hospital_patient %}
-            <span class="badge badge-success">Y</span>
-            {% elif sample.created.coguk_supp.is_hospital_patient == False %}
-            <span class="badge badge-danger">N</span>
-            {% else %}
-            <span class="badge badge-dark">?</span>
-            {% endif %}
-            {% if sample.created.coguk_supp.is_icu_patient %}
-            <span class="badge badge-info badge-left">ICU</span><span class="badge badge-success badge-right">Y</span>
-            {% elif sample.created.coguk_supp.is_icu_patient == False %}
-            <span class="badge badge-info badge-left">ICU</span><span class="badge badge-danger badge-right">N</span>
-            {% else %}
-            <span class="badge badge-info badge-left">ICU</span><span class="badge badge-dark badge-right">?</span>
-            {% endif %}
+            <span class="badge badge-danger">Restricted</span>
         </td>
         <td>
-            {% if sample.created.coguk_supp.is_care_home_worker %}
-            <span class="badge badge-success">Y</span>
-            {% elif sample.created.coguk_supp.is_care_home_worker == False %}
-            <span class="badge badge-danger">N</span>
-            {% else %}
-            <span class="badge badge-dark">?</span>
-            {% endif %}
+            <span class="badge badge-danger">Restricted</span>
         </td>
         <td>
-            {% if sample.created.coguk_supp.is_care_home_resident %}
-            <span class="badge badge-success">Y</span>
-            {% elif sample.created.coguk_supp.is_care_home_resident == False %}
-            <span class="badge badge-danger">N</span>
-            {% else %}
-            <span class="badge badge-dark">?</span>
-            {% endif %}
+            <span class="badge badge-danger">Restricted</span>
         </td>
         <td>
-            {% if sample.created.coguk_supp.admitted_with_covid_diagnosis %}
-            <span class="badge badge-success">Y</span>
-            {% elif sample.created.coguk_supp.admitted_with_covid_diagnosis == False %}
-            <span class="badge badge-danger">N</span>
-            {% else %}
-            <span class="badge badge-dark">?</span>
-            {% endif %}
+            <span class="badge badge-danger">Restricted</span>
         </td>
     </tr>
     <tr>
         <td></td>
         <td></td>
         <td style="font-size: 0.7em">
-            {{ sample.created.coguk_supp.employing_hospital_name }}
-            {% if sample.created.coguk_supp.employing_hospital_trust_or_board %}
-            ({{ sample.created.coguk_supp.employing_hospital_trust_or_board }})
-            {% endif %}
         </td>
         <td style="font-size: 0.7em">
-            {{ sample.created.coguk_supp.admitted_hospital_name }} 
-            {% if sample.created.coguk_supp.admitted_hospital_trust_or_board %}
-            ({{ sample.created.coguk_supp.admitted_hospital_trust_or_board }})
-            {% endif %}
-            {% if sample.created.coguk_supp.admission_date %}
-            <br> {{ sample.created.coguk_supp.admission_date }}
-            {% endif %}
         </td>
         <td colspan=2 style="font-size: 0.7em">
             {% if sample.created.coguk_supp.anonymised_care_home_code %}
-            Carehome Code <code>{{ sample.created.coguk_supp.anonymised_care_home_code }}</code>
+            Carehome Code <code>Restricted</code>
             {% endif %}
         </td>
         <td></td>
