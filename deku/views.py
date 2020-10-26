@@ -23,7 +23,6 @@ def list_all_profiles(request):
     inactive_site_profiles = models.Profile.objects.filter(is_site_approved=False)
     return render(request, 'list_all_profiles.html', {
         'user': request.user,
-        'org': request.user.profile.institute,
         'active_profiles': active_site_profiles,
         'inactive_profiles': inactive_site_profiles,
     })
