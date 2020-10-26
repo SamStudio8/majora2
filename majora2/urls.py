@@ -32,8 +32,6 @@ urlpatterns = [
     path('accounts/profile/agreements/', account_views.agreements, name='agreements'),
     path('accounts/profile/mdv/', account_views.list_dataviews, name='list_profile_mdv'),
 
-    path('institute/profiles/', account_views.list_site_profiles, name='list_site_profiles'),
-
     # DATAMATRIX ###############################################################
     path('dm/<uuid:uuid>/', views.barcode, name="barcode"),
 
