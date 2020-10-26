@@ -1393,6 +1393,7 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
                 biosample_sources.append(record.in_group.as_struct())
 
         is_surveillance = ""
+        pillar = ""
         if hasattr(self, "coguk_supp"):
             if self.coguk_supp.is_surveillance:
                 is_surveillance = "Y"
@@ -1400,6 +1401,7 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
                 is_surveillance = "N"
             else:
                 is_surveillance = ""
+            pillar = self.coguk_supp.collection_pillar
 
         return {
             "collection_date": self.collection_date.strftime("%Y-%m-%d") if self.collection_date else None,
@@ -1419,6 +1421,7 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
             "adm2_private": self.private_collection_location_adm2,
 
             "is_surveillance": is_surveillance,
+            "collection_pillar": pillar,
 
             "biosample_sources": biosample_sources,
         }
