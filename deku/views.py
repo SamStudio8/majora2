@@ -7,6 +7,28 @@ from majora2 import models
 from tatl.util import django_2fa_mixin_hack
 
 @login_required
+def list_all_profiles(request):
+    otp = django_2fa_mixin_hack(request)
+    if otp:
+        return otp
+
+    if not hasattr(request.user, "profile"):
+        return HttpResponseBadRequest() # bye
+
+    if not request.user.has_perm("majora2.change_profile"):
+        return HttpResponseBadRequest() # bye
+
+    # Render the list regardless of what the form did
+    active_site_profiles = models.Profile.objects.filter(is_site_approved=True)
+    inactive_site_profiles = models.Profile.objects.filter(is_site_approved=False)
+    return render(request, 'site_profiles.html', {
+        'user': request.user,
+        'org': request.user.profile.institute,
+        'active_profiles': active_site_profiles,
+        'inactive_profiles': inactive_site_profiles,
+    })
+
+@login_required
 def list_site_profiles(request):
     otp = django_2fa_mixin_hack(request)
     if otp:
