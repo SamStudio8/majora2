@@ -25,27 +25,27 @@
     <div class="col-md-12">
         <h1>Active profiles</h1>
         <br>
-        <table class="table table-borderless table-hover">
+        <table id="users" class="table table-borderless table-hover">
             <thead class="table-dark">
             <tr>
                 <th>ID</th>
-                <th>Org / Username</th>
-                <th>Name / Email</th>
+                <th>Org</th>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Email</th>
                 <th>Last login</th>
-                <th>Last action</th>
                 <th>Active</th>
             </tr>
             </thead>
             <tbody>
             {% for profile in active_profiles %}
             <tr>
-                <td><code>{{ profile.user.id }}</code></br>
-                <td><code>{{ profile.institute.code }}</code></br>
-                <code>{{ profile.user.username }}</code></td>
-                <td>{{ profile.user.first_name }} {{ profile.user.last_name }}
-                </br><code>{{ profile.user.email }}</code></td>
+                <td><code>{{ profile.user.id }}</code></td>
+                <td><code>{{ profile.institute.code }}</code></td>
+                <td><code>{{ profile.user.username }}</code></td>
+                <td>{{ profile.user.first_name }} {{ profile.user.last_name }}</td>
+                <td><code>{{ profile.user.email }}</code></td>
                 <td>{{ profile.user.last_login | naturaltime }}</td>
-                <td>{{ profile.last_action | naturaltime }}</td>
                 <td>
                 {% if profile.user.is_active %}
                     <span class="badge badge-success">ACTIVE</span>
@@ -58,9 +58,23 @@
             <tr><td>No users to list...</td></tr>
             {% endfor %}
             </tbody>
+            <tfoot class="table-dark">
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </tfoot>
         </table>
     </div>
 </div>
+
+<hr>
+
 <div class="row">
     <div class="col-md-12">
         <h1>Approval queue</h1>
@@ -94,6 +108,38 @@
 </div>
 </div>
 </div>
+
+<script>
+$(document).ready(function() {
+   var table = $('#users').DataTable({
+      'columnDefs': [
+      ],
+      'order': [[0, 'asc']],
+
+      initComplete: function () {
+          this.api().columns(  function ( idx, data, node ){ if(idx == 1){ return true }; return false;}  ).every( function () {
+              var column = this;
+              var select = $('<select><option value=""></option></select>')
+                  .appendTo( $(column.footer()).empty() )
+                  .on( 'change', function () {
+                      var val = $.fn.dataTable.util.escapeRegex(
+                          $(this).val()
+                      );
+ 
+                      column
+                          .search( val ? '^'+val+'$' : '', true, false )
+                          .draw();
+                  } );
+ 
+              {% for code in site_codes %}
+                  select.append( '<option value="{{ code|escape }}">{{ code|escape }}</option>' )
+              {% endfor %}
+          });
+      }
+
+   });
+});
+</script>
 
 {% include 'footer.html' %}
 
