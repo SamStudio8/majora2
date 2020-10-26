@@ -82,6 +82,9 @@
 
 <hr>
 
+</div>
+</div>
+
 <div class="row">
     <div class="col-md-12">
         <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
@@ -102,7 +105,7 @@
             <div class="tab-pane fade" id="pills-published" role="tabpanel" aria-labelledby="pills-published-tab">
                 <h2>Published Artifact Groups <code>{{ request.user.profile.institute.code }}</code></h2>
                 {% with gitems=pags %}
-                    {% include 'tables/pag.html' %}
+                    {% include 'tables/dt_pag.html' %}
                 {% endwith %}
             </div>
         </div>

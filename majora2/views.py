@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
+from django.utils.http import urlencode
 
 from . import models
 from . import util
@@ -134,7 +135,8 @@ def profile(request):
         'pgroups': models.Favourite.objects.filter(user=request.user.id).exclude(pgroup__isnull=True),
         'processes': models.MajoraArtifactProcess.objects.filter(who=request.user.id).order_by('-when'),
         'samples': models.BiosampleArtifact.objects.filter(created__who__profile__institute__code=request.user.profile.institute.code),
-        'pags': models.PublishedArtifactGroup.objects.filter(owner__profile__institute__code=request.user.profile.institute.code, is_latest=True),
+        'pag_ajax_url': reverse('api.datatable.pag.get') + '?' + urlencode({'default_seqsite': request.user.profile.institute.code}),
+        'site_codes': [request.user.profile.institute.code],
     })
 
 @login_required

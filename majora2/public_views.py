@@ -57,15 +57,19 @@ class OrderListJson(BaseDatatableView):
         if search:
             qs = qs.filter(published_name__icontains=search)
 
+        default_seqsite = self.request.GET.get('default_seqsite', None)
         seqsite = self.request.GET.get('columns[3][search][value]', None)
         if seqsite:
             qs = qs.filter(owner__profile__institute__code=seqsite[1:-1])
+        elif default_seqsite:
+            qs = qs.filter(owner__profile__institute__code=default_seqsite)
 
         return qs
 
 @cache_page(60 * 60)
 def list_accessions(request):
     return render(request, 'public/special/pag_list.html', {
+        "pag_ajax_url": reverse("api.datatable.pag.get"),
         "site_codes": sorted(models.Institute.objects.all().values_list('code', flat=True)),
     })
 
