@@ -98,15 +98,11 @@
         <div class="tab-content" id="pills-tabContent">
             <div class="tab-pane fade show active" id="pills-biosample" role="tabpanel" aria-labelledby="pills-biosample-tab">
                 <h2>Biosamples <code>{{ request.user.profile.institute.code }}</code></h2>
-                {% with gitems=samples %}
-                    {% include 'tables/biosample.html' %}
-                {% endwith %}
+                {% include 'tables/dt_biosample.html' %}
             </div>
             <div class="tab-pane fade" id="pills-published" role="tabpanel" aria-labelledby="pills-published-tab">
                 <h2>Published Artifact Groups <code>{{ request.user.profile.institute.code }}</code></h2>
-                {% with gitems=pags %}
-                    {% include 'tables/dt_pag.html' %}
-                {% endwith %}
+                {% include 'tables/dt_pag.html' %}
             </div>
         </div>
     </div>

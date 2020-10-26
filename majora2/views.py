@@ -136,6 +136,7 @@ def profile(request):
         'processes': models.MajoraArtifactProcess.objects.filter(who=request.user.id).order_by('-when'),
         'samples': models.BiosampleArtifact.objects.filter(created__who__profile__institute__code=request.user.profile.institute.code),
         'pag_ajax_url': reverse('api.datatable.pag.get') + '?' + urlencode({'default_seqsite': request.user.profile.institute.code}),
+        'biosample_ajax_url': reverse('api.datatable.biosample.get'),
         'site_codes': [request.user.profile.institute.code],
     })
 

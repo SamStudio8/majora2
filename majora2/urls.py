@@ -1,6 +1,7 @@
 from django.urls import path, re_path, include
 from django.views.generic import TemplateView
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 
 from . import views
 from . import account_views
@@ -8,6 +9,7 @@ from . import bot_views
 from . import public_views
 from . import private_views
 from . import api_views
+from . import tables
 
 urlpatterns = [
     #search
@@ -94,6 +96,7 @@ urlpatterns = [
     path('api/v2/majora/task/delete/', csrf_exempt(api_views.del_task_result), name="api.majora.task.delete"),
 
     path('api/datatable/pag/', public_views.OrderListJson.as_view(), name='api.datatable.pag.get'),
+    path('api/datatable/biosample/', login_required(tables.BiosampleOrderListJson.as_view()), name='api.datatable.biosample.get'),
 
     # Home
     path('', views.home, name='home'),

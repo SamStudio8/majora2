@@ -1,5 +1,5 @@
 <div class="table-responsive">
-<table class="table datatable" style="width: 100% !important">
+<table id="dt_pag" class="table datatable" style="width: 100% !important">
     <thead class="table-dark">
         <tr>
             <th></th>
@@ -41,7 +41,7 @@ $(document).ready(function() {
         });
     }
 
-    var oTable = $('.datatable').dataTable({
+    var oTable = $('#dt_pag').dataTable({
         processing: true,
         serverSide: true,
         ajax: "{{ pag_ajax_url }}",

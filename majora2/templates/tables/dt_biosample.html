@@ -1,0 +1,68 @@
+<div class="table-responsive">
+<table id="dt_biosample" class="table datatable" style="width: 100% !important">
+    <thead class="table-dark">
+        <tr>
+            <th></th>
+            <th>Sample ID</th>
+            <th>Sample Source</th>
+            <th>Collected at</th>
+            <th>Collected by</th>
+            <th>Type</th>
+            <th>Collection Date</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+    <tfoot class="table-dark">
+        <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+    </tfoot>
+</table>
+</div>
+
+<script>
+$(document).ready(function() {
+    // https://stackoverflow.com/questions/46790263/replace-nth-occurence-of-number-in-string-with-javascript
+    function replaceOccurrence(string, regex, n, replace) {
+       var i = 0;
+       return string.replace(regex, function(match) {
+            i+=1;
+            if(i===n) return replace;
+            return match;
+        });
+    }
+
+    var oTable = $('#dt_biosample').dataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ biosample_ajax_url }}",
+        pageLength: 10,
+
+        dom: 'frtip',
+
+        columnDefs: [
+            {
+                orderable: false,
+            },
+            { 
+                "render": function(data, type, row){
+                    data = replaceOccurrence(data, /\//g, 2, '<br />')
+                    var url_mask = "{% url 'detail_artifact' '00000000-0000-0000-0000-000000000000' %}".replace(/00000000-0000-0000-0000-000000000000/, row[0].toString());
+                    return '<a style="font-size; 0.8em" href="' + url_mask + '">' + data + '</a>';
+                },
+                "targets": 1
+            },
+            { "visible": false,  "targets": [ 0 ] }
+        ],
+
+    });
+});
+</script>
+
