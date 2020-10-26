@@ -8,7 +8,7 @@ class BiosampleOrderListJson(BaseDatatableView):
     model = models.BiosampleArtifact
 
     columns = ["id", "central_sample_id", "sample_source", "collected_at", "collected_by", "type", "collection_date"]
-    order_columns = ["id", "central_sample_id", "-", "-", "-", "-", "-"]
+    order_columns = ["id", "central_sample_id", "-", "-", "-", "-", "created__collection_date"]
     max_display_length = 25
 
     def render_column(self, row, column):
