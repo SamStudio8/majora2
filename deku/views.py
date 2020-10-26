@@ -21,7 +21,7 @@ def list_all_profiles(request):
     # Render the list regardless of what the form did
     active_site_profiles = models.Profile.objects.filter(is_site_approved=True)
     inactive_site_profiles = models.Profile.objects.filter(is_site_approved=False)
-    return render(request, 'site_profiles.html', {
+    return render(request, 'list_all_profiles.html', {
         'user': request.user,
         'org': request.user.profile.institute,
         'active_profiles': active_site_profiles,
@@ -63,7 +63,7 @@ def list_site_profiles(request):
     # Render the list regardless of what the form did
     active_site_profiles = models.Profile.objects.filter(institute=request.user.profile.institute, is_site_approved=True)
     inactive_site_profiles = models.Profile.objects.filter(institute=request.user.profile.institute, is_site_approved=False)
-    return render(request, 'site_profiles.html', {
+    return render(request, 'list_site_profiles.html', {
         'user': request.user,
         'org': request.user.profile.institute,
         'active_profiles': active_site_profiles,

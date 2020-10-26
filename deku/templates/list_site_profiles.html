@@ -1,0 +1,97 @@
+{% include 'header.html' %}
+{% load humanize %}
+<div class="mast" style="margin-bottom:0">
+    <div class="container">
+        <div class="row">
+        <div class="col-md-6">
+            <span class="badge badge-warning">User</span>
+            <span class="uuid-mast" style="margin-top:0; padding-top:0;">{{ user.id }}</span>
+        </div>
+        <div class="col-md-6 text-right">
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-md-12">
+            <h1>{{ user.username }}</h1>
+        </div>
+        </div>
+    </div>
+</div>
+<div class="mast2">
+</div>
+
+<div class="container">
+<div class="row">
+    <div class="col-md-8">
+        <h1>Active <code>{{ org.code }}</code> profiles</h1>
+        <br>
+        <table class="table table-borderless">
+            <thead class="table-dark">
+            <tr>
+                <th>Username</th>
+                <th>Name / Email</th>
+                <th>Last login</th>
+                <th>Last action</th>
+                <th>Active</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for profile in active_profiles %}
+            <tr class="table-success">
+                <td><code>{{ profile.user.username }}</code></td>
+                <td>{{ profile.user.first_name }} {{ profile.user.last_name }}
+                </br><code>{{ profile.user.email }}</code></td>
+                <td>{{ profile.user.last_login | naturaltime }}</td>
+                <td>{{ profile.last_action | naturaltime }}</td>
+                <td>
+                {% if profile.user.is_active %}
+                    <span class="badge badge-success">ACTIVE</span>
+                {% else %}
+                    <span class="badge badge-warning">WAITING</span>
+                {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td>No users to list...</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-4">
+        <h1>Approval queue</h1>
+        <p>These profiles require your attention. Approve a profile only if you know this user should have access to CLIMB systems.</p>
+        <table class="table table-borderless">
+            <thead class="table-dark">
+            <tr>
+                <th>User</th>
+                <th class="text-right">Approve</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for profile in inactive_profiles %}
+            <tr class="table-danger">
+                <td>{{ profile.user.username }}</br>{{ profile.user.first_name }} {{ profile.user.last_name }}</br>{{ profile.user.email }}</td>
+                <td class="text-right">
+                    <form action="{% url 'list_site_profiles' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" id="profile" name="profile" value="{{ profile.pk }}">
+                        <input type="submit" class="btn btn-success btn-sm" type="button" value="Approve">
+                    </form>
+            </tr>
+            {% empty %}
+            <tr><td>No users to list...</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</div>
+</div>
+</div>
+
+{% include 'footer.html' %}
+
+
+
+
