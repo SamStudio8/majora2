@@ -4,6 +4,7 @@
     <thead class="table-active">
     <tr>
         <th width="10%">Surveillance</th>
+        <th width="10%">Pillar</th>
         <th width="18%">Hospital Worker</th>
         <th width="18%">Hospital Patient</th>
         <th width="18%">Carehome Worker</th>
@@ -17,6 +18,13 @@
             <span class="badge badge-success">Y</span>
             {% elif sample.created.coguk_supp.is_surveillance == False %}
             <span class="badge badge-danger">N</span>
+            {% else %}
+            <span class="badge badge-dark">?</span>
+            {% endif %}
+        </td>
+        <td>
+            {% if sample.created.coguk_supp.collection_pillar %}
+            <span class="badge badge-success">{{ sample.created.coguk_supp.collection_pillar }}</span>
             {% else %}
             <span class="badge badge-dark">?</span>
             {% endif %}
