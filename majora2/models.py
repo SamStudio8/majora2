@@ -1386,6 +1386,17 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
     collection_location_adm2 = models.CharField(max_length=100, blank=True, null=True)
     private_collection_location_adm2 = models.CharField(max_length=100, blank=True, null=True)
 
+    def get_source_age(self):
+        if self.source_age:
+            return self.source_age
+        else:
+            return "[Age:?]"
+    def get_source_sex(self):
+        if self.source_sex:
+            return self.source_sex
+        else:
+            return "[Sex:?]"
+
     def as_struct(self):
         biosample_sources = []
         for record in self.records.all():
