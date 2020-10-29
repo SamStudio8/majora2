@@ -42,6 +42,7 @@ urlpatterns = [
     ), name="logout"),
 
     path('', include('majora2.urls')),
+    path('', include('deku.urls')),
     path('', include(tf_urls)),
     path('account/', include('django.contrib.auth.urls')), # tf login will supercede this
 ]
