@@ -1329,3 +1329,54 @@ def get_mag(request):
         api_o["mag"] = MAGSerializer(mag).data
 
     return wrap_api_v2(request, f)
+
+def suppress_pag(request):
+    def f(request, api_o, json_data, user=None):
+        pag_names = json_data.get("publish_group")
+        reason = json_data.get("reason")
+
+        if (not pag_names) or (not reason):
+            api_o["messages"].append("'publish_group' or 'reason' key missing or empty")
+            api_o["errors"] += 1
+            return
+        if len(pag_names)==0 or len(reason)==0:
+            api_o["messages"].append("'publish_group' or 'reason' key missing or empty")
+            api_o["errors"] += 1
+            return
+
+        valid_reasons = ["WRONG_BARCODE", "WRONG_METADATA", "WRONG_SEQUENCE"]
+        if reason.upper() not in valid_reasons:
+            api_o["messages"].append("Reason must be one of: %s" % str(valid_reasons))
+            api_o["errors"] += 1
+            return
+
+        if type(pag_names) == str:
+            pag_names = [pag_names]
+
+        for pag_name in pag_names:
+            pag = models.PublishedArtifactGroup.objects.filter(is_latest=True, published_name=pag_name).first() # There can be only one
+            if not pag:
+                api_o["ignored"].append(pag_name)
+                api_o["warnings"] += 1
+                api_o["messages"].append("%s not found" % pag_name)
+                continue
+
+            if pag.is_suppressed:
+                api_o["ignored"].append(pag_name)
+                api_o["warnings"] += 1
+                api_o["messages"].append("%s already suppressed" % pag_name)
+                continue
+
+            if pag.owner.profile.institute != user.profile.institute and not user.has_perm('majora2.can_suppress_pags_via_api'):
+                api_o["ignored"].append(pag_name)
+                api_o["errors"] += 1
+                api_o["messages"].append("Your organisation (%s) does not own %s (%s)" % (user.profile.institute.code, pag_name, pag.owner.profile.institute.code))
+                continue
+
+            pag.is_suppressed = True
+            pag.suppressed_date = timezone.now()
+            pag.suppressed_reason = reason.upper()
+            pag.save()
+            api_o["updated"].append(form_handlers._format_tuple(pag))
+
+    return wrap_api_v2(request, f) # TODO Needs OAuth will fallback to Owner

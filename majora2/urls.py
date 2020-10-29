@@ -89,6 +89,7 @@ urlpatterns = [
     #path('api/v2/artifact/digitalresource/add/', csrf_exempt(api_views.add_digitalresource), name="api.artifact.digitalresource.add"),
 
     path('api/v2/group/mag/get/', csrf_exempt(api_views.get_mag), name="api.group.mag.get"),
+    path('api/v2/group/pag/suppress/', csrf_exempt(api_views.suppress_pag), name="api.group.pag.suppress"),
 
     path('api/v2/majora/task/get/', csrf_exempt(api_views.get_task_result), name="api.majora.task.get"),
     path('api/v2/majora/task/delete/', csrf_exempt(api_views.del_task_result), name="api.majora.task.delete"),
