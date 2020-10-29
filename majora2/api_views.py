@@ -1378,5 +1378,6 @@ def suppress_pag(request):
             pag.suppressed_reason = reason.upper()
             pag.save()
             api_o["updated"].append(form_handlers._format_tuple(pag))
+            TatlVerb(request=request.treq, verb="SUPPRESS", content_object=pag).save()
 
     return wrap_api_v2(request, f) # TODO Needs OAuth will fallback to Owner
