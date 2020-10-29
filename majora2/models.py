@@ -467,6 +467,7 @@ class PublishedArtifactGroup(MajoraArtifactGroup):
         ]
         permissions = [
             ("temp_can_read_pags_via_api", "Can read published artifact groups via the API"),
+            ("can_suppress_pags_via_api", "Can suppress any published artifact group via the API"),
         ]
     def as_struct(self):
         if self.is_suppressed:
