@@ -59,6 +59,51 @@ def task_get_sequencing(request, api_o, json_data, user=None, **kwargs):
 
 
 @shared_task
+def task_get_pag_by_qc_faster(request, api_o, json_data, user=None, **kwargs):
+    test_name = json_data.get("test_name")
+
+    if not test_name or len(test_name) == 0:
+        api_o["messages"].append("'test_name', key missing or empty")
+        api_o["errors"] += 1
+        return
+    t_group = models.PAGQualityTestEquivalenceGroup.objects.filter(slug=test_name).first()
+    if not t_group:
+        api_o["messages"].append("Invalid 'test_name'")
+        api_o["ignored"].append(test_name)
+        api_o["errors"] += 1
+        return
+
+    base_q = Q(
+        groups__publishedartifactgroup__isnull=False, # has PAG
+        groups__publishedartifactgroup__quality_groups__test_group=t_group, # Has result for this QC test
+        groups__publishedartifactgroup__is_latest=True, # Is latest and
+        groups__publishedartifactgroup__is_suppressed=False) # not suppressed for bad reasons
+
+    if json_data.get("pass") and json_data.get("fail"):
+        status_q= Q() # Should basically be NOP
+    elif json_data.get("pass"):
+        status_q = Q(groups__publishedartifactgroup__quality_groups__is_pass=True)
+    elif json_data.get("fail"):
+        status_q = Q(groups__publishedartifactgroup__quality_groups__is_pass=False)
+    else:
+        pass
+
+    # Perform the query
+    artifacts = models.DigitalResourceArtifact.objects.filter(base_q, status_q)
+
+    # Collapse into list items
+    artifacts = list(artifacts.values_list('groups__publishedartifactgroup__published_name', 'current_kind', 'current_path', 'current_hash', 'current_size', 'groups__publishedartifactgroup__quality_groups__is_pass'))
+
+    try:
+        api_o["get"] = {}
+        api_o["get"]["result"] = artifacts
+        api_o["get"]["count"] = len(artifacts)
+    except Exception as e:
+        api_o["errors"] += 1
+        api_o["messages"].append(str(e))
+    return api_o
+
+@shared_task
 def task_get_pag_by_qc(request, api_o, json_data, user=None, **kwargs):
     test_name = json_data.get("test_name")
     dra_current_kind = json_data.get("dra_current_kind")

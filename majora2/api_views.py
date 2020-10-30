@@ -1213,6 +1213,19 @@ def get_dashboard_metrics(request):
 
 
 
+def get_pag_by_qc2_celery(request):
+    def f(request, api_o, json_data, user=None):
+        from . import tasks
+        celery_task = tasks.task_get_pag_by_qc_faster.delay(None, api_o, json_data, user=user.pk, response_uuid=api_o["request"])
+        if celery_task:
+            api_o["tasks"].append(celery_task.id)
+            api_o["messages"].append("Call api.majora.task.get with the appropriate task ID later...")
+        else:
+            api_o["errors"] += 1
+            api_o["messages"].append("Could not add requested task to Celery...")
+
+    return wrap_api_v2(request, f, permission="majora2.temp_can_read_pags_via_api")
+
 def get_pag_by_qc_celery(request):
     def f(request, api_o, json_data, user=None):
         test_name = json_data.get("test_name")
