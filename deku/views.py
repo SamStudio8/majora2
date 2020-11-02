@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 
 from . import models as dmodels
 from majora2 import models
+from majora2 import signals
 from tatl.util import django_2fa_mixin_hack
 
 @login_required
