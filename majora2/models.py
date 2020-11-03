@@ -1157,6 +1157,7 @@ class BiosampleSource(MajoraArtifactGroup):
     source_type = models.CharField(max_length=24)        #TODO lookup
 
     secondary_id = models.CharField(max_length=48, blank=True, null=True)
+    root_biosample_source_id = models.CharField(max_length=48, blank=True, null=True)
 
     def __str__(self):
         return '%s' % self.dice_name
@@ -1171,6 +1172,7 @@ class BiosampleSource(MajoraArtifactGroup):
         return {
             "source_type": self.source_type,
             "biosample_source_id": self.dice_name,
+            "root_biosample_source_id": self.root_biosample_source_id,
         }
 
 class MajoraArtifactProcessRecord(PolymorphicModel):
