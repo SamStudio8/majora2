@@ -766,6 +766,46 @@ def addempty_biosample(request):
 
     return wrap_api_v2(request, f, permission="majora2.force_add_biosampleartifact", oauth_permission="majora2.force_add_biosampleartifact majora2.add_biosampleartifact majora2.change_biosampleartifact majora2.add_biosourcesamplingprocess majora2.change_biosourcesamplingprocess")
 
+def update_biosample(request):
+    def f(request, api_o, json_data, user=None):
+        biosamples = json_data.get("biosamples", [])
+        if not biosamples:
+            api_o["messages"].append("'biosamples' key missing or empty")
+            api_o["errors"] += 1
+            return
+
+        for biosample_i, biosample_d in enumerate(biosamples):
+            try:
+                sample_id = biosample_d.get("central_sample_id")
+                if not sample_id:
+                    api_o["messages"].append("'central_sample_id' key missing or empty for biosample %d" % biosample_i)
+                    api_o["errors"] += 1
+                    continue
+
+                biosample = models.BiosampleArtifact.objects.filter(
+                                central_sample_id=sample_id,
+                                dice_name=sample_id
+                        ).first()
+                if not biosample:
+                    api_o["messages"].append("Biosample %s (#%d) does not exist in Majora" % (sample_id, biosample_i))
+                    api_o["errors"] += 1
+                    continue
+
+                allow_fields = [
+                    "root_biosample_source_id",
+                ]
+                for field in allow_fields:
+                    if biosample_d.get(field):
+                        setattr(biosample, field, biosample_d.get(field))
+                biosample.save()
+
+            except Exception as e:
+                api_o["errors"] += 1
+                api_o["messages"].append("Error encountered on Biosample %s (%d): %s" % (biosample_d.get("central_sample_id"), biosample_i, str(e)))
+
+    return wrap_api_v2(request, f, oauth_permission="majora2.change_biosampleartifact majora2.change_biosamplesource majora2.change_biosourcesamplingprocess")
+
+
 def add_biosample(request):
     def f(request, api_o, json_data, user=None):
         biosamples = json_data.get("biosamples", {})
