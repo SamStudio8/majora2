@@ -794,10 +794,20 @@ def update_biosample(request):
                 allow_fields = [
                     "root_biosample_source_id",
                 ]
+
+                changed = False
                 for field in allow_fields:
                     if biosample_d.get(field):
-                        setattr(biosample, field, biosample_d.get(field))
-                biosample.save()
+                        new_v = biosample_d.get(field)
+                        if getattr(biosample, field, None) != new_v:
+                            setattr(biosample, field, new_v)
+                            if not changed:
+                                changed = True
+
+                if changed:
+                    api_o["updated"].append(form_handlers._format_tuple(biosample))
+                    TatlVerb(request=request.treq, verb="UPDATE", content_object=biosample).save()
+                    biosample.save()
 
             except Exception as e:
                 api_o["errors"] += 1
