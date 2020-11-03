@@ -1099,6 +1099,8 @@ class BiosampleArtifact(MajoraArtifact):
     secondary_accession = models.CharField(max_length=256, blank=True, null=True)
     taxonomy_identifier = models.CharField(max_length=24, blank=True, null=True)
 
+    root_biosample_source_id = models.CharField(max_length=48, blank=True, null=True)
+
     class Meta:
         permissions = [
             ("force_add_biosampleartifact", "Can forcibly add a biosample artifact to Majora"),
@@ -1139,6 +1141,7 @@ class BiosampleArtifact(MajoraArtifact):
             "published_as": ",".join([pag.published_name for pag in self.get_pags(include_suppressed=True)]),
             "metadata": self.get_metadata_as_struct(),
             "metrics": self.get_metrics_as_struct(),
+            "root_biosample_source_id": self.root_biosample_source_id,
         }
         collection = {}
         if self.created:
@@ -1157,7 +1160,6 @@ class BiosampleSource(MajoraArtifactGroup):
     source_type = models.CharField(max_length=24)        #TODO lookup
 
     secondary_id = models.CharField(max_length=48, blank=True, null=True)
-    root_biosample_source_id = models.CharField(max_length=48, blank=True, null=True)
 
     def __str__(self):
         return '%s' % self.dice_name
@@ -1172,7 +1174,6 @@ class BiosampleSource(MajoraArtifactGroup):
         return {
             "source_type": self.source_type,
             "biosample_source_id": self.dice_name,
-            "root_biosample_source_id": self.root_biosample_source_id,
         }
 
 class MajoraArtifactProcessRecord(PolymorphicModel):
