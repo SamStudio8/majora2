@@ -10,11 +10,17 @@
         </tr>
         <tr>
             <th>Source</th>
+            <td>
             {% if sample.primary_group %}
-            <td><b><a href="{% url 'group_artifact' sample.primary_group.id %}">{{ sample.primary_group }}</a></b></td>
+            <b><a href="{% url 'group_artifact' sample.primary_group.id %}">{{ sample.primary_group }}</a></b>
             {% else %}
-            <td>Unlinked</td>
+            Unlinked
             {% endif %}
+
+            {% if sample.root_biosample_source_id %}
+            <code>{{ sample.root_biosample_source_id }}</code>
+            {% endif %}
+            </td>
         </tr>
         <tr>
             <th>-</th>
