@@ -1566,8 +1566,13 @@ class Profile(models.Model):
 
     is_site_approved = models.BooleanField(default=False)
 
+    is_revoked = models.BooleanField(default=False)
+    revoked_reason = models.CharField(max_length=24, blank=True, null=True)
+    revoked_timestamp = models.DateTimeField(blank=True, null=True)
+
     class Meta:
         permissions = [
+            ("can_revoke_profiles", "Can revoke the access of any user"),
             ("can_approve_profiles", "Can approve new user profiles for their organisation"),
             ("can_approve_profiles_via_bot", "Can approve new user profiles for any organisation via the bot system"),
             ("can_grant_profile_permissions", "Can grant other users permissions that change the Profile system"),
