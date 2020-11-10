@@ -48,6 +48,8 @@ class TatlVerb(models.Model):
     object_id = models.CharField(max_length=64) # ffs you really cooked this one (needs to support positive int and uuid)
     content_object = GenericForeignKey('content_type', 'object_id')
 
+    extra_context = models.TextField(blank=True, null=True, default="{}")
+
     request = models.ForeignKey('TatlRequest', on_delete=models.PROTECT, related_name="verbs", blank=True, null=True)
 
 class TatlPermFlex(models.Model):
