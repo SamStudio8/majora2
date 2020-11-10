@@ -12,7 +12,7 @@ from django_slack import slack_message
 from django.core.mail import send_mail
 
 @receiver(signals.revoked_profile)
-def email_revoked_profile(sender, username, org, email, reason, **kwargs):
+def email_revoked_profile(sender, username, organisation, email, reason, **kwargs):
     send_mail(
         '[majora@climb] Your account has been closed',
         '''You're receiving this email because your %s account (username %s) has been closed with this reason: %s.
@@ -56,7 +56,7 @@ def email_revoked_profile(sender, username, org, email, reason, **kwargs):
                     "short": True
                 },
                 {
-                    "value": org,
+                    "value": organisation,
                     "short": True
                 },
                 {
