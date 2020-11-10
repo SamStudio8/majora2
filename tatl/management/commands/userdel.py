@@ -5,6 +5,7 @@ from majora2 import models
 from django.contrib.auth.models import User, Permission, Group
 
 from tatl import models
+from majora2 import signals
 
 import sys
 import json
@@ -66,4 +67,12 @@ class Command(BaseCommand):
         treq.save()
 
         # Flex verb
-        models.TatlVerb(request=None, verb="REVOKE", content_object=user).save()
+        models.TatlVerb(request=None, verb="REVOKE", content_object=user,
+            extra_context = json.dumps({
+                "is_revoked": True,
+                "revoked_reason": options["reason"],
+                "revoked_timestamp_ts": ts.timestamp(),
+                "revoked_timestamp_str": ts.strftime("%Y-%m-%d %H:%M"),
+            }),
+        ).save()
+        signals.revoked_profile.send(sender=request, username=user.username, email=user.email, reason=options["reason"])
