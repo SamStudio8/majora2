@@ -12,7 +12,7 @@ from django_slack import slack_message
 from django.core.mail import send_mail
 
 @receiver(signals.revoked_profile)
-def email_revoked_profile(sender, username, email, reason, **kwargs):
+def email_revoked_profile(sender, username, org, email, reason, **kwargs):
     send_mail(
         '[majora@climb] Your account has been closed',
         '''You're receiving this email because your %s account (username %s) has been closed with this reason: %s.
@@ -28,6 +28,48 @@ def email_revoked_profile(sender, username, email, reason, **kwargs):
         [email],
         fail_silently=True,
     )
+    if settings.SLACK_CHANNEL:
+        slack_message('slack/blank', {
+        }, [{
+            "mrkdwn_in": ["text", "pretext", "fields"],
+            "title": "User profile revoked",
+            "title_link": "",
+            "text": "Access for %s has been revoked" % (username),
+            "footer": "Revocation spotted by Majora",
+            "footer_icon": "https://avatars.slack-edge.com/2019-05-03/627972616934_a621b7d3a28c2b6a7bd1_512.jpg",
+
+            "fields": [
+                {
+                    "title": "Metadata",
+                    "short": False
+                },
+                {
+                    "title": "Email",
+                    "short": True
+                },
+                {
+                    "value": email,
+                    "short": True
+                },
+                {
+                    "title": "Org Code",
+                    "short": True
+                },
+                {
+                    "value": org,
+                    "short": True
+                },
+                {
+                    "title": "Reason",
+                    "short": True
+                },
+                {
+                    "value": reason,
+                    "short": True
+                },
+            ],
+            "ts": int(time.time()),
+        }])
 
 @receiver(signals.new_registration)
 def recv_new_registration(sender, username, first_name, last_name, organisation, email, **kwargs):

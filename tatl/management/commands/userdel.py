@@ -75,4 +75,4 @@ class Command(BaseCommand):
                 "revoked_timestamp_str": ts.strftime("%Y-%m-%d %H:%M"),
             }),
         ).save()
-        signals.revoked_profile.send(sender=request, username=user.username, email=user.email, reason=options["reason"])
+        signals.revoked_profile.send(sender=request, username=user.username, organisation=user.profile.institute.code, email=user.email, reason=options["reason"])
