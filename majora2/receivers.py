@@ -11,6 +11,24 @@ from . import signals
 from django_slack import slack_message
 from django.core.mail import send_mail
 
+@receiver(signals.revoked_profile)
+def email_revoked_profile(sender, username, email, reason, **kwargs):
+    send_mail(
+        '[majora@climb] Your account has been closed',
+        '''You're receiving this email because your %s account (username %s) has been closed with this reason: %s.
+
+        As a result of this:
+        * You will no longer be able to use your account or access data.
+        * Your SSH keys will be removed and you will be unable to access any systems.
+        * Any API requests you send will now be rejected.
+
+        If you do not believe this should have happened, please contact your site lead as soon as possible.
+        ''' % (settings.INSTANCE_NAME, username, reason),
+        None,
+        email,
+        fail_silently=True,
+    )
+
 @receiver(signals.new_registration)
 def recv_new_registration(sender, username, first_name, last_name, organisation, email, **kwargs):
     from django.contrib.auth.models import User, Permission
