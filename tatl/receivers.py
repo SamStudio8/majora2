@@ -21,15 +21,30 @@ logger = logging.getLogger('majora')
 @receiver(post_save, sender=models.TatlVerb)
 def syslog_verb(sender, instance, **kwargs):
     # Emit syslog
+    if instance.request:
+        req_uuid = instance.request.response_uuid if instance.request else ""
+        req_user = "anonymous"
+        remote_addr = instance.request.remote_addr
+        ts = str(instance.request.timestamp)
+        is_api = instance.request.is_api
+        if hasattr(instance.request, "user"):
+            req_user = instance.request.user.username
+    else:
+        req_uuid = "NONE"
+        req_user = "NONE"
+        remote_addr = "NONE"
+        ts = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+        is_api = False
+
     logger.info("[VERB] request=%s user=%s verb=%s object_model=%s object_uuid=%s addr=%s at=%s api=%d" % (
-        instance.request.response_uuid,
-        instance.request.user.username if instance.request.user else "anonymous",
+        req_uuid,
+        req_user,
         instance.verb,
         instance.content_object._meta.model.__name__,
         instance.content_object.id,
-        instance.request.remote_addr,
-        str(instance.request.timestamp).replace(" ", "_"),
-        1 if instance.request.is_api else 0,
+        remote_addr,
+        ts.replace(" ", "_"),
+        1 if is_api else 0,
     ))
 
 @receiver(post_save, sender=models.TatlPermFlex)
