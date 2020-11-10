@@ -1567,7 +1567,7 @@ class Profile(models.Model):
     is_site_approved = models.BooleanField(default=False)
 
     is_revoked = models.BooleanField(default=False)
-    revoked_reason = models.CharField(max_length=24, blank=True, null=True)
+    revoked_reason = models.CharField(max_length=128, blank=True, null=True)
     revoked_timestamp = models.DateTimeField(blank=True, null=True)
 
     class Meta:
