@@ -15,7 +15,7 @@ from django.core.mail import send_mail
 def email_revoked_profile(sender, username, organisation, email, reason, **kwargs):
     send_mail(
         '[majora@climb] Your account has been closed',
-        '''You're receiving this email because your %s account (username %s) has been closed with this reason: %s.
+        '''You're receiving this email because your %s account (username %s) has been closed.
 
         As a result of this:
         * You will no longer be able to use your account or access data.
@@ -23,7 +23,7 @@ def email_revoked_profile(sender, username, organisation, email, reason, **kwarg
         * Any API requests you send will now be rejected.
 
         If you do not believe this should have happened, please contact %s as soon as possible.
-        ''' % (settings.INSTANCE_NAME, username, reason, "your site lead, or the accounts team (%s)" % settings.MAJORA_ACCOUNT_MAIL if hasattr(settings, "MAJORA_ACCOUNT_MAIL") and len(settings.MAJORA_ACCOUNT_MAIL) > 0 else "your site lead"),
+        ''' % (settings.INSTANCE_NAME, username, "your site lead, or the accounts team (%s)" % settings.MAJORA_ACCOUNT_MAIL if hasattr(settings, "MAJORA_ACCOUNT_MAIL") and len(settings.MAJORA_ACCOUNT_MAIL) > 0 else "your site lead"),
         None,
         [email],
         fail_silently=True,
