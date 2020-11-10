@@ -25,7 +25,7 @@ def email_revoked_profile(sender, username, email, reason, **kwargs):
         If you do not believe this should have happened, please contact your site lead as soon as possible.
         ''' % (settings.INSTANCE_NAME, username, reason),
         None,
-        email,
+        [email],
         fail_silently=True,
     )
 
