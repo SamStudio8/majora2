@@ -286,3 +286,6 @@ CORS_ALLOWED_ORIGIN_REGEXES = []
 CORS_ALLOW_ALL_ORIGINS = True # This is dangerous but we limit the CORS URLs to the token interface below
 CORS_URLS_REGEX = r'^/o/token/$'
 CORS_URLS_ALLOW_ALL_REGEX = r'^/o/token/$'
+
+# CONTACTS
+MAJORA_ACCOUNT_MAIL = ""

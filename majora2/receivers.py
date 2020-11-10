@@ -22,8 +22,8 @@ def email_revoked_profile(sender, username, organisation, email, reason, **kwarg
         * Your SSH keys will be removed and you will be unable to access any systems.
         * Any API requests you send will now be rejected.
 
-        If you do not believe this should have happened, please contact your site lead as soon as possible.
-        ''' % (settings.INSTANCE_NAME, username, reason),
+        If you do not believe this should have happened, please contact %s as soon as possible.
+        ''' % (settings.INSTANCE_NAME, username, reason, "your site lead, or the accounts team (%s)" %s settings.MAJORA_ACCOUNT_MAIL if hasattr(settings, "MAJORA_ACCOUNT_MAIL") and len(settings.MAJORA_ACCOUNT_MAIL) > 0 else "your site lead"),
         None,
         [email],
         fail_silently=True,
