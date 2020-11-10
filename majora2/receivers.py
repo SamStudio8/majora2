@@ -22,7 +22,7 @@ def email_revoked_profile(sender, username, organisation, email, reason, **kwarg
         * Your SSH keys will be removed and you will be unable to access any systems.
         * Any API requests you send will now be rejected.
 
-        If you do not believe this should have happened, please contact %s as soon as possible.
+        If you do not believe this should have happened, please contact %s as soon as possible. Do not contact the CLIMB team or #account-requests with requests to be reactivated.
         ''' % (settings.INSTANCE_NAME, username, "your site lead, or the accounts team (%s)" % settings.MAJORA_ACCOUNT_MAIL if hasattr(settings, "MAJORA_ACCOUNT_MAIL") and len(settings.MAJORA_ACCOUNT_MAIL) > 0 else "your site lead"),
         None,
         [email],
