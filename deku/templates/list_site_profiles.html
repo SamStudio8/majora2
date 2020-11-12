@@ -47,7 +47,11 @@
                 {% if profile.user.is_active %}
                     <span class="badge badge-success">ACTIVE</span>
                 {% else %}
-                    <span class="badge badge-warning">WAITING</span>
+                    {% if profile.is_revoked %}
+                        <span class="badge badge-danger">REVOKED</span>
+                    {% else %}
+                        <span class="badge badge-warning">WAITING</span>
+                    {% endif %}
                 {% endif %}
                 </td>
             </tr>
