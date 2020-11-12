@@ -20,7 +20,7 @@ def list_all_profiles(request):
         return HttpResponseForbidden() # bye
 
     # Render the list regardless of what the form did
-    active_site_profiles = models.Profile.objects.filter(is_site_approved=True)
+    active_site_profiles = models.Profile.objects.filter(is_site_approved=True, is_revoked=False)
     inactive_site_profiles = models.Profile.objects.filter(is_site_approved=False)
     revoked_site_profiles = models.Profile.objects.filter(is_revoked=True)
     return render(request, 'list_all_profiles.html', {
