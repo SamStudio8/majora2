@@ -50,7 +50,7 @@
                 {% if profile.user.is_active %}
                     <span class="badge badge-success">ACTIVE</span>
                 {% else %}
-                    {% if profile.user.is_revoked %}
+                    {% if profile.is_revoked %}
                         <span class="badge badge-danger">REVOKED</span>
                     {% else %}
                         <span class="badge badge-warning">WAITING</span>
@@ -77,6 +77,66 @@
     </div>
 </div>
 
+<hr>
+
+<div class="row">
+    <div class="col-md-12">
+        <h1>Closed profiles</h1>
+        <br>
+        <table id="revoked-users" class="table table-borderless table-hover">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Org</th>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Revoked date</th>
+                <th>Revoked reason</th>
+                <th>Active</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for profile in revoked_profiles %}
+            <tr>
+                <td><code>{{ profile.user.id }}</code></td>
+                <td><code>{{ profile.institute.code }}</code></td>
+                <td><code>{{ profile.user.username }}</code></td>
+                <td>{{ profile.user.first_name }} {{ profile.user.last_name }}</td>
+                <td><code>{{ profile.user.email }}</code></td>
+                <td>{{ profile.revoked_timestamp | naturaltime }}</td>
+                <td>{{ profile.revoked_reason }}</td>
+                <td>
+                {% if profile.user.is_active %}
+                    <span class="badge badge-success">ACTIVE</span>
+                {% else %}
+                    {% if profile.is_revoked %}
+                        <span class="badge badge-danger">REVOKED</span>
+                    {% else %}
+                        <span class="badge badge-warning">WAITING</span>
+                    {% endif %}
+                {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td>No users to list...</td></tr>
+            {% endfor %}
+            </tbody>
+            <tfoot class="table-dark">
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
 <hr>
 
 <div class="row">

@@ -22,11 +22,13 @@ def list_all_profiles(request):
     # Render the list regardless of what the form did
     active_site_profiles = models.Profile.objects.filter(is_site_approved=True)
     inactive_site_profiles = models.Profile.objects.filter(is_site_approved=False)
+    revoked_site_profiles = models.Profile.objects.filter(is_revoked=True)
     return render(request, 'list_all_profiles.html', {
         'user': request.user,
         "site_codes": sorted(models.Institute.objects.all().values_list('code', flat=True)),
         'active_profiles': active_site_profiles,
         'inactive_profiles': inactive_site_profiles,
+        'revoked_profiles': revoked_site_profiles,
     })
 
 @login_required
