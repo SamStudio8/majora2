@@ -34,7 +34,7 @@ class Command(BaseCommand):
 
         ts = timezone.now()
 
-        if not user.is_active:
+        if user.profile.is_revoked:
             sys.stderr.write("[NOTE] User %s is already deactivated\n" % (user.username))
             sys.exit(3)
 
