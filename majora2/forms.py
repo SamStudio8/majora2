@@ -280,6 +280,7 @@ class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a mode
                 ("VIASURE", "VIASURE"),
                 ("BD", "BD"),
                 ("XPERT", "XPERT"),
+                ("QIASTAT", "QIASTAT"),
             ],
             required=False,
     )
@@ -288,6 +289,7 @@ class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a mode
                 (None, ""),
                 ("ALTOSTAR_AM16", "ALTOSTAR_AM16"),
                 ("ABBOTT_M2000", "ABBOTT_M2000"),
+                ("ABBOTT_ALINITY", "ABBOTT_ALINITY"),
                 ("APPLIED_BIO_7500", "APPLIED_BIO_7500"),
                 ("ROCHE_FLOW", "ROCHE_FLOW"),
                 ("ROCHE_COBAS", "ROCHE_COBAS"),

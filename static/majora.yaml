@@ -554,6 +554,7 @@ components:
             "VIASURE",
             "BD",
             "XPERT",
+            "QIASTAT",
             null
           ]
         test_platform:
@@ -562,6 +563,7 @@ components:
           enum: [
             "ALTOSTAR_AM16",
             "ABBOTT_M2000",
+            "ABBOTT_ALINITY",
             "APPLIED_BIO_7500",
             "ROCHE_COBAS",
             "ROCHE_FLOW",
