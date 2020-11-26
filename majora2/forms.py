@@ -703,13 +703,14 @@ class TestSampleForm(forms.Form):
                 data[field] = data[field].strip().upper()
         for field in COERCE_BOOLEAN:
             if data.get(field):
-                b = data[field].strip().upper()
-                if b == "Y" or b == "YES":
-                    data[field] = True
-                elif b == "N" or b == "NO":
-                    data[field] = False
-                else:
-                    data[field] = None
+                if type(data.get(field)) is str:
+                    b = data[field].strip().upper()
+                    if b == "Y" or b == "YES":
+                        data[field] = True
+                    elif b == "N" or b == "NO":
+                        data[field] = False
+                    else:
+                        data[field] = None
 
         #if data.get("swab_site", "").upper() == "NSTS" or data.get("swab_site", "").lower() == "nose and throat":
         #    data["swab_site"] = "nose-throat"
