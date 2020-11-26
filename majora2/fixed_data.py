@@ -17,3 +17,6 @@ def fill_fixed_data(k, user=None):
     else:
         return {}
 
+RESTRICTED_METADATA = [
+    "investigation"
+]

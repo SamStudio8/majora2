@@ -33,6 +33,11 @@ def handle_testmetadata(form, user=None, api_o=None, request=None):
 
     timestamp = form.cleaned_data.get("timestamp")
 
+    restricted = False
+    if hasattr(fixed_data, "RESTRICTED_METADATA"):
+        if tag in fixed_data.RESTRICTED_METADATA:
+            restricted = True
+
     mr, created = models.MajoraMetaRecord.objects.get_or_create(
             artifact=artifact,
             group=group,
@@ -43,6 +48,7 @@ def handle_testmetadata(form, user=None, api_o=None, request=None):
     )
     mr.value=value
     mr.timestamp = timestamp
+    mr.restricted=restricted
     mr.save()
     return mr, created
 
