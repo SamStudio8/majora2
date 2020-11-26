@@ -1694,6 +1694,8 @@ class MajoraMetaRecord(PolymorphicModel):
     inheritable = models.BooleanField(default=True)
     timestamp = models.DateTimeField(blank=True, null=True)
 
+    restricted = models.BooleanField(default=False)
+
     @property
     def translate(self):
         if self.link:
