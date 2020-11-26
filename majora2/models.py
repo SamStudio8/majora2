@@ -247,6 +247,9 @@ class MajoraArtifact(PolymorphicModel):
     def get_metadata_as_struct(self, flat=False):
         metadata = {}
         for m in self.metadata.all():
+            if m.restricted:
+                continue
+
             if not flat:
                 if m.meta_tag not in metadata:
                     metadata[m.meta_tag] = {}
