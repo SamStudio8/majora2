@@ -1,6 +1,6 @@
 {% load humanize %}
 {% if thing.metadata.all %}
 {% for metadatum in thing.metadata.all %}
-<span style="font-size: 1.2em"><span class="badge badge-left badge-dark">{{ metadatum.meta_tag }}</span><span class="badge badge-center badge-secondary">{{ metadatum.meta_name }}</span><span class="badge badge-center badge-primary">{{ metadatum.translate }}</span><span class="badge badge-right badge-light">{{ metadatum.timestamp | naturaltime }}</span></span>
+<span style="font-size: 1.2em"><span class="badge badge-left badge-dark">{{ metadatum.meta_tag }}</span><span class="badge badge-center badge-secondary">{{ metadatum.meta_name }}</span>{% if not metadatum.restricted %}<span class="badge badge-center badge-primary">{{ metadatum.translate }}</span>{% else %}<span class="badge badge-center badge-danger">RESTRICTED</span>{% endif %}<span class="badge badge-right badge-light">{{ metadatum.timestamp | naturaltime }}</span></span>
 {% endfor %}
 {% endif %}
