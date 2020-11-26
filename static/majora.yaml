@@ -555,6 +555,7 @@ components:
             "BD",
             "XPERT",
             "QIASTAT",
+            "ALINITY",
             null
           ]
         test_platform:

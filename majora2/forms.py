@@ -281,6 +281,7 @@ class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a mode
                 ("BD", "BD"),
                 ("XPERT", "XPERT"),
                 ("QIASTAT", "QIASTAT"),
+                ("ALINITY", "ALINITY"),
             ],
             required=False,
     )
