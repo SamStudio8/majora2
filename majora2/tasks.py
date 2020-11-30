@@ -29,7 +29,7 @@ def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
     try:
         api_o["get"] = {}
         api_o["get"]["result"] = {
-            "biosamples": [x.as_struct() for x in models.BiosampleArtifact.objects.filter(id__in=biosample_ids)],
+            "biosamples": [x.as_struct() for x in models.BiosampleArtifact.objects.filter(id__in=biosample_ids).prefetch_related('created')],
             "runs": [x.as_struct(deep=False) for x in models.DNASequencingProcess.objects.filter(id__in=run_ids)],
             "libraries": [x.as_struct(deep=False) for x in models.LibraryArtifact.objects.filter(id__in=lib_ids)],
         }
