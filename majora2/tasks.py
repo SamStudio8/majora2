@@ -29,7 +29,7 @@ def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
     try:
         api_o["get"] = {}
         api_o["get"]["result"] = {
-            "biosamples": models.BiosampleArtifact.objects.filter(id__in=biosample_ids).values(
+            "biosamples": list(models.BiosampleArtifact.objects.filter(id__in=biosample_ids).values(
                 'created__biosourcesamplingprocess__collection_date',
                 'created__biosourcesamplingprocess__received_date',
                 'created__biosourcesamplingprocess__submission_user',
@@ -52,8 +52,8 @@ def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
                 'sample_type_current',
                 'sample_site',
                 'root_biosample_source_id',
-            ),
-            "biosample-metadata": models.MajoraMetaRecord.objects.filter(artifact__id__in=biosample_ids, restricted=False).values('meta_tag', 'meta_name', 'value', 'artifact__dice_name'),
+            )),
+            "biosample-metadata": list(models.MajoraMetaRecord.objects.filter(artifact__id__in=biosample_ids, restricted=False).values('meta_tag', 'meta_name', 'value', 'artifact__dice_name')),
             "biosample-metrics": [x.get_metrics_as_struct() for x in models.BiosampleArtifact.objects.filter(id__in=biosample_ids)],
             "runs": [x.as_struct(deep=False) for x in models.DNASequencingProcess.objects.filter(id__in=run_ids)],
             "libraries": [x.as_struct(deep=False) for x in models.LibraryArtifact.objects.filter(id__in=lib_ids)],
