@@ -1785,10 +1785,10 @@ class LibraryArtifact(MajoraArtifact):
     def artifact_kind(self):
         return 'Library'
 
-    def as_struct(self):
+    def as_struct(self, deep=True):
         biosamples = []
 
-        if self.created:
+        if self.created and deep:
             for record in self.created.records.all().prefetch_related('in_artifact'):
                 if record.in_artifact and record.in_artifact.kind == "Biosample":
                     rec = record.in_artifact.as_struct()
@@ -1856,12 +1856,13 @@ class DNASequencingProcess(MajoraArtifactProcess):
     def process_kind(self):
         return 'Sequencing'
 
-    def as_struct(self):
+    def as_struct(self, deep=True):
 
         libraries = []
-        for record in self.records.all().prefetch_related('in_artifact'):
-            if record.in_artifact and record.in_artifact.kind == "Library":
-                libraries.append(record.in_artifact.as_struct())
+        if deep:
+            for record in self.records.all().prefetch_related('in_artifact'):
+                if record.in_artifact and record.in_artifact.kind == "Library":
+                    libraries.append(record.in_artifact.as_struct())
 
         return {
             "run_name": self.run_name,

@@ -21,6 +21,26 @@ def structify_pags(api_o):
     return api_o
 
 @shared_task
+def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
+    run_ids = models.DNASequencingProcess.objects.all().values_list("id", flat=True)
+    lib_ids = models.MajoraArtifactProcessRecord.objects.filter(process_id__in=run_ids).values_list("in_artifact__id", flat=True).distinct()
+    biosample_ids = models.MajoraArtifactProcessRecord.objects.filter(out_artifact__id__in=lib_ids).values_list("in_artifact__id", flat=True).distinct()
+
+    try:
+        api_o["get"] = {
+            "biosamples": [x.as_struct() for x in models.BiosampleArtifact.objects.filter(id__in=biosample_ids)],
+            "runs": [x.as_struct(deep=False) for x in models.DNASequencingProcess.objects.filter(id__in=run_ids)],
+            "libraries": [x.as_struct(deep=False) for x in models.LibraryArtifact.objects.filter(id__in=lib_ids)],
+        }
+        api_o["get"]["result"] = runs
+        api_o["get"]["count"] = len(runs)
+    except Exception as e:
+        api_o["errors"] += 1
+        api_o["messages"].append(str(e))
+    return api_o
+
+
+@shared_task
 def task_get_sequencing(request, api_o, json_data, user=None, **kwargs):
     run_names = json_data.get("run_name")
     if not run_names:
