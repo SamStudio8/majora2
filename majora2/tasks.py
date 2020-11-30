@@ -27,13 +27,13 @@ def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
     biosample_ids = models.MajoraArtifactProcessRecord.objects.filter(out_artifact__id__in=lib_ids).values_list("in_artifact__id", flat=True).distinct()
 
     try:
-        api_o["get"] = {
+        api_o["get"] = {}
+        api_o["get"]["result"] = {
             "biosamples": [x.as_struct() for x in models.BiosampleArtifact.objects.filter(id__in=biosample_ids)],
             "runs": [x.as_struct(deep=False) for x in models.DNASequencingProcess.objects.filter(id__in=run_ids)],
             "libraries": [x.as_struct(deep=False) for x in models.LibraryArtifact.objects.filter(id__in=lib_ids)],
         }
-        api_o["get"]["result"] = runs
-        api_o["get"]["count"] = len(runs)
+        api_o["get"]["count"] = (run_ids.count(), lib_ids.count(), biosample_ids.count())
     except Exception as e:
         api_o["errors"] += 1
         api_o["messages"].append(str(e))
