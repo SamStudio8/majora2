@@ -29,10 +29,36 @@ def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
     try:
         api_o["get"] = {}
         api_o["get"]["result"] = {
-            "biosamples": [x.as_struct() for x in models.BiosampleArtifact.objects.filter(id__in=biosample_ids).prefetch_related('created')],
+            "biosamples": models.BiosampleArtifact.objects.filter(id__in=biosample_ids).values(
+                'created__biosourcesamplingprocess__collection_date',
+                'created__biosourcesamplingprocess__received_date',
+                'created__biosourcesamplingprocess__submission_user',
+                'created__biosourcesamplingprocess__submission_org__name',
+                'created__biosourcesamplingprocess__submission_org__code',
+                'created__biosourcesamplingprocess__source_sex',
+                'created__biosourcesamplingprocess__source_age',
+                'created__biosourcesamplingprocess__collection_location_country',
+                'created__biosourcesamplingprocess__collection_location_adm1',
+                'created__biosourcesamplingprocess__collection_location_adm2',
+                'created__biosourcesamplingprocess__private_collection_location_adm2',
+                'created__biosourcesamplingprocess__coguk_supp__is_surveillance',
+                'created__biosourcesamplingprocess__coguk_supp__collection_pillar',
+                'created__records__in_group__biosamplesource__id',
+                'created__records__in_group__biosamplesource__secondary_id',
+                'created__records__in_group__biosamplesource__source_type',
+                'central_sample_id',
+                'root_sample_id',
+                'sample_type_collected',
+                'sample_type_current',
+                'sample_site',
+                'root_biosample_source_id',
+            ),
+            "biosample-metadata": models.MajoraMetaRecord.objects.filter(artifact__id__in=biosample_ids, restricted=False).values('meta_tag', 'meta_name', 'value', 'artifact__dice_name'),
+            "biosample-metrics": [x.get_metrics_as_struct() for x in models.BiosampleArtifact.objects.filter(id__in=biosample_ids)],
             "runs": [x.as_struct(deep=False) for x in models.DNASequencingProcess.objects.filter(id__in=run_ids)],
             "libraries": [x.as_struct(deep=False) for x in models.LibraryArtifact.objects.filter(id__in=lib_ids)],
         }
+
         api_o["get"]["count"] = (run_ids.count(), lib_ids.count(), biosample_ids.count())
     except Exception as e:
         api_o["errors"] += 1
