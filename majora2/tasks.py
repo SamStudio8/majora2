@@ -22,48 +22,74 @@ def structify_pags(api_o):
 
 @shared_task
 def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
-    run_ids = models.DNASequencingProcess.objects.all().values_list("id", flat=True)
-    lib_ids = models.MajoraArtifactProcessRecord.objects.filter(process_id__in=run_ids).values_list("in_artifact__id", flat=True).distinct()
-    biosample_ids = models.MajoraArtifactProcessRecord.objects.filter(out_artifact__id__in=lib_ids).values_list("in_artifact__id", flat=True).distinct()
+
+    run_names = list(models.DNASequencingProcess.objects.all().values_list("run_name", flat=True))
+
+    n_runs = 0
+    n_libs = 0
+    n_biosamples = 0
+
+    api_o["get"] = {}
+    api_o["get"]["result"] = []
+    for run_name in run_names:
+        try:
+            process = models.DNASequencingProcess.objects.get(run_name=run_name)
+            n_runs += 1
+
+            lib_ids = models.MajoraArtifactProcessRecord.objects.filter(process_id=process.id).values_list("in_artifact__id", flat=True).distinct()
+
+            run = process.as_struct(deep=False)
+            run["libraries"] = []
+
+            for lib_id in lib_ids:
+                n_libs += 1
+                lib_obj = models.LibraryArtifact.objects.get(id=lib_id)
+                lib = lib_obj.as_struct(deep=False)
+
+                biosample_ids = models.MajoraArtifactProcessRecord.objects.filter(out_artifact__id=lib_id).values_list("in_artifact__id", flat=True).distinct()
+                lib["biosamples"] = {x["central_sample_id"]: x for x in models.BiosampleArtifact.objects.filter(id__in=biosample_ids).values(
+                    'created__biosourcesamplingprocess__collection_date',
+                    'created__biosourcesamplingprocess__received_date',
+                    'created__biosourcesamplingprocess__submission_user__username',
+                    'created__biosourcesamplingprocess__submission_org__name',
+                    'created__biosourcesamplingprocess__submission_org__code',
+                    'created__biosourcesamplingprocess__source_sex',
+                    'created__biosourcesamplingprocess__source_age',
+                    'created__biosourcesamplingprocess__collection_location_country',
+                    'created__biosourcesamplingprocess__collection_location_adm1',
+                    'created__biosourcesamplingprocess__collection_location_adm2',
+                    'created__biosourcesamplingprocess__private_collection_location_adm2',
+                    'created__biosourcesamplingprocess__coguk_supp__is_surveillance',
+                    'created__biosourcesamplingprocess__coguk_supp__collection_pillar',
+                    'created__records__in_group__biosamplesource__id',
+                    'created__records__in_group__biosamplesource__secondary_id',
+                    'created__records__in_group__biosamplesource__source_type',
+                    'central_sample_id',
+                    'root_sample_id',
+                    'sample_type_collected',
+                    'sample_type_current',
+                    'sample_site',
+                    'root_biosample_source_id',
+                )}
+
+                biosample_metadata = {x["artifact__dice_name"]: x for x in models.MajoraMetaRecord.objects.filter(artifact__id__in=biosample_ids, restricted=False).values('meta_tag', 'meta_name', 'value', 'artifact__dice_name')}
+                for bs in lib["biosamples"]:
+                    n_biosamples += 1
+                    bs_obj = models.BiosampleArtifact.objects.get(central_sample_id=bs)
+                    lib["biosamples"][bs]["metrics"] = bs_obj.get_metrics_as_struct()
+                    lib["biosamples"][bs]["metadata"] = biosample_metadata.get(bs, {})
+
+                run["libraries"].append(lib)
+
+            api_o["get"]["result"].append(run)
+
+        except Exception as e:
+            api_o["errors"] += 1
+            api_o["ignored"].append(run_name)
+            api_o["messages"].append(str(e))
 
     try:
-        api_o["get"] = {}
-        api_o["get"]["result"] = {
-            "biosamples": {x["central_sample_id"]: x for x in models.BiosampleArtifact.objects.filter(id__in=biosample_ids).values(
-                'created__biosourcesamplingprocess__collection_date',
-                'created__biosourcesamplingprocess__received_date',
-                'created__biosourcesamplingprocess__submission_user__username',
-                'created__biosourcesamplingprocess__submission_org__name',
-                'created__biosourcesamplingprocess__submission_org__code',
-                'created__biosourcesamplingprocess__source_sex',
-                'created__biosourcesamplingprocess__source_age',
-                'created__biosourcesamplingprocess__collection_location_country',
-                'created__biosourcesamplingprocess__collection_location_adm1',
-                'created__biosourcesamplingprocess__collection_location_adm2',
-                'created__biosourcesamplingprocess__private_collection_location_adm2',
-                'created__biosourcesamplingprocess__coguk_supp__is_surveillance',
-                'created__biosourcesamplingprocess__coguk_supp__collection_pillar',
-                'created__records__in_group__biosamplesource__id',
-                'created__records__in_group__biosamplesource__secondary_id',
-                'created__records__in_group__biosamplesource__source_type',
-                'central_sample_id',
-                'root_sample_id',
-                'sample_type_collected',
-                'sample_type_current',
-                'sample_site',
-                'root_biosample_source_id',
-            )},
-            "runs": [x.as_struct(deep=False) for x in models.DNASequencingProcess.objects.filter(id__in=run_ids)],
-            "libraries": [x.as_struct(deep=False) for x in models.LibraryArtifact.objects.filter(id__in=lib_ids)],
-        }
-
-        biosample_metadata = {x["artifact__dice_name"]: x for x in models.MajoraMetaRecord.objects.filter(artifact__id__in=biosample_ids, restricted=False).values('meta_tag', 'meta_name', 'value', 'artifact__dice_name')}
-        for bs in api_o["get"]["result"]["biosamples"]:
-            bs_obj = models.BiosampleArtifact.objects.get(central_sample_id=bs)
-            api_o["get"]["result"]["biosamples"][bs]["metrics"] = bs_obj.get_metrics_as_struct()
-            api_o["get"]["result"]["biosamples"][bs]["metadata"] = biosample_metadata.get(bs, {})
-
-        api_o["get"]["count"] = (run_ids.count(), lib_ids.count(), biosample_ids.count())
+        api_o["get"]["count"] = (n_runs, n_libs, n_biosamples)
     except Exception as e:
         api_o["errors"] += 1
         api_o["messages"].append(str(e))
