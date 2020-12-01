@@ -30,7 +30,7 @@ def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
     n_biosamples = 0
 
     api_o["get"] = {}
-    api_o["get"]["result"] = []
+    api_o["get"]["result"] = {}
     for run_name in run_names:
         try:
             process = models.DNASequencingProcess.objects.get(run_name=run_name)
@@ -71,17 +71,29 @@ def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
                     'sample_site',
                     'root_biosample_source_id',
                 )}
+                lib["metadata"] = lib_obj.get_metadata_as_struct()
 
                 biosample_metadata = {x["artifact__dice_name"]: x for x in models.MajoraMetaRecord.objects.filter(artifact__id__in=biosample_ids, restricted=False).values('meta_tag', 'meta_name', 'value', 'artifact__dice_name')}
+                biosample_pooling = {x["in_artifact__dice_name"]: x for x in models.LibraryPoolingProcessRecord.objects.filter(out_artifact__id=lib_id).values(
+                    "in_artifact__dice_name",
+                    "library_strategy",
+                    "library_source",
+                    "library_selection",
+                    "barcode",
+                    "library_protocol",
+                    "library_primers",
+                )}
+
                 for bs in lib["biosamples"]:
                     n_biosamples += 1
                     bs_obj = models.BiosampleArtifact.objects.get(central_sample_id=bs)
                     lib["biosamples"][bs]["metrics"] = bs_obj.get_metrics_as_struct()
                     lib["biosamples"][bs]["metadata"] = biosample_metadata.get(bs, {})
+                    lib["biosamples"][bs].update(biosample_pooling.get(bs, {}))
 
                 run["libraries"].append(lib)
 
-            api_o["get"]["result"].append(run)
+            api_o["get"]["result"][process.run_name] = run
 
         except Exception as e:
             api_o["errors"] += 1
@@ -89,7 +101,8 @@ def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
             api_o["messages"].append(str(e))
 
     try:
-        api_o["get"]["count"] = (n_runs, n_libs, n_biosamples)
+        api_o["get"]["count"] = n_runs
+        api_o["get"]["count_detail"] = (n_runs, n_libs, n_biosamples)
     except Exception as e:
         api_o["errors"] += 1
         api_o["messages"].append(str(e))
