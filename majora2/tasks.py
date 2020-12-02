@@ -7,7 +7,7 @@ from . import serializers
 from . import resty_serializers
 from . import util
 
-from django.db.models import Q
+from django.db.models import Q, F
 
 import datetime
 
@@ -31,7 +31,16 @@ def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
 
     api_o["get"] = {}
     api_o["get"]["result"] = {}
+
+    # Serialise all the PAG names at once, and look them up, instead of hitting the database 150,000 times
+    pag_lookup = {}
+    for published_name, artifact_dice in models.PublishedArtifactGroup.objects.filter(tagged_artifacts__biosampleartifact__isnull=False, is_latest=True).values_list("published_name", "tagged_artifacts__biosampleartifact__dice_name"):
+        if artifact_dice not in pag_lookup:
+            pag_lookup[artifact_dice] = []
+        pag_lookup[artifact_dice].append(published_name)
+
     for run_name in run_names:
+
         try:
             process = models.DNASequencingProcess.objects.get(run_name=run_name)
             n_runs += 1
@@ -41,6 +50,7 @@ def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
             run = process.as_struct(deep=False)
             run["libraries"] = []
 
+
             for lib_id in lib_ids:
                 n_libs += 1
                 lib_obj = models.LibraryArtifact.objects.get(id=lib_id)
@@ -48,48 +58,57 @@ def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
 
                 biosample_ids = models.MajoraArtifactProcessRecord.objects.filter(out_artifact__id=lib_id).values_list("in_artifact__id", flat=True).distinct()
                 lib["biosamples"] = {x["central_sample_id"]: x for x in models.BiosampleArtifact.objects.filter(id__in=biosample_ids).values(
-                    'created__biosourcesamplingprocess__collection_date',
-                    'created__biosourcesamplingprocess__received_date',
-                    'created__biosourcesamplingprocess__submission_user__username',
-                    'created__biosourcesamplingprocess__submission_org__name',
-                    'created__biosourcesamplingprocess__submission_org__code',
-                    'created__biosourcesamplingprocess__source_sex',
-                    'created__biosourcesamplingprocess__source_age',
-                    'created__biosourcesamplingprocess__collection_location_country',
-                    'created__biosourcesamplingprocess__collection_location_adm1',
-                    'created__biosourcesamplingprocess__collection_location_adm2',
-                    'created__biosourcesamplingprocess__private_collection_location_adm2',
-                    'created__biosourcesamplingprocess__coguk_supp__is_surveillance',
-                    'created__biosourcesamplingprocess__coguk_supp__collection_pillar',
-                    'created__records__in_group__biosamplesource__id',
-                    'created__records__in_group__biosamplesource__secondary_id',
-                    'created__records__in_group__biosamplesource__source_type',
                     'central_sample_id',
                     'root_sample_id',
                     'sample_type_collected',
-                    'sample_type_current',
-                    'sample_site',
                     'root_biosample_source_id',
+                    collection_date=F('created__biosourcesamplingprocess__collection_date'),
+                    received_date=F('created__biosourcesamplingprocess__received_date'),
+                    submission_user=F('created__biosourcesamplingprocess__submission_user__username'),
+                    submission_org=F('created__biosourcesamplingprocess__submission_org__name'),
+                    submission_org_code=F('created__biosourcesamplingprocess__submission_org__code'),
+                    source_sex=F('created__biosourcesamplingprocess__source_sex'),
+                    source_age=F('created__biosourcesamplingprocess__source_age'),
+                    adm0=F('created__biosourcesamplingprocess__collection_location_country'),
+                    adm1=F('created__biosourcesamplingprocess__collection_location_adm1'),
+                    adm2=F('created__biosourcesamplingprocess__collection_location_adm2'),
+                    adm2_private=F('created__biosourcesamplingprocess__private_collection_location_adm2'),
+                    is_surveillance=F('created__biosourcesamplingprocess__coguk_supp__is_surveillance'),
+                    collection_pillar=F('created__biosourcesamplingprocess__coguk_supp__collection_pillar'),
+                    biosample_source_id=F('created__records__in_group__biosamplesource__secondary_id'),
+                    source_type=F('created__records__in_group__biosamplesource__source_type'),
+                    sample_type_received=F('sample_type_current'),
+                    swab_site=F('sample_site'),
                 )}
                 lib["metadata"] = lib_obj.get_metadata_as_struct()
 
+                # Preload ALL biosample metadata records for this lib
                 biosample_metadata = {x["artifact__dice_name"]: x for x in models.MajoraMetaRecord.objects.filter(artifact__id__in=biosample_ids, restricted=False).values('meta_tag', 'meta_name', 'value', 'artifact__dice_name')}
+
+                # Preload ALL biosample-pool records for this lib
                 biosample_pooling = {x["in_artifact__dice_name"]: x for x in models.LibraryPoolingProcessRecord.objects.filter(out_artifact__id=lib_id).values(
                     "in_artifact__dice_name",
                     "library_strategy",
                     "library_source",
                     "library_selection",
-                    "barcode",
                     "library_protocol",
                     "library_primers",
+                    library_adaptor_barcode=F("barcode"),
                 )}
+
+                # Load all the metrics for this lib
+                biosample_metrics = {}
+                for metric in models.TemporaryMajoraArtifactMetric.objects.filter(artifact_id__in=biosample_ids):
+                    if metric.artifact.dice_name not in biosample_metrics:
+                        biosample_metrics[metric.artifact.dice_name] = []
+                    biosample_metrics[metric.artifact.dice_name].append(metric.as_struct())
 
                 for bs in lib["biosamples"]:
                     n_biosamples += 1
-                    bs_obj = models.BiosampleArtifact.objects.get(central_sample_id=bs)
-                    lib["biosamples"][bs]["metrics"] = bs_obj.get_metrics_as_struct()
-                    lib["biosamples"][bs]["metadata"] = biosample_metadata.get(bs, {})
                     lib["biosamples"][bs].update(biosample_pooling.get(bs, {}))
+                    lib["biosamples"][bs]["metrics"] = biosample_metrics.get(bs, [])
+                    lib["biosamples"][bs]["metadata"] = biosample_metadata.get(bs, {})
+                    lib["biosamples"][bs]["published_as"] = ",".join( set(pag_lookup.get(bs, [])) )
 
                 run["libraries"].append(lib)
 
@@ -102,6 +121,9 @@ def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
 
     try:
         api_o["get"]["count"] = n_runs
+        api_o["get"]["legend"] = {
+            #"biosample": bs_api_key_fields,
+        }
         api_o["get"]["count_detail"] = (n_runs, n_libs, n_biosamples)
     except Exception as e:
         api_o["errors"] += 1
