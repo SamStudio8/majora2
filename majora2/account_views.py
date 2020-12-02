@@ -21,7 +21,11 @@ import json
 import uuid
 
 def generate_username(cleaned_data):
-    proposed_username = "%s%s%s" % (settings.USER_PREFIX, cleaned_data["last_name"].replace(' ', '').lower(), cleaned_data["first_name"][0].lower())
+    last_name = cleaned_data["last_name"].replace(' ', '').lower()
+    last_name = last_name[:(settings.USER_LEN_BEFORE_NUM - (len(settings.USER_PREFIX) + 1))]
+
+    proposed_username = "%s%s%s" % (settings.USER_PREFIX, last_name, cleaned_data["first_name"][0].lower())
+    proposed_username = proposed_username[:settings.USER_LEN_BEFORE_NUM]
 
     potentially_existing_profiles = models.Profile.objects.filter(user__username__startswith=proposed_username)
     if potentially_existing_profiles.count() > 0:
