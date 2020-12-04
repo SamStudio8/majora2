@@ -407,6 +407,47 @@ def get_sequencing(request):
     return wrap_api_v2(request, f)
 
 
+def get_sequencing2(request):
+    def f(request, api_o, json_data, user=None):
+        run_names = json_data.get("run_name")
+        if not run_names:
+            api_o["messages"].append("'run_name' key missing or empty")
+            api_o["errors"] += 1
+            return
+
+        if len(run_names) == 1 and run_names[0] == "*":
+            if user.is_staff:
+                from . import tasks
+                celery_task = tasks.task_get_sequencing_faster.delay(None, api_o, json_data, user=user.pk if user else None, response_uuid=api_o["request"])
+                if celery_task:
+                    api_o["tasks"].append(celery_task.id)
+                    api_o["messages"].append("Call api.majora.task.get with the appropriate task ID later...")
+                else:
+                    api_o["errors"] += 1
+                    api_o["messages"].append("Could not add requested task to Celery...")
+            else:
+                return HttpResponseBadRequest()
+
+        runs = {}
+        for run_name in run_names:
+            try:
+                process = models.DNASequencingProcess.objects.get(run_name=run_name)
+            except Exception as e:
+                api_o["warnings"] += 1
+                api_o["ignored"].append(run_name)
+                continue
+
+            try:
+                runs[process.run_name] = process.as_struct()
+            except Exception as e:
+                api_o["errors"] += 1
+                api_o["messages"].append(str(e))
+                continue
+        api_o["get"] = runs
+
+    return wrap_api_v2(request, f)
+
+
 def add_qc(request):
     def f(request, api_o, json_data, user=None):
         pag_name = json_data.get("publish_group")

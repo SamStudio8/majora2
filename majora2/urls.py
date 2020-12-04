@@ -73,6 +73,7 @@ urlpatterns = [
     #path('api/v2/process/pipeline/add/', csrf_exempt(api_views.add_pipeline), name="api.process.pipeline.add"),
     path('api/v2/process/sequencing/add/', csrf_exempt(api_views.add_sequencing), name="api.process.sequencing.add"),
     path('api/v2/process/sequencing/get/', csrf_exempt(api_views.get_sequencing), name="api.process.sequencing.get"),
+    path('api/v2/process/sequencing/get2/', csrf_exempt(api_views.get_sequencing2), name="api.process.sequencing.get2"),
     path('api/v2/meta/tag/add/', csrf_exempt(api_views.add_tag), name="api.meta.tag.add"),
     path('api/v2/meta/metric/add/', csrf_exempt(api_views.add_metrics), name="api.meta.metric.add"),
     path('api/v2/meta/qc/add/', csrf_exempt(api_views.add_qc), name="api.meta.qc.add"),
