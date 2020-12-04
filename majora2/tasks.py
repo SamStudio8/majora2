@@ -83,7 +83,13 @@ def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
                 lib["metadata"] = lib_obj.get_metadata_as_struct()
 
                 # Preload ALL biosample metadata records for this lib
-                biosample_metadata = {x["artifact__dice_name"]: x for x in models.MajoraMetaRecord.objects.filter(artifact__id__in=biosample_ids, restricted=False).values('meta_tag', 'meta_name', 'value', 'artifact__dice_name')}
+                biosample_metadata = {}
+                for record in models.MajoraMetaRecord.objects.filter(artifact__id__in=biosample_ids, restricted=False).values('meta_tag', 'meta_name', 'value', 'artifact__dice_name'):
+                    if record["artifact__dice_name"] not in biosample_metadata:
+                        biosample_metadata[record["artifact__dice_name"]] = {}
+                    if record["meta_tag"] not in biosample_metadata[record["artifact__dice_name"]]:
+                        biosample_metadata[record["artifact__dice_name"]][record["meta_tag"]] = {}
+                    biosample_metadata[record["artifact__dice_name"]][record["meta_tag"]][record["meta_name"]] = record["value"]
 
                 # Preload ALL biosample-pool records for this lib
                 biosample_pooling = {x["in_artifact__dice_name"]: x for x in models.LibraryPoolingProcessRecord.objects.filter(out_artifact__id=lib_id).values(
@@ -100,15 +106,20 @@ def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
                 biosample_metrics = {}
                 for metric in models.TemporaryMajoraArtifactMetric.objects.filter(artifact_id__in=biosample_ids):
                     if metric.artifact.dice_name not in biosample_metrics:
-                        biosample_metrics[metric.artifact.dice_name] = []
-                    biosample_metrics[metric.artifact.dice_name].append(metric.as_struct())
+                        biosample_metrics[metric.artifact.dice_name] = {}
+                    biosample_metrics[metric.artifact.dice_name][metric.namespace] = metric.as_struct()
 
                 for bs in lib["biosamples"]:
                     n_biosamples += 1
                     lib["biosamples"][bs].update(biosample_pooling.get(bs, {}))
-                    lib["biosamples"][bs]["metrics"] = biosample_metrics.get(bs, [])
+                    lib["biosamples"][bs]["metrics"] = biosample_metrics.get(bs, {})
                     lib["biosamples"][bs]["metadata"] = biosample_metadata.get(bs, {})
                     lib["biosamples"][bs]["published_as"] = ",".join( set(pag_lookup.get(bs, [])) )
+
+                    # Force to match previous seq get interface
+                    lib["biosamples"][bs]["collected_by"] = ""
+                    del lib["biosamples"][bs]["in_artifact__dice_name"]
+                    del lib["biosamples"][bs]["source_type"]
 
                 run["libraries"].append(lib)
 
