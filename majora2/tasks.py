@@ -213,7 +213,7 @@ def task_get_pag_by_qc_faster(request, api_o, json_data, user=None, **kwargs):
     if json_data.get("published_after"):
         try:
             gt_date = datetime.datetime.strptime(json_data["published_after"], "%Y-%m-%d")
-            base_q = base_q | Q(
+            base_q = base_q & Q(
                 groups__publishedartifactgroup__published_date__gt=gt_date
             )
         except Exception as e:
@@ -223,15 +223,16 @@ def task_get_pag_by_qc_faster(request, api_o, json_data, user=None, **kwargs):
     if json_data.get("suppressed_after"):
         try:
             gt_date = datetime.datetime.strptime(json_data["suppressed_after"], "%Y-%m-%d")
-            base_q = base_q | Q(
+            base_q = base_q & Q(
                 groups__publishedartifactgroup__suppressed_date__gt=gt_date,
                 groups__publishedartifactgroup__is_suppressed=True,
             )
         except Exception as e:
             api_o["errors"] += 1
             api_o["messages"].append(str(e))
+            return api_o
     else:
-        base_q = base_q | Q(
+        base_q = base_q & Q(
             groups__publishedartifactgroup__is_suppressed=False,
         )
 
@@ -245,7 +246,7 @@ def task_get_pag_by_qc_faster(request, api_o, json_data, user=None, **kwargs):
         pass
 
     # Perform the query
-    artifacts = models.DigitalResourceArtifact.objects.filter(base_q, status_q)
+    artifacts = models.DigitalResourceArtifact.objects.filter(base_q & status_q)
 
     # Collapse into list items
     artifacts = list(artifacts.values_list('groups__publishedartifactgroup__published_name', 'current_kind', 'current_path', 'current_hash', 'current_size', 'groups__publishedartifactgroup__quality_groups__is_pass'))
@@ -284,6 +285,7 @@ def task_get_pag_by_qc(request, api_o, json_data, user=None, **kwargs):
         except Exception as e:
             api_o["errors"] += 1
             api_o["messages"].append(str(e))
+            return api_o
 
     if json_data.get("pass") and json_data.get("fail"):
         pass
