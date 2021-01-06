@@ -205,8 +205,33 @@ def task_get_pag_by_qc_faster(request, api_o, json_data, user=None, **kwargs):
     base_q = Q(
         groups__publishedartifactgroup__isnull=False, # has PAG
         groups__publishedartifactgroup__quality_groups__test_group=t_group, # Has result for this QC test
-        groups__publishedartifactgroup__is_latest=True, # Is latest and
-        groups__publishedartifactgroup__is_suppressed=False) # not suppressed for bad reasons
+        groups__publishedartifactgroup__is_latest=True, # Is latest
+    )
+
+    if json_data.get("published_after"):
+        try:
+            gt_date = datetime.datetime.strptime(json_data["published_after"], "%Y-%m-%d")
+            base_q = base_q | Q(
+                groups__publishedartifactgroup__published_date__gt=gt_date
+            )
+        except Exception as e:
+            api_o["errors"] += 1
+            api_o["messages"].append(str(e))
+
+    if json_data.get("suppressed_after"):
+        try:
+            gt_date = datetime.datetime.strptime(json_data["suppressed_after"], "%Y-%m-%d")
+            base_q = base_q | Q(
+                groups__publishedartifactgroup__suppressed_date__gt=gt_date,
+                groups__publishedartifactgroup__is_suppressed=True,
+            )
+        except Exception as e:
+            api_o["errors"] += 1
+            api_o["messages"].append(str(e))
+    else:
+        base_q = base_q | Q(
+            groups__publishedartifactgroup__is_suppressed=False,
+        )
 
     if json_data.get("pass") and json_data.get("fail"):
         status_q= Q() # Should basically be NOP
