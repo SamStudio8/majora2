@@ -155,7 +155,7 @@ def task_get_sequencing(request, api_o, json_data, user=None, **kwargs):
     if not run_names:
         api_o["messages"].append("'run_name' key missing or empty")
         api_o["errors"] += 1
-        return
+        return api_o
 
     if len(run_names) == 1 and run_names[0] == "*":
         #TODO Cannot check staff status here, relies on checking in the calling view.
@@ -191,22 +191,24 @@ def task_get_sequencing(request, api_o, json_data, user=None, **kwargs):
 def task_get_pag_by_qc_faster(request, api_o, json_data, user=None, **kwargs):
     test_name = json_data.get("test_name")
 
+    api_o["messages"].append("0")
     if not test_name or len(test_name) == 0:
         api_o["messages"].append("'test_name', key missing or empty")
         api_o["errors"] += 1
-        return
+        return api_o
     t_group = models.PAGQualityTestEquivalenceGroup.objects.filter(slug=test_name).first()
     if not t_group:
         api_o["messages"].append("Invalid 'test_name'")
         api_o["ignored"].append(test_name)
         api_o["errors"] += 1
-        return
+        return api_o
 
     base_q = Q(
         groups__publishedartifactgroup__isnull=False, # has PAG
         groups__publishedartifactgroup__quality_groups__test_group=t_group, # Has result for this QC test
         groups__publishedartifactgroup__is_latest=True, # Is latest
     )
+    api_o["messages"].append("1")
 
     if json_data.get("published_after"):
         try:
@@ -265,13 +267,13 @@ def task_get_pag_by_qc(request, api_o, json_data, user=None, **kwargs):
     if not test_name or len(test_name) == 0:
         api_o["messages"].append("'test_name', key missing or empty")
         api_o["errors"] += 1
-        return
+        return api_o
     t_group = models.PAGQualityTestEquivalenceGroup.objects.filter(slug=test_name).first()
     if not t_group:
         api_o["messages"].append("Invalid 'test_name'")
         api_o["ignored"].append(test_name)
         api_o["errors"] += 1
-        return
+        return api_o
 
     reports = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group=t_group, pag__is_latest=True, pag__is_suppressed=False)
 
