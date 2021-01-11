@@ -195,6 +195,7 @@ class PAGSerializer(serpy.Serializer):
     owner_org_gisaid_lab_list = serpy.MethodField('serialize_owner_org_gisaid_lab_list')
 
     owner_org_ena_opted = serpy.BoolField(attr='owner.profile.institute.ena_opted')
+    owner_org_ena_assembly_opted = serpy.BoolField(attr='owner.profile.institute.ena_assembly_opted')
 
     owner_org_lab_or_name = serpy.MethodField('serialize_owner_org_lab_or_name')
 
