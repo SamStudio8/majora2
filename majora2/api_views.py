@@ -1452,7 +1452,7 @@ def suppress_pag(request):
             api_o["errors"] += 1
             return
 
-        valid_reasons = ["WRONG_BARCODE", "WRONG_METADATA", "WRONG_SEQUENCE"]
+        valid_reasons = ["WRONG_BARCODE", "WRONG_METADATA", "WRONG_SEQUENCE", "CONTROL_FAIL"]
         if reason.upper() not in valid_reasons:
             api_o["messages"].append("Reason must be one of: %s" % str(valid_reasons))
             api_o["errors"] += 1
