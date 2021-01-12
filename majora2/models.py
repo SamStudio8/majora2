@@ -1896,7 +1896,11 @@ class AbstractBioinformaticsProcess(MajoraArtifactProcess):
     @property
     def process_kind(self):
         return 'Bioinformatics: %s' % self.pipe_kind
-    pass
+
+    @classmethod
+    def get_resty_serializer(cls):
+        from . import resty_serializers
+        return resty_serializers.AbstractBioinformaticsProcessSerializer
 
 
 class MajoraDataview(models.Model):

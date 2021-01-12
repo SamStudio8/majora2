@@ -111,6 +111,15 @@ class RestyBiosourceSamplingProcessSerializer(DynamicDataviewModelSerializer):
     def get_biosources(self, obj):
         return RestyBiosampleSourceSerializer([x.in_group for x in obj.records.filter(in_group__biosamplesource__isnull=False).order_by('id').prefetch_related('in_group')], many=True, context=self.context).data
 
+class AbstractBioinformaticsProcessSerializer(DynamicDataviewModelSerializer):
+    class Meta:
+        model = models.AbstractBioinformaticsProcess
+        fields = BaseRestyProcessSerializer.Meta.fields + (
+            'pipe_kind',
+            'pipe_name',
+            'pipe_version',
+        )
+
 class RestyDNASequencingProcessSerializer(DynamicDataviewModelSerializer):
     libraries = serializers.SerializerMethodField()
     sequencing_org_code = serializers.SerializerMethodField()
@@ -150,6 +159,7 @@ class RestyProcessSerializer(PolymorphicSerializer):
     resource_type_field_name = 'process_model'
     model_serializer_mapping = {
         models.MajoraArtifactProcess: BaseRestyProcessSerializer,
+        models.AbstractBioinformaticsProcess: AbstractBioinformaticsProcessSerializer,
         models.BiosourceSamplingProcess: RestyBiosourceSamplingProcessSerializer,
         models.DNASequencingProcess: RestyDNASequencingProcessSerializer,
     }
@@ -301,5 +311,6 @@ class RestyPublishedArtifactGroupSerializer(DynamicDataviewModelSerializer):
         wide_ids = []
         for d in models.MajoraArtifactProcessRecord.objects.filter(Q(in_artifact__id__in=ids) | Q(out_artifact__id__in=ids)).values('in_artifact', 'out_artifact', 'in_group', 'out_group'):
             wide_ids.extend(d.values())
-        return RestyProcessRecordSerializer(models.MajoraArtifactProcessRecord.objects.filter(Q(in_artifact__id__in=wide_ids) | Q(out_artifact__id__in=wide_ids)).prefetch_related('process'), many=True, context=self.context).data
+        wide_ids = set(wide_ids)
+        return RestyProcessRecordSerializer(models.MajoraArtifactProcessRecord.objects.filter(Q(in_artifact__id__in=wide_ids) | Q(out_artifact__id__in=wide_ids)).distinct().prefetch_related('process'), many=True, context=self.context).data
 
