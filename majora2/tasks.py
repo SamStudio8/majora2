@@ -208,9 +208,9 @@ def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs)
             quality_groups__test_group = t_group,
             owner__profile__institute__ena_assembly_opted = True,
     ).values(
-            'id',
             'published_name',
             'published_date',
+            published_uuid=F('id'),
     )}
 
     # build pag to run map
@@ -223,8 +223,8 @@ def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs)
         if run_name not in run_to_pag:
             run_to_pag[run_name] = []
         run_to_pag[run_name].append(pag)
-        pags[pag]["processes"] = {}
-        pag_ids.append(pags[pag]["id"])
+        pag_ids.append(pags[pag]["published_uuid"])
+        pags[pag]["artifacts"] = {}
 
     # get accessions and match to pag
     accessions = models.TemporaryAccessionRecord.objects.filter(pag__id__in=pag_ids, is_public=True).values(
@@ -258,7 +258,7 @@ def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs)
         # determine the run
         run_name = run["run_name"]
         for pag in run_to_pag[run_name]:
-            pags[pag]["processes"]["sequencing"] = run
+            pags[pag]["artifacts"]["sequencing"] = [run] # cheat to make this fit the old ocarina api format
 
         # get library info and match the biosample and run combo
         # ffs this is also gross, should have put the library in the fucking pag, i hate myself
@@ -300,9 +300,10 @@ def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs)
         del bs["groups__publishedartifactgroup__published_name"]
 
         # map library info
-        run_name = pags[published_name]["processes"]["sequencing"]["run_name"]
-        bs["library"] = run_to_library_lookup[run_name].get(bs["central_sample_id"], {}) 
-        pags[published_name]["biosample"] = bs
+        run_name = pags[published_name]["artifacts"]["sequencing"][0]["run_name"]
+
+        pags[published_name]["artifacts"]["biosample"] = [bs]
+        pags[published_name]["artifacts"]["library"] = [run_to_library_lookup[run_name].get(bs["central_sample_id"], {})]
 
     # get files 
     artifacts = models.DigitalResourceArtifact.objects.filter(
@@ -323,13 +324,11 @@ def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs)
         published_name = dra["groups__publishedartifactgroup__published_name"]
         del dra["groups__publishedartifactgroup__published_name"]
 
-        if "files" not in pags[published_name]:
-            pags[published_name]["files"] = {}
-        pags[published_name]["files"][dra["current_kind"]] = dra
+        pags[published_name]["artifacts"][dra["current_kind"]] = [dra]
 
     try:
         api_o["get"] = {}
-        api_o["get"]["result"] = pags
+        api_o["get"]["result"] = [{"published_name": x, "pag": pags[x]} for x in pags]
         api_o["get"]["count"] = len(pags)
     except Exception as e:
         api_o["errors"] += 1
