@@ -669,7 +669,7 @@ class PAGQualityReportDecisionRecord(models.Model):
 
 # Until Artifacts become less generic in Majora3, we have to encode properties about them somewhere
 class TemporaryMajoraArtifactMetric(PolymorphicModel):
-    artifact = models.ForeignKey('MajoraArtifact', on_delete=models.CASCADE)
+    artifact = models.ForeignKey('MajoraArtifact', on_delete=models.CASCADE, related_name="metrics")
     namespace = models.CharField(max_length=64, blank=True, null=True)
 
     @property
