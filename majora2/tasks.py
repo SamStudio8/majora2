@@ -188,6 +188,155 @@ def task_get_sequencing(request, api_o, json_data, user=None, **kwargs):
 
 
 @shared_task
+def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs):
+    #NOTE(samstudio8, 20210112)
+    #  This has been written to provide fast response to the need to mass upload
+    #  consensus sequences to ENA on behalf of COG. The v3 API was too slow for this
+    #  so further thought needs to go in to how to unify the API to serve the
+    #  getpag/getseq modes of thinking. This behaviour was going to be stitched into
+    #  the getseq interface but the PAGs aren't in scope there (but actually the runs
+    #  aren't in scope here so it's just as difficult).
+    #  Behaves like the getpag and getseq interfaces had a child.
+
+    # get pags matching qc requirement
+    t_group = models.PAGQualityTestEquivalenceGroup.objects.filter(slug="cog-uk-high-quality-public").first()
+    pags = {x["published_name"]: x for x in models.PublishedArtifactGroup.objects.filter(
+            is_latest = True,
+            is_suppressed = False,
+            quality_groups__is_pass = True,
+            quality_groups__test_group = t_group,
+            owner__profile__institute__ena_assembly_opted = True,
+    ).values(
+            'id',
+            'published_name',
+            'published_date',
+    )}
+
+    # build pag to run map
+    # This is gross and only works because we use the run_name as a key on the PAG
+    # In future we'd do well to lock processes in to the PAG directly I think
+    run_to_pag = {}
+    pag_ids = []
+    for pag in pags:
+        run_name = pag.split(':')[1]
+        if run_name not in run_to_pag:
+            run_to_pag[run_name] = []
+        run_to_pag[run_name].append(pag)
+        pags[pag]["processes"] = {}
+        pag_ids.append(pags[pag]["id"])
+
+    # get accessions and match to pag
+    accessions = models.TemporaryAccessionRecord.objects.filter(pag__id__in=pag_ids, is_public=True).values(
+            'pag__published_name',
+            'service',
+            'primary_accession',
+            'secondary_accession',
+    )
+    for acc in accessions:
+        published_name = acc["pag__published_name"]
+        del acc["pag__published_name"]
+
+        service = acc["service"]
+        del acc["service"]
+
+        if "accessions" not in pags[published_name]:
+            pags[published_name]["accessions"] = {}
+        pags[published_name]["accessions"][service] = acc
+
+    # get sequencing processeses
+    #NOTE probably get slow performance with the run_name__in filter but it'll be faster than processing every run overall i reckon
+    sequencing_procs = models.DNASequencingProcess.objects.filter(run_name__in=list(run_to_pag.keys())).values(
+            'id',
+            'run_name',
+            'instrument_make',
+            'instrument_model',
+    )
+
+    run_to_library_lookup = {}
+    for run in sequencing_procs:
+        # determine the run
+        run_name = run["run_name"]
+        for pag in run_to_pag[run_name]:
+            pags[pag]["processes"]["sequencing"] = run
+
+        # get library info and match the biosample and run combo
+        # ffs this is also gross, should have put the library in the fucking pag, i hate myself
+        # we roll up to the biosample name here because you can't upload the same sample on two libraries on the same run (yet)
+        lib_ids = models.MajoraArtifactProcessRecord.objects.filter(process_id=run["id"]).values_list("in_artifact__id", flat=True).distinct()
+        biosample_pooling = {x["in_artifact__dice_name"]: x for x in models.LibraryPoolingProcessRecord.objects.filter(out_artifact__id__in=lib_ids).values(
+                    "in_artifact__dice_name",
+                    "library_strategy",
+                    "library_source",
+                    "library_selection",
+                    "library_protocol",
+                    "library_primers",
+                    seq_kit=F('out_artifact__libraryartifact__seq_kit'),
+                    seq_protocol=F('out_artifact__libraryartifact__seq_protocol'),
+                    library_adaptor_barcode=F("barcode"),
+        )}
+        if run_name not in run_to_library_lookup:
+            run_to_library_lookup[run_name] = {}
+        run_to_library_lookup[run_name].update(biosample_pooling)
+
+    # get biosamples
+    biosamples = models.BiosampleArtifact.objects.filter(
+        groups__id__in=pag_ids, # get biosamples in the selected pag set
+    ).values(
+            'groups__publishedartifactgroup__published_name',
+            'central_sample_id',
+            collection_date=F('created__biosourcesamplingprocess__collection_date'),
+            received_date=F('created__biosourcesamplingprocess__received_date'),
+            submission_user=F('created__biosourcesamplingprocess__submission_user__username'),
+            submission_org=F('created__biosourcesamplingprocess__submission_org__name'),
+            submission_org_code=F('created__biosourcesamplingprocess__submission_org__code'),
+            adm0=F('created__biosourcesamplingprocess__collection_location_country'),
+            adm1=F('created__biosourcesamplingprocess__collection_location_adm1'),
+            min_ct=F('metrics__temporarymajoraartifactmetric_thresholdcycle__min_ct'),
+            max_ct=F('metrics__temporarymajoraartifactmetric_thresholdcycle__max_ct'),
+    )
+    for bs in biosamples:
+        published_name = bs["groups__publishedartifactgroup__published_name"]
+        del bs["groups__publishedartifactgroup__published_name"]
+
+        # map library info
+        run_name = pags[published_name]["processes"]["sequencing"]["run_name"]
+        bs["library"] = run_to_library_lookup[run_name].get(bs["central_sample_id"], {}) 
+        pags[published_name]["biosample"] = bs
+
+    # get files 
+    artifacts = models.DigitalResourceArtifact.objects.filter(
+        groups__id__in=pag_ids, # get files in the selected pag set
+    ).values(
+                'groups__publishedartifactgroup__published_name',
+                'current_kind',
+                'current_path',
+                'current_hash',
+                'current_size',
+                mean_cov=F('metrics__temporarymajoraartifactmetric_mapping__mean_cov'),
+                pipe_id=F('created__abstractbioinformaticsprocess__id'),
+                pipe_kind=F('created__abstractbioinformaticsprocess__pipe_kind'),
+                pipe_name=F('created__abstractbioinformaticsprocess__pipe_name'),
+                pipe_version=F('created__abstractbioinformaticsprocess__pipe_version'),
+    )
+    for dra in artifacts:
+        published_name = dra["groups__publishedartifactgroup__published_name"]
+        del dra["groups__publishedartifactgroup__published_name"]
+
+        if "files" not in pags[published_name]:
+            pags[published_name]["files"] = {}
+        pags[published_name]["files"][dra["current_kind"]] = dra
+
+    try:
+        api_o["get"] = {}
+        api_o["get"]["result"] = pags
+        api_o["get"]["count"] = len(pags)
+    except Exception as e:
+        api_o["errors"] += 1
+        api_o["messages"].append(str(e))
+    return api_o
+
+
+@shared_task
 def task_get_pag_by_qc_faster(request, api_o, json_data, user=None, **kwargs):
     test_name = json_data.get("test_name")
 
