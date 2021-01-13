@@ -482,7 +482,7 @@ def add_qc(request):
         for artifact in pag.tagged_artifacts.all():
             # For this project we don't need to worry about duplicates
             # but this is an outstanding problem... TODO
-            for metric in artifact.temporarymajoraartifactmetric_set.all():
+            for metric in artifact.metrics.all():
                 if metric.namespace:
                     if metric.namespace not in metrics:
                         metrics[metric.namespace] = metric.as_struct()

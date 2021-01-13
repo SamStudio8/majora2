@@ -1,5 +1,5 @@
 {% load humanize %}
-{% for metric_set in thing.temporarymajoraartifactmetric_set.all %}
+{% for metric_set in thing.metrics.all %}
 {% for metric, value in metric_set.as_struct.items %}
 <span style="font-size: 1.2em"><span class="badge badge-left badge-dark">{{ metric_set.kind }}</span><span class="badge badge-center badge-secondary">{{ metric }}</span><span class="badge badge-right badge-primary">{{ value }}</span></span>
 {% endfor %}

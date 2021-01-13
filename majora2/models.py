@@ -260,7 +260,7 @@ class MajoraArtifact(PolymorphicModel):
 
     def get_metrics_as_struct(self, flat=False):
         metrics = {}
-        for m in self.temporarymajoraartifactmetric_set.all():
+        for m in self.metrics.all():
             if m.namespace not in metrics:
                 metrics[m.namespace] = m.as_struct() #TODO flat or not
         return metrics

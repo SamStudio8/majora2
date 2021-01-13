@@ -21,7 +21,7 @@ class ArtifactSerializer(serpy.Serializer):
         return metadata
     def get_metrics_as_struct(self, artifact, flat=False):
         metrics = {}
-        for metric in artifact.temporarymajoraartifactmetric_set.all():
+        for metric in artifact.metrics.all():
             s = metric.get_serializer()
             metrics[metric.metric_kind.lower()] = s(metric).data
         return metrics
