@@ -201,6 +201,7 @@ def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs)
     # get pags matching qc requirement
     t_group = models.PAGQualityTestEquivalenceGroup.objects.filter(slug="cog-uk-high-quality-public").first()
     pags = {x["published_name"]: x for x in models.PublishedArtifactGroup.objects.filter(
+            ~Q(accessions__service='ENA-ASSEMBLY'),
             is_latest = True,
             is_suppressed = False,
             quality_groups__is_pass = True,
