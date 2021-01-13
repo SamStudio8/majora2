@@ -1338,7 +1338,13 @@ def get_pag_by_qc_celery(request):
             return
 
         from . import tasks
-        celery_task = tasks.task_get_pag_by_qc.delay(None, api_o, json_data, user=user.pk, response_uuid=api_o["request"])
+        if json_data.get("mode", "").lower() == "ena-assembly":
+            celery_task = tasks.task_api_get_pags_to_publish.delay(None, api_o, json_data, user=user.pk, response_uuid=api_o["request"])
+            api_o["messages"].append("Switched to task_api_get_pags_to_publish")
+        else:
+            # fall back
+            celery_task = tasks.task_get_pag_by_qc.delay(None, api_o, json_data, user=user.pk, response_uuid=api_o["request"])
+
         if celery_task:
             api_o["tasks"].append(celery_task.id)
             api_o["messages"].append("Call api.majora.task.get with the appropriate task ID later...")
