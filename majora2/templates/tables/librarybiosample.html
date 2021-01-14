@@ -9,6 +9,7 @@
             <th>Sample Source</th>
             <th>Collected at (by)</th>
             <th>Collection date</th>
+            <th>Seqlab received date</th>
             <th>Pool</th>
         </tr>
     </thead>
@@ -25,6 +26,8 @@
             {{artifact.created.collected_by}}</td>
         <td>{{ artifact.created.when }}</br>
         {{ artifact.created.when | naturaltime }}</td>
+        <td>{{ record.sequencing_org_received_date }}</br>
+        {{ record.sequencing_org_received_date | naturalday }}</td>
         <td>{{ record.library_source }} {{ record.library_selection }} {{ record.library_strategy }}</td>
     </tr>
     {% endwith %}
