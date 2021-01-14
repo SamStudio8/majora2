@@ -122,6 +122,7 @@ def handle_testsequencing(form, user=None, api_o=None, request=None):
     rec.save()
 
     if dgroup_created:
+        # Placeholder basecalling
         bio = models.AbstractBioinformaticsProcess(
             who = user,
             when = p.when,
@@ -147,6 +148,31 @@ def handle_testsequencing(form, user=None, api_o=None, request=None):
             api_o["new"].append(_format_tuple(a))
             TatlVerb(request=request.treq, verb="CREATE", content_object=dgroup).save()
             TatlVerb(request=request.treq, verb="CREATE", content_object=a).save()
+
+    # Placeholder downstream pipeline
+    # This will allow us to accept and overwrite basic bioinformatics information
+    # see https://github.com/SamStudio8/majora/issues/45
+    pipe, pipe_created = models.AbstractBioinformaticsProcess.objects.get_or_create(
+            pipe_kind = "Pipeline",
+            pipe_name = "bioinfo-%s" % run_name,
+    )
+    if pipe_created:
+        pipe.who = user
+        pipe.when = p.when
+
+        if api_o:
+            api_o["new"].append(_format_tuple(pipe))
+        TatlVerb(request=request.treq, verb="CREATE", content_object=pipe).save()
+    else:
+        pipe.pipe_name = form.cleaned_data.get("bioinfo_pipe_name")
+        pipe.pipe_version = form.cleaned_data.get("bioinfo_pipe_version")
+
+        if api_o:
+            api_o["updated"].append(_format_tuple(pipe))
+        TatlVerb(request=request.treq, verb="UPDATE", content_object=pipe).save()
+    pipe.save()
+
+
     return p, sequencing_created
 
 

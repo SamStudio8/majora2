@@ -424,6 +424,9 @@ class TestSequencingForm(forms.Form):
     start_time = forms.DateTimeField(input_formats=["%Y-%m-%d %H:%M"], required=False)
     end_time = forms.DateTimeField(input_formats=["%Y-%m-%d %H:%M"], required=False)
 
+    bioinfo_pipe_name = forms.CharField(max_length=96, required=False)
+    bioinfo_pipe_version = forms.CharField(max_length=48, required=False)
+
     @staticmethod
     def modify_preform(data):
         UPPERCASE_FIELDS = [
