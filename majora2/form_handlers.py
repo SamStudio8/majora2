@@ -160,6 +160,15 @@ def handle_testsequencing(form, user=None, api_o=None, request=None):
         pipe.who = user
         pipe.when = p.when
 
+        # It would be nice to inject the dummy reads as the sources of this process
+        # but the records have a 1:1 mapping with the FASTA and BAM which won't be
+        # in scope until Elan sets them up later...
+        #pipe_record, pipe_record_created = models.MajoraArtifactProcessRecord.objects.get_or_create(
+        #        process = pipe,
+        #        in_artifact = sa,
+        #)
+        #pipe_record.save()
+
         if api_o:
             api_o["new"].append(_format_tuple(pipe))
         TatlVerb(request=request.treq, verb="CREATE", content_object=pipe).save()
