@@ -23,11 +23,21 @@ Majora OAuth2.0 Code Granted
             </br>
             If you are using Ocarina you must now return to the application and paste the following URL:
 
-            <input style="margin-top:10px; margin-bottom:10px" class="form-control" type="text" value="{{ full_uri }}" readonly />
+            <div class="input-group" style="margin-top:10px">
+                <input type="text" class="form-control" value="{{ full_uri }}" readonly >
+                <div class="input-group-append">
+                    <button type="button form-control" class="copy-btn btn btn-sm btn-primary" data-clipboard-text="{{ full_uri }}"><b>Copy</b></button>
+                </div>
+            </div>
             <hr>
             For other applications, you must now return to application and provide the following code:
 
-            <input style="margin-top:10px; margin-bottom:10px" class="form-control" type="text" value="{{ code }}" readonly />
+            <div class="input-group" style="margin:10px 0 10px 0">
+                <input type="text" class="form-control" value="{{ code }}" readonly >
+                <div class="input-group-append">
+                    <button type="button form-control" class="copy-btn btn btn-sm btn-primary" data-clipboard-text="{{ code }}"><b>Copy</b></button>
+                </div>
+            </div>
 
             This one-use grant code is valid for a very short period of time.</br>
             Your application will trade this in for a longer lived access code.
@@ -37,7 +47,45 @@ Majora OAuth2.0 Code Granted
 
         For additional scrutiny, your request included a 'state' code.</br>
         Ensure this matches that set by the originating application.
-        <input style="margin-top:10px" class="form-control" type="text" value="{{ state }}" readonly />
+        <div class="input-group" style="margin-top:10px">
+            <input type="text" class="form-control" value="{{ state }}" readonly >
+            <div class="input-group-append">
+                <button type="button form-control" class="copy-btn btn btn-sm btn-primary" data-clipboard-text="{{ state }}"><b>Copy</b></button>
+            </div>
         </div>
     </div>
+
+<script>
+//Tooltip tip from https://stackoverflow.com/questions/37381640/tooltips-highlight-animation-with-clipboard-js-click
+$( document ).ready(function() {
+$('button').tooltip({
+  trigger: 'click',
+  placement: 'bottom'
+});
+
+function setTooltip(btn, message) {
+  $(btn).tooltip('hide')
+    .attr('data-original-title', message)
+    .tooltip('show');
+}
+
+function hideTooltip(btn) {
+  setTimeout(function() {
+    $(btn).tooltip('hide');
+  }, 1000);
+}
+
+var clipboard = new ClipboardJS('.copy-btn');
+
+clipboard.on('success', function(e) {
+  setTooltip(e.trigger, 'Copied!');
+  hideTooltip(e.trigger);
+});
+
+clipboard.on('error', function(e) {
+  setTooltip(e.trigger, 'Failed!');
+  hideTooltip(e.trigger);
+});
+});
+</script>
 {% endblock %}
