@@ -296,6 +296,7 @@ def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs)
                     "library_selection",
                     "library_protocol",
                     "library_primers",
+                    "sequencing_org_received_date",
                     seq_kit=F('out_artifact__libraryartifact__seq_kit'),
                     seq_protocol=F('out_artifact__libraryartifact__seq_protocol'),
                     library_adaptor_barcode=F("barcode"),
