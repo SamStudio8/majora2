@@ -210,8 +210,32 @@ def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs)
     ).values(
             'published_name',
             'published_date',
+            owner_institute_code=F('owner__profile__institute__code'),
             published_uuid=F('id'),
     )}
+
+    # get v1 credit
+    v1_credits_lookup = {x["institute_code"]: x for x in models.Institute.objects.values(
+            credit_code=F('code'),
+            institute_code=F('code'),
+            credit_lab_name=F('gisaid_lab_name'),
+            credit_lab_addr=F('gisaid_lab_addr'),
+            credit_lab_list=F('gisaid_list'),
+    )}
+
+    # build v2 credit code map
+    credit_codes_lookup = {}
+    credits = models.InstituteCredit.objects.values(
+            'credit_code',
+            institute_code=F('institute__code'),
+            credit_lab_name=F('lab_name'),
+            credit_lab_addr=F('lab_addr'),
+            credit_lab_list=F('lab_list'),
+    )
+    for ic in credits:
+        if ic["institute_code"] not in credit_codes_lookup:
+            credit_codes_lookup[ic["institute_code"]] = {}
+        credit_codes_lookup[ ic["institute_code"] ][ ic["credit_code"] ] = ic
 
     # build pag to run map
     # This is gross and only works because we use the run_name as a key on the PAG
@@ -295,6 +319,9 @@ def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs)
             min_ct=F('metrics__temporarymajoraartifactmetric_thresholdcycle__min_ct'),
             max_ct=F('metrics__temporarymajoraartifactmetric_thresholdcycle__max_ct'),
     )
+    # get biosample credits
+    biosample_credits = {x["artifact__dice_name"]: x["value"].upper() for x in models.MajoraMetaRecord.objects.filter(artifact__groups__id__in=pag_ids, meta_tag='majora', meta_name='credit').values('artifact__dice_name', 'value')}
+
     for bs in biosamples:
         published_name = bs["groups__publishedartifactgroup__published_name"]
         del bs["groups__publishedartifactgroup__published_name"]
@@ -304,6 +331,15 @@ def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs)
 
         pags[published_name]["artifacts"]["biosample"] = [bs]
         pags[published_name]["artifacts"]["library"] = [run_to_library_lookup[run_name].get(bs["central_sample_id"], {})]
+
+        # resolve credit (tagged on biosample)
+        credit_code = biosample_credits.get(bs["central_sample_id"])
+        ic = {}
+        if credit_code:
+            ic = credit_codes_lookup.get(pags[published_name]["owner_institute_code"], {}).get(credit_code, {})
+        if not ic:
+            ic = v1_credits_lookup.get(pags[published_name]["owner_institute_code"], {})
+        pags[published_name].update(ic)
 
     # get files 
     artifacts = models.DigitalResourceArtifact.objects.filter(
