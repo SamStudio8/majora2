@@ -154,7 +154,7 @@ def handle_testsequencing(form, user=None, api_o=None, request=None):
     # see https://github.com/SamStudio8/majora/issues/45
     pipe, pipe_created = models.AbstractBioinformaticsProcess.objects.get_or_create(
             pipe_kind = "Pipeline",
-            pipe_name = "bioinfo-%s" % run_name,
+            hook_name = "bioinfo-%s" % run_name,
     )
     if pipe_created:
         pipe.who = user
