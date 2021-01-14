@@ -99,6 +99,7 @@ def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
                     "library_selection",
                     "library_protocol",
                     "library_primers",
+                    "sequencing_org_received_date",
                     library_adaptor_barcode=F("barcode"),
                 )}
 
