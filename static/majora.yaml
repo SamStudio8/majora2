@@ -40,7 +40,7 @@ info:
     * If metadata is missing, send a blank field or do not submit the field at all. Do not submit 'unknown' or 'null' or any other text that attempts to explain that the field is missing.
     <hr>
 
-  version: 2.1.0
+  version: 2.2.0
 externalDocs:
   description: Majora on github
   url: 'https://github.com/SamStudio8/majora'
@@ -518,7 +518,13 @@ components:
           type: string
           format: date-time
           example: "YYYY-MM-DD HH:MM"
-          
+        bioinfo_pipe_name:
+          type: string
+          description: "The name of the bioinformatics pipeline used for downstream analysis of this run"
+          example: "ARTIC Pipeline (Nanopolish)"
+        bioinfo_pipe_version:
+          type: string
+          description: "The version number of the bioinformatics pipeline used for downstream analysis of this run"
     Metric:
       type: object
       properties:
