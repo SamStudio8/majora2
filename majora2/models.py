@@ -1831,6 +1831,8 @@ class LibraryPoolingProcessRecord(MajoraArtifactProcessRecord):
     library_primers = models.CharField(max_length=48, blank=True, null=True)
     library_protocol = models.CharField(max_length=48, blank=True, null=True)
 
+    sequencing_org_received_date = models.DateField(blank=True, null=True)
+
 
 class DNASequencingProcessGroup(MajoraArtifactProcessGroup):
     experiment_name = models.CharField(max_length=128)
