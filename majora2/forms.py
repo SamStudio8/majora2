@@ -784,9 +784,9 @@ class TestFileForm(forms.Form):
     #pipe_id = forms.UUIDField()
     pipe_hook = forms.CharField(max_length=256)
     artifact_uuid = forms.UUIDField(required=False)
-    pipe_kind = forms.CharField(max_length=64)
-    pipe_name = forms.CharField(max_length=96)
-    pipe_version = forms.CharField(max_length=48)
+    pipe_kind = forms.CharField(max_length=64, required=False)
+    pipe_name = forms.CharField(max_length=96, required=False)
+    pipe_version = forms.CharField(max_length=48, required=False)
 
     #node_uuid = forms.ModelChoiceField(queryset=models.DigitalResourceNode.objects.all())
     node_name = forms.ModelChoiceField(queryset=models.DigitalResourceNode.objects.all(), to_field_name="unique_name", required=False)
