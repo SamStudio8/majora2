@@ -21,7 +21,11 @@ Majora OAuth2.0 Code Granted
             You have been redirected to this page as your request to authorize an application to access your Majora account was successful.
             </br>
             </br>
-            You must now return to application and provide the following code.
+            If you are using Ocarina you must now return to the application and paste the following URL:
+
+            <input style="margin-top:10px; margin-bottom:10px" class="form-control" type="text" value="{{ full_uri }}" readonly />
+            <hr>
+            For other applications, you must now return to application and provide the following code:
 
             <input style="margin-top:10px; margin-bottom:10px" class="form-control" type="text" value="{{ code }}" readonly />
 
@@ -31,7 +35,7 @@ Majora OAuth2.0 Code Granted
         {% endif %}
         <hr>
 
-        For additional scrutiny, your request included an additional code.</br>
+        For additional scrutiny, your request included a 'state' code.</br>
         Ensure this matches that set by the originating application.
         <input style="margin-top:10px" class="form-control" type="text" value="{{ state }}" readonly />
         </div>

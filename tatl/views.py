@@ -8,6 +8,7 @@ def oauth2_callback(request):
         return otp
 
     return render(request, 'oauth2_provider/authorized-oob.html', {
+        "full_uri": request.build_absolute_uri(),
         "code": request.GET.get("code"),
         "state": request.GET.get("state"),
         "error": request.GET.get("error"),
