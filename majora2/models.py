@@ -1831,6 +1831,9 @@ class LibraryPoolingProcessRecord(MajoraArtifactProcessRecord):
     library_primers = models.CharField(max_length=48, blank=True, null=True)
     library_protocol = models.CharField(max_length=48, blank=True, null=True)
 
+    #NOTE samstudio8 20210114
+    # This REALLY does not belong here but there isn't really anywhere else
+    # suitable for it to go. Sorry about that.
     sequencing_org_received_date = models.DateField(blank=True, null=True)
 
 
