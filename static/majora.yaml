@@ -40,7 +40,7 @@ info:
     * If metadata is missing, send a blank field or do not submit the field at all. Do not submit 'unknown' or 'null' or any other text that attempts to explain that the field is missing.
     <hr>
 
-  version: 2.2.0
+  version: 2.2.1
 externalDocs:
   description: Majora on github
   url: 'https://github.com/SamStudio8/majora'
@@ -270,7 +270,7 @@ components:
           type: string
           format: date
           example: "2020-06-04"
-          description: "One may provide received_date in place of collection_date where it is unavailable."
+          description: "Date sample was first received by any lab. This date should be as close to possible to collection_date. This date must be provided if collection_date is missing."
         collecting_org:
           type: string
           description: "The site (eg. hospital or surgery) that this sample was originally collected by."
@@ -473,6 +473,11 @@ components:
         barcode:
           type: string
           example: "02"
+        sequencing_org_received_date:
+          type: string
+          format: date
+          example: "2021-01-14"
+          description: "Date sample was received by the organisation which sequenced it. This date is used for tracking sample turnaround time."
     Sequencing:
       type: object
       required:
