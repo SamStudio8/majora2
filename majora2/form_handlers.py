@@ -172,15 +172,15 @@ def handle_testsequencing(form, user=None, api_o=None, request=None):
         if api_o:
             api_o["new"].append(_format_tuple(pipe))
         TatlVerb(request=request.treq, verb="CREATE", content_object=pipe).save()
-    else:
-        pipe.pipe_name = form.cleaned_data.get("bioinfo_pipe_name")
-        pipe.pipe_version = form.cleaned_data.get("bioinfo_pipe_version")
 
+    pipe.pipe_name = form.cleaned_data.get("bioinfo_pipe_name")
+    pipe.pipe_version = form.cleaned_data.get("bioinfo_pipe_version")
+
+    if not pipe_created:
         if api_o:
             api_o["updated"].append(_format_tuple(pipe))
         TatlVerb(request=request.treq, verb="UPDATE", content_object=pipe).save()
     pipe.save()
-
 
     return p, sequencing_created
 
