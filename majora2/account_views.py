@@ -143,6 +143,8 @@ def form_credit(request, credit_code=None):
             credit.lab_name = form.cleaned_data["lab_name"]
             credit.lab_addr = form.cleaned_data["lab_addr"]
             credit.lab_list = form.cleaned_data["lab_list"]
+            if credit.lab_list:
+                credit.lab_list = credit.lab_list.replace('\t', ' ').replace('\r', '').replace('\n', ',').replace(",,", ',').replace(' ,', ',') # sigh
             credit.save()
             return render(request, 'accounts/institute_success.html')
         else:
@@ -178,6 +180,8 @@ def form_institute(request):
             org.gisaid_lab_name = form.cleaned_data.get("gisaid_lab_name")
             org.gisaid_lab_addr = form.cleaned_data.get("gisaid_lab_addr")
             org.gisaid_list = form.cleaned_data.get("gisaid_list")
+            if org.gisaid_list:
+                org.gisaid_list = org.gisaid_list.replace('\t', ' ').replace('\r', '').replace('\n', ',').replace(",,", ',').replace(' ,', ',') # sigh
             org.save()
             return render(request, 'accounts/institute_success.html')
     else:
