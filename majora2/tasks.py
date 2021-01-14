@@ -122,6 +122,8 @@ def task_get_sequencing_faster(request, api_o, json_data, user=None, **kwargs):
                     del lib["biosamples"][bs]["in_artifact__dice_name"]
                     del lib["biosamples"][bs]["source_type"]
 
+                    if lib["biosamples"][bs]["sequencing_org_received_date"]:
+                        lib["biosamples"][bs]["sequencing_org_received_date"] = lib["biosamples"][bs]["sequencing_org_received_date"].strftime("%Y-%m-%d")
                     if lib["biosamples"][bs]["collection_date"]:
                         lib["biosamples"][bs]["collection_date"] = lib["biosamples"][bs]["collection_date"].strftime("%Y-%m-%d")
                     if lib["biosamples"][bs]["received_date"]:
