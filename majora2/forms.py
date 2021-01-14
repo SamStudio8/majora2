@@ -397,6 +397,11 @@ class TestLibraryBiosampleForm(forms.Form):
     library_primers = forms.CharField(max_length=48, required=False)
     library_protocol = forms.CharField(max_length=48, required=False)
 
+    sequencing_org_received_date = forms.DateField(
+            label="Date sample was eligible for processing at sequencing lab",
+            help_text="YYYY-MM-DD",
+            required=False,
+    )
 
 class TestSequencingForm(forms.Form):
     library_name = forms.ModelChoiceField(queryset=models.LibraryArtifact.objects.all(), required=True, to_field_name="dice_name")

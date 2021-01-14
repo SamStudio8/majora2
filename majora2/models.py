@@ -1834,6 +1834,7 @@ class LibraryPoolingProcessRecord(MajoraArtifactProcessRecord):
     #NOTE samstudio8 20210114
     # This REALLY does not belong here but there isn't really anywhere else
     # suitable for it to go. Sorry about that.
+    # See https://github.com/COG-UK/dipi-group/issues/12
     sequencing_org_received_date = models.DateField(blank=True, null=True)
 
 
