@@ -54,13 +54,14 @@ def list_site_profiles(request):
                 if profile_to_approve.institute != request.user.profile.institute:
                     return HttpResponseBadRequest() # bye
 
-                profile_to_approve.is_site_approved = True
-                profile_to_approve.save()
-                signals.site_approved_registration.send(
-                        sender=request,
-                        approver=request.user,
-                        approved_profile=profile_to_approve
-                )
+                if not profile_to_approve.is_site_approved:
+                    profile_to_approve.is_site_approved = True
+                    profile_to_approve.save()
+                    signals.site_approved_registration.send(
+                            sender=request,
+                            approver=request.user,
+                            approved_profile=profile_to_approve
+                    )
 
 
     # Render the list regardless of what the form did
