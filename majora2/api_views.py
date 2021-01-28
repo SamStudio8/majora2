@@ -1307,20 +1307,6 @@ def get_dashboard_metrics(request):
     return wrap_api_v2(request, f)
 
 
-
-def get_pag_by_qc2_celery(request):
-    def f(request, api_o, json_data, user=None):
-        from . import tasks
-        celery_task = tasks.task_get_pag_by_qc_faster.delay(None, api_o, json_data, user=user.pk, response_uuid=api_o["request"])
-        if celery_task:
-            api_o["tasks"].append(celery_task.id)
-            api_o["messages"].append("Call api.majora.task.get with the appropriate task ID later...")
-        else:
-            api_o["errors"] += 1
-            api_o["messages"].append("Could not add requested task to Celery...")
-
-    return wrap_api_v2(request, f, permission="majora2.temp_can_read_pags_via_api")
-
 def get_pag_by_qc_celery(request):
     def f(request, api_o, json_data, user=None):
         test_name = json_data.get("test_name")
@@ -1338,20 +1324,17 @@ def get_pag_by_qc_celery(request):
             return
 
         from . import tasks
-        basic_task = False
+        basic_task = True
         get_mode = json_data.get("mode")
         if get_mode and len(get_mode) > 0:
             if get_mode.lower() == "ena-assembly":
-                celery_task = tasks.task_api_get_pags_to_publish.delay(None, api_o, json_data, user=user.pk, response_uuid=api_o["request"])
-                api_o["messages"].append("Switched to task_api_get_pags_to_publish")
-            else:
-                basic_task = True
-        else:
-            # fall back
-            basic_task = True
+                pass
+            elif get_mode.lower() == "pagfiles":
+                celery_task = tasks.task_get_pagfiles.delay(None, api_o, json_data, user=user.pk, response_uuid=api_o["request"])
+                basic_task = False
 
         if basic_task:
-            celery_task = tasks.task_get_pag_by_qc.delay(None, api_o, json_data, user=user.pk, response_uuid=api_o["request"])
+            celery_task = tasks.task_api_get_pags_to_publish.delay(None, api_o, json_data, user=user.pk, response_uuid=api_o["request"])
 
         if celery_task:
             api_o["tasks"].append(celery_task.id)

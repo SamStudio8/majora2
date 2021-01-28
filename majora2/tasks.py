@@ -492,7 +492,7 @@ def _get_pags_by_qc_options(request, api_o, json_data):
 
 
 @shared_task
-def task_get_pag_by_qc_faster(request, api_o, json_data, user=None, **kwargs):
+def task_get_pagfiles(request, api_o, json_data, user=None, **kwargs):
     pag_ids = _get_pags_by_qc_options(None, api_o, json_data)
     if len(pag_ids) == 0:
         api_o["messages"].append("No PAGs found.")
