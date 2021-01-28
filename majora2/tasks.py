@@ -209,13 +209,29 @@ def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs)
             id__in=pag_ids,
     ).values(
             'published_name',
+            'published_version',
             'published_date',
             owner_institute_code=F('owner__profile__institute__code'),
             published_uuid=F('id'),
             owner_org_ena_assembly_opted=F('owner__profile__institute__ena_assembly_opted'),
             owner_org_ena_opted=F('owner__profile__institute__ena_opted'),
             owner_org_gisaid_opted=F('owner__profile__institute__gisaid_opted'),
+
+            # Inserted for compat with deprecated task_get_pag_by_qc
+            owner_username=F('owner__username'),
+            owner_org_code=F('owner__profile__institute__code'),
+            owner_org_name=F('owner__profile__institute__name'),
+            owner_org_gisaid_user=F('owner__profile__institute__gisaid_user'),
+            owner_org_gisaid_mail=F('owner__profile__institute__gisaid_mail'),
     )}
+
+    # adm1 lookup
+    countries = {
+        "UK-ENG": "England",
+        "UK-WLS": "Wales",
+        "UK-SCT": "Scotland",
+        "UK-NIR": "Northern_Ireland",
+    }
 
     # get v1 credit
     v1_credits_lookup = {x["institute_code"]: x for x in models.Institute.objects.values(
@@ -246,7 +262,10 @@ def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs)
     run_to_pag = {}
     pag_ids = []
     for pag in pags:
-        run_name = pag.split(':')[1]
+        try:
+            run_name = pag.split(':')[1]
+        except:
+            run_name = pag
         if run_name not in run_to_pag:
             run_to_pag[run_name] = []
         run_to_pag[run_name].append(pag)
@@ -322,6 +341,8 @@ def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs)
             adm1=F('created__biosourcesamplingprocess__collection_location_adm1'),
             min_ct=F('metrics__temporarymajoraartifactmetric_thresholdcycle__min_ct'),
             max_ct=F('metrics__temporarymajoraartifactmetric_thresholdcycle__max_ct'),
+            is_surveillance=F('created__biosourcesamplingprocess__coguk_supp__is_surveillance'),
+            collection_pillar=F('created__biosourcesamplingprocess__coguk_supp__collection_pillar'),
     )
     # get biosample credits
     biosample_credits = {x["artifact__dice_name"]: x["value"].upper() for x in models.MajoraMetaRecord.objects.filter(artifact__groups__id__in=pag_ids, meta_tag='majora', meta_name='credit').values('artifact__dice_name', 'value')}
@@ -344,6 +365,9 @@ def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs)
         if not ic:
             ic = v1_credits_lookup.get(pags[published_name]["owner_institute_code"], {})
         pags[published_name].update(ic)
+
+        # trans adm1 (for task_get_pag_by_qc)
+        bs["adm1_trans"] = countries.get(bs["adm1"], "")
 
     # get files 
     artifacts = models.DigitalResourceArtifact.objects.filter(
