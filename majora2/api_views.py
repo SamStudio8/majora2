@@ -1334,7 +1334,7 @@ def get_pag_by_qc_celery(request):
                 basic_task = False
 
         if basic_task:
-            celery_task = tasks.task_api_get_pags_to_publish.delay(None, api_o, json_data, user=user.pk, response_uuid=api_o["request"])
+            celery_task = tasks.task_get_pag_v2.delay(None, api_o, json_data, user=user.pk, response_uuid=api_o["request"])
 
         if celery_task:
             api_o["tasks"].append(celery_task.id)

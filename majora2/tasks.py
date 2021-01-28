@@ -191,16 +191,7 @@ def task_get_sequencing(request, api_o, json_data, user=None, **kwargs):
 
 
 @shared_task
-def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs):
-    #NOTE(samstudio8, 20210112)
-    #  This has been written to provide fast response to the need to mass upload
-    #  consensus sequences to ENA on behalf of COG. The v3 API was too slow for this
-    #  so further thought needs to go in to how to unify the API to serve the
-    #  getpag/getseq modes of thinking. This behaviour was going to be stitched into
-    #  the getseq interface but the PAGs aren't in scope there (but actually the runs
-    #  aren't in scope here so it's just as difficult).
-    #  Behaves like the getpag and getseq interfaces had a child.
-
+def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
     pag_ids = _get_pags_by_qc_options(None, api_o, json_data)
     if len(pag_ids) == 0:
         api_o["messages"].append("No PAGs found.")
