@@ -201,20 +201,20 @@ def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs)
     #  aren't in scope here so it's just as difficult).
     #  Behaves like the getpag and getseq interfaces had a child.
 
-    # get pags matching qc requirement
-    t_group = models.PAGQualityTestEquivalenceGroup.objects.filter(slug="cog-uk-high-quality-public").first()
+    pag_ids = _get_pags_by_qc_options(None, api_o, json_data)
+    if len(pag_ids) == 0:
+        api_o["messages"].append("No PAGs found.")
+
     pags = {x["published_name"]: x for x in models.PublishedArtifactGroup.objects.filter(
-            ~Q(accessions__service='ENA-ASSEMBLY'),
-            is_latest = True,
-            is_suppressed = False,
-            quality_groups__is_pass = True,
-            quality_groups__test_group = t_group,
-            owner__profile__institute__ena_assembly_opted = True,
+            id__in=pag_ids,
     ).values(
             'published_name',
             'published_date',
             owner_institute_code=F('owner__profile__institute__code'),
             published_uuid=F('id'),
+            owner_org_ena_assembly_opted=F('owner__profile__institute__ena_assembly_opted'),
+            owner_org_ena_opted=F('owner__profile__institute__ena_opted'),
+            owner_org_gisaid_opted=F('owner__profile__institute__gisaid_opted'),
     )}
 
     # get v1 credit
