@@ -379,34 +379,30 @@ def task_api_get_pags_to_publish(request, api_o, json_data, user=None, **kwargs)
     return api_o
 
 
-@shared_task
-def task_get_pag_by_qc_faster(request, api_o, json_data, user=None, **kwargs):
+def _get_pags_by_qc_options(request, api_o, json_data):
     test_name = json_data.get("test_name")
 
-    api_o["messages"].append("0")
     if not test_name or len(test_name) == 0:
         api_o["messages"].append("'test_name', key missing or empty")
         api_o["errors"] += 1
-        return api_o
+        return []
     t_group = models.PAGQualityTestEquivalenceGroup.objects.filter(slug=test_name).first()
     if not t_group:
         api_o["messages"].append("Invalid 'test_name'")
         api_o["ignored"].append(test_name)
         api_o["errors"] += 1
-        return api_o
+        return []
 
     base_q = Q(
-        groups__publishedartifactgroup__isnull=False, # has PAG
-        groups__publishedartifactgroup__quality_groups__test_group=t_group, # Has result for this QC test
-        groups__publishedartifactgroup__is_latest=True, # Is latest
+        is_latest = True,
+        quality_groups__test_group = t_group,
     )
-    api_o["messages"].append("1")
 
     if json_data.get("published_after"):
         try:
             gt_date = datetime.datetime.strptime(json_data["published_after"], "%Y-%m-%d")
             base_q = base_q & Q(
-                groups__publishedartifactgroup__published_date__gt=gt_date
+                published_date__gt=gt_date
             )
         except Exception as e:
             api_o["errors"] += 1
@@ -416,29 +412,67 @@ def task_get_pag_by_qc_faster(request, api_o, json_data, user=None, **kwargs):
         try:
             gt_date = datetime.datetime.strptime(json_data["suppressed_after"], "%Y-%m-%d")
             base_q = base_q & Q(
-                groups__publishedartifactgroup__suppressed_date__gt=gt_date,
-                groups__publishedartifactgroup__is_suppressed=True,
+                suppressed_date__gt=gt_date,
+                is_suppressed=True,
             )
         except Exception as e:
             api_o["errors"] += 1
             api_o["messages"].append(str(e))
-            return api_o
+            return []
     else:
         base_q = base_q & Q(
-            groups__publishedartifactgroup__is_suppressed=False,
+            is_suppressed=False,
         )
 
-    if json_data.get("pass") and json_data.get("fail"):
-        status_q= Q() # Should basically be NOP
-    elif json_data.get("pass"):
-        status_q = Q(groups__publishedartifactgroup__quality_groups__is_pass=True)
-    elif json_data.get("fail"):
-        status_q = Q(groups__publishedartifactgroup__quality_groups__is_pass=False)
-    else:
-        pass
+    # Return only PAGs with the service name, otherwise use the is_public shortcut
+    if json_data.get("public") and json_data.get("private"):
+        if json_data.get("service_name"):
+            api_o["messages"].append("service_name is ignored with both public and private")
 
-    # Perform the query
-    artifacts = models.DigitalResourceArtifact.objects.filter(base_q & status_q)
+    elif json_data.get("public"):
+        base_q = base_q & Q(
+            accessions__is_public=True,
+        )
+        if json_data.get("service_name"):
+            base_q = base_q & Q(
+                accessions__service=json_data.get("service_name"),
+            )
+
+    elif json_data.get("private"):
+        base_q = base_q & Q(
+            is_public=False,
+        )
+        if json_data.get("service_name"):
+            # Exclude any PAG that has this service name (public or not)
+            # Private means unsubmitted in this context basically
+            base_q = base_q & Q(
+                ~Q(accessions__service=json_data.get("service_name")),
+            )
+
+    else:
+        if json_data.get("service_name"):
+            api_o["messages"].append("service_name is ignored without public or private")
+
+
+    # Pass/Fail QC status
+    if json_data.get("pass") and json_data.get("fail"):
+        status_q= Q(quality_groups__isnull=False) # must have a result
+    elif json_data.get("pass"):
+        status_q = Q(quality_groups__is_pass=True)
+    elif json_data.get("fail"):
+        status_q = Q(quality_groups__is_pass=False)
+    else:
+        status_q= Q() # Should basically be NOP
+
+    return models.PublishedArtifactGroup.objects.filter(base_q & status_q).values_list('id', flat=True)
+
+
+@shared_task
+def task_get_pag_by_qc_faster(request, api_o, json_data, user=None, **kwargs):
+    pag_ids = _get_pags_by_qc_options(None, api_o, json_data)
+    if len(pag_ids) == 0:
+        api_o["messages"].append("No PAGs found.")
+    artifacts = models.DigitalResourceArtifact.objects.filter(groups__id__in=pag_ids)
 
     # Collapse into list items
     artifacts = list(artifacts.values_list('groups__publishedartifactgroup__published_name', 'current_kind', 'current_path', 'current_hash', 'current_size', 'groups__publishedartifactgroup__quality_groups__is_pass'))
@@ -488,7 +522,7 @@ def task_get_pag_by_qc(request, api_o, json_data, user=None, **kwargs):
     else:
         pass
 
-    # Return only PAGs with the service name, otherwise use the is_pbulic shortcut
+    # Return only PAGs with the service name, otherwise use the is_public shortcut
     if json_data.get("public") and json_data.get("private"):
         if json_data.get("service_name"):
             api_o["messages"].append("service_name is ignored with both public and private")
