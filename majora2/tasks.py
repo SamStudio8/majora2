@@ -228,16 +228,21 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
     v1_credits_lookup = {x["institute_code"]: x for x in models.Institute.objects.values(
             credit_code=F('code'),
             institute_code=F('code'),
+            credit_lab_org_name=F('name'),
             credit_lab_name=F('gisaid_lab_name'),
             credit_lab_addr=F('gisaid_lab_addr'),
             credit_lab_list=F('gisaid_list'),
     )}
+    for code, c in v1_credits_lookup.items():
+        if not c["credit_lab_name"] or len(c["credit_lab_name"]) == 0:
+            c["credit_lab_name"] = c["credit_lab_org_name"]
 
     # build v2 credit code map
     credit_codes_lookup = {}
     credits = models.InstituteCredit.objects.values(
             'credit_code',
             institute_code=F('institute__code'),
+            credit_lab_org_name=F('institute__name'),
             credit_lab_name=F('lab_name'),
             credit_lab_addr=F('lab_addr'),
             credit_lab_list=F('lab_list'),
@@ -327,6 +332,7 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
             received_date=F('created__biosourcesamplingprocess__received_date'),
             submission_user=F('created__biosourcesamplingprocess__submission_user__username'),
             submission_org=F('created__biosourcesamplingprocess__submission_org__name'),
+            submission_org_credit_name=F('created__biosourcesamplingprocess__submission_org__gisaid_lab_name'),
             submission_org_code=F('created__biosourcesamplingprocess__submission_org__code'),
             adm0=F('created__biosourcesamplingprocess__collection_location_country'),
             adm1=F('created__biosourcesamplingprocess__collection_location_adm1'),
@@ -369,6 +375,8 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
             bs["received_date"] = bs["received_date"].strftime("%Y-%m-%d") 
         if bs["is_surveillance"] is None:
             bs["is_surveillance"] = ""
+        if not bs["submission_org_credit_name"] or len(bs["submission_org_credit_name"]) == 0:
+            bs["submission_org_credit_name"] = bs["submission_org"]
 
     # get files 
     artifacts = models.DigitalResourceArtifact.objects.filter(
