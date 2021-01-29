@@ -486,8 +486,13 @@ def _get_pags_by_qc_options(request, api_o, json_data):
 def task_get_pagfiles(request, api_o, json_data, user=None, **kwargs):
     pag_ids = _get_pags_by_qc_options(None, api_o, json_data)
     if len(pag_ids) == 0:
-        api_o["messages"].append("No PAGs found.")
-    artifacts = models.DigitalResourceArtifact.objects.filter(groups__id__in=pag_ids)
+        api_o["messages"].append("No PAGs found")
+    else:
+        api_o["messages"].append("%d PAGs found" % len(pag_ids))
+
+    #TODO
+    t_group = models.PAGQualityTestEquivalenceGroup.objects.filter(slug=json_data.get("test_name")).first()
+    artifacts = models.DigitalResourceArtifact.objects.filter(groups__id__in=pag_ids, groups__publishedartifactgroup__quality_groups__test_group = t_group)
 
     # Collapse into list items
     artifacts = list(artifacts.values_list('groups__publishedartifactgroup__published_name', 'current_kind', 'current_path', 'current_hash', 'current_size', 'groups__publishedartifactgroup__quality_groups__is_pass'))
