@@ -455,23 +455,26 @@ def _get_pags_by_qc_options(request, api_o, json_data):
             api_o["messages"].append("service_name is ignored with both public and private")
 
     elif json_data.get("public"):
-        base_q = base_q & Q(
-            accessions__is_public=True,
-        )
         if json_data.get("service_name"):
             base_q = base_q & Q(
                 accessions__service=json_data.get("service_name"),
+                accessions__is_public=True,
+            )
+        else:
+            base_q = base_q & Q(
+                is_public=True,
             )
 
     elif json_data.get("private"):
-        base_q = base_q & Q(
-            is_public=False,
-        )
         if json_data.get("service_name"):
             # Exclude any PAG that has this service name (public or not)
             # Private means unsubmitted in this context basically
             base_q = base_q & Q(
                 ~Q(accessions__service=json_data.get("service_name")),
+            )
+        else:
+            base_q = base_q & Q(
+                is_public=False,
             )
 
     else:
