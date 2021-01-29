@@ -360,6 +360,16 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
         # trans adm1 (for task_get_pag_by_qc)
         bs["adm1_trans"] = countries.get(bs["adm1"], "")
 
+        # str dates
+        #if bs["sequencing_org_received_date"]:
+        #    bs["sequencing_org_received_date"] = bs["sequencing_org_received_date"].strftime("%Y-%m-%d") 
+        if bs["collection_date"]:
+            bs["collection_date"] = bs["collection_date"].strftime("%Y-%m-%d") 
+        if bs["received_date"]:
+            bs["received_date"] = bs["received_date"].strftime("%Y-%m-%d") 
+        if bs["is_surveillance"] is None:
+            bs["is_surveillance"] = ""
+
     # get files 
     artifacts = models.DigitalResourceArtifact.objects.filter(
         groups__id__in=pag_ids, # get files in the selected pag set
