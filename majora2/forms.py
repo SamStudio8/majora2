@@ -127,9 +127,6 @@ class InstituteForm(forms.Form):
             for field in ["gisaid_user", "gisaid_mail", "gisaid_lab_name", "gisaid_lab_addr", "gisaid_list"]:
                 if not cleaned_data.get(field):
                     self.add_error(field, "Required if opting-in to GISAID submissions")
-        if cleaned_data.get("gisaid_user"):
-            if not cleaned_data.get("gisaid_opted"):
-                self.add_error("gisaid_opted", "Check this box to opt-in to GISAID submissions")
 
 class AccountForm(forms.Form):
     username = forms.CharField(max_length=150, disabled=True, required=False, help_text="You cannot change your username")
