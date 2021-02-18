@@ -45,7 +45,25 @@ class BiosampleArtifactTest(BasicAPITest):
                         "majora": {
                             "mask": "creepy",
                         }
-                    }
+                    },
+                    "metrics": {
+                        "ct": {
+                            "records": {
+                                1: {
+                                    "test_platform": "INHOUSE",
+                                    "test_target": "S",
+                                    "test_kit": "INHOUSE",
+                                    "ct_value": 20,
+                                },
+                                2: {
+                                    "test_platform": "INHOUSE",
+                                    "test_target": "E",
+                                    "test_kit": "INHOUSE",
+                                    "ct_value": 21,
+                                },
+                            }
+                        }
+                    },
                 },
             ],
             "client_name": "pytest",
@@ -98,9 +116,27 @@ class BiosampleArtifactTest(BasicAPITest):
         self.assertEqual(self.default_payload["biosamples"][0]["sender_sample_id"], bs.sender_sample_id)
         self.assertEqual(self.default_payload["biosamples"][0]["swab_site"], bs.sample_site)
 
+        # Metadata
         self.assertEqual(bs.metadata.count(), 4)
         for record in bs.metadata.all():
             self.assertEqual(str(self.default_payload["biosamples"][0]["metadata"][record.meta_tag][record.meta_name]), record.value) # all metadata is str atm
+
+        # Metrics
+        n_records = 0
+        self.assertEqual(bs.metrics.count(), 1)
+        for metric in bs.metrics.all():
+            for record in metric.metric_records.all():
+                n_records += 1
+        self.assertEqual(n_records, 2)
+
+        for i, metric in self.default_payload["biosamples"][0]["metrics"]["ct"]["records"].items():
+            self.assertIsNotNone(models.TemporaryMajoraArtifactMetricRecord_ThresholdCycle.objects.filter(
+                artifact_metric__artifact=bs,
+                test_platform = metric["test_platform"],
+                test_kit = metric["test_kit"],
+                test_target = metric["test_target"],
+                ct_value = metric["ct_value"]
+            ).first())
 
 
     def test_biosample_update(self):
