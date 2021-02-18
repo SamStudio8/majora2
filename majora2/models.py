@@ -1138,8 +1138,6 @@ class BiosampleArtifact(MajoraArtifact):
             "sample_type_collected": self.sample_type_collected,
             "sample_type_received": self.sample_type_current,
             "swab_site": self.sample_site,
-            #"secondary_accession": self.secondary_accession,
-            #"secondary_identifier": self.secondary_identifier,
 
             "published_as": ",".join([pag.published_name for pag in self.get_pags(include_suppressed=True)]),
             "metadata": self.get_metadata_as_struct(),

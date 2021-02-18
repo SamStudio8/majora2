@@ -289,8 +289,6 @@ def handle_testsample(form, user=None, api_o=None, request=None):
         sample.sample_site = form.cleaned_data.get("swab_site")
 
         sample.primary_group = source
-        sample.secondary_identifier = form.cleaned_data.get("secondary_identifier")
-        sample.secondary_accession = form.cleaned_data.get("secondary_accession")
         sample.taxonomy_identifier = form.cleaned_data.get("source_taxon")
 
         sample.save()
