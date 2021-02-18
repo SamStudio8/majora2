@@ -288,6 +288,9 @@ class BiosampleArtifactTest(BasicAPITest):
             self._test_biosample(bs, payload)
         self._test_biosample(bs, update_payload)
 
+        # Check the supp has been updated and not recreated
+        self.assertEqual(models.COGUK_BiosourceSamplingProcessSupplement.objects.count(), 1)
+
     def test_biosample_add_overwrite_metadata(self):
         # create a biosample
         payload = copy.deepcopy(self.default_payload)
@@ -385,6 +388,9 @@ class BiosampleArtifactTest(BasicAPITest):
         stomp_payload["biosamples"][0]["metadata"] = payload["biosamples"][0]["metadata"]
         stomp_payload["biosamples"][0]["metrics"] = payload["biosamples"][0]["metrics"]
         self._test_biosample(bs, stomp_payload) # compare object to payload
+
+        # Check the supp has been updated and not recreated
+        self.assertEqual(models.COGUK_BiosourceSamplingProcessSupplement.objects.count(), 1)
 
     # Test nuke metadata (with new None)
     # Test nuke ct (currently only nuked on new)

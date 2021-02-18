@@ -879,7 +879,13 @@ def add_biosample(request):
                 initial = fixed_data.fill_fixed_data("api.artifact.biosample.add", user)
 
                 # Handle new 2021-style fancy ModelForm
-                coguk_supp_form = forms.COGUK_BiosourceSamplingProcessSupplement_ModelForm(biosample, initial=initial)
+                supp = None
+                bs = models.BiosampleArtifact.objects.filter(central_sample_id=sample_id).first()
+                if bs:
+                    if hasattr(bs.created, "coguk_supp"):
+                        supp = bs.created.coguk_supp
+
+                coguk_supp_form = forms.COGUK_BiosourceSamplingProcessSupplement_ModelForm(biosample, initial=initial, instance=supp)
                 if not coguk_supp_form.is_valid():
                     api_o["errors"] += 1
                     api_o["ignored"].append(sample_id)
@@ -898,20 +904,9 @@ def add_biosample(request):
                         api_o["errors"] += 1
                     else:
                         # Link the supp
-                        supp = None
-                        if hasattr(sample.created, "coguk_supp"):
-                            supp = sample.created.coguk_supp
-
-                        coguk_supp_form = forms.COGUK_BiosourceSamplingProcessSupplement_ModelForm(biosample, initial=initial, instance=supp)
-                        if not coguk_supp_form.is_valid():
-                            api_o["errors"] += 1
-                            api_o["ignored"].append(sample_id)
-                            api_o["messages"].append(coguk_supp_form.errors.get_json_data())
-                            continue
-                        else:
-                            coguk_supp = coguk_supp_form.save(commit=False)
-                            coguk_supp.sampling = sample.created
-                            coguk_supp.save()
+                        coguk_supp = coguk_supp_form.save(commit=False)
+                        coguk_supp.sampling = sample.created
+                        coguk_supp.save()
 
                         handle_metadata(biosample.get("metadata", {}), 'artifact', sample.dice_name, user, api_o)
                         handle_metrics(biosample.get("metrics", {}), 'artifact', sample, user, api_o) #TODO clean this as it duplicates the add_metric view
