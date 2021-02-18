@@ -1098,8 +1098,8 @@ class BiosampleArtifact(MajoraArtifact):
     sample_batch = models.PositiveSmallIntegerField(default=0)
     sample_batch_longitude = models.PositiveSmallIntegerField(default=0)
 
-    secondary_identifier = models.CharField(max_length=256, blank=True, null=True)
-    secondary_accession = models.CharField(max_length=256, blank=True, null=True)
+    secondary_identifier = models.CharField(max_length=256, blank=True, null=True) # deprecated
+    secondary_accession = models.CharField(max_length=256, blank=True, null=True) # deprecated
     taxonomy_identifier = models.CharField(max_length=24, blank=True, null=True)
 
     root_biosample_source_id = models.CharField(max_length=48, blank=True, null=True)
