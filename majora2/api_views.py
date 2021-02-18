@@ -183,6 +183,11 @@ def handle_metadata(metadata, tag_type, tag_to, user, api_o):
                 if not majora_meta:
                     api_o["warnings"] += 1
                     api_o["ignored"].append("metadata__%s__%s" % (t_data.get("tag"), t_data.get("name")))
+
+                #if t_data.get("value") is None:
+                #    # Nuke the record if it has been None'd
+                #    if majora_meta.delete()[0] == 1:
+                #        api_o["messages"].append("Deleted: metadata__%s__%s" % (t_data.get("tag"), t_data.get("name")))
             else:
                 api_o["errors"] += 1
                 api_o["ignored"].append("metadata__%s__%s" % (t_data.get("tag"), t_data.get("name")))

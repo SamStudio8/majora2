@@ -329,7 +329,7 @@ class TestMetadataForm(forms.Form):
 
     tag = forms.CharField(max_length=64)
     name = forms.CharField(max_length=64)
-    value = forms.CharField(max_length=128)
+    value = forms.CharField(max_length=128, required=False)
 
     timestamp = forms.DateTimeField()
 

@@ -103,13 +103,20 @@ class BiosampleArtifactTest(BasicAPITest):
 
         received_date = None
         try:
-            received_date = datetime.datetime.strptime(payload["biosamples"][0]["collection_date"], "%Y-%m-%d").date()
+            received_date = datetime.datetime.strptime(payload["biosamples"][0]["received_date"], "%Y-%m-%d").date()
         except TypeError:
             pass
         self.assertEqual(received_date, bs.created.received_date)
-        self.assertEqual(payload["biosamples"][0]["adm2"].upper(), bs.created.collection_location_adm2) # adm2 co-erced to upper
+
+        adm2 = "" # None to ""
+        try:
+            adm2 = payload["biosamples"][0]["adm2"].upper() #adm2 coerced to upper
+        except AttributeError:
+            pass
+        self.assertEqual(adm2, bs.created.collection_location_adm2)
         self.assertEqual(payload["biosamples"][0]["source_age"], bs.created.source_age)
         self.assertEqual(payload["biosamples"][0]["source_sex"], bs.created.source_sex)
+        self.assertEqual(payload["biosamples"][0]["adm2_private"], bs.created.private_collection_location_adm2)
 
         biosample_sources = []
         for record in bs.created.records.all():
@@ -292,6 +299,9 @@ class BiosampleArtifactTest(BasicAPITest):
         self._test_biosample(bs, payload) # compare object to payload
 
     def test_biosample_add_update_stomp(self):
+        #NOTE Some fields become "" empty string when sending None
+        #TODO   it would be nice if that behaviour was consistent
+
         # create a biosample
         payload = copy.deepcopy(self.default_payload)
         bs = self._add_biosample(payload)
@@ -307,29 +317,19 @@ class BiosampleArtifactTest(BasicAPITest):
                     "is_surveillance": False,
 
                     "received_date": None,
-                    "adm2": None,
+                    "adm2": "",
                     "source_age": None,
-                    "source_sex": None,
-                    "adm2_private": None,
-                    "biosample_source_id": None,
-                    "collecting_org": None,
+                    "source_sex": "",
+                    "adm2_private": "",
+                    "biosample_source_id": "ABC12345", # can't nuke biosample_source_id once it has been set
+                    "collecting_org": "",
                     "collection_pillar": None,
-                    "root_sample_id": None,
-                    "sample_type_collected": None,
-                    "sample_type_received": None,
-                    "sender_sample_id": None,
-                    "swab_site": None,
-                    "metadata": {
-                        "test": {
-                            "bubo": None,
-                            "hoots": None,
-                            "hooting": None,
-
-                        },
-                        "majora": {
-                            "mask": None,
-                        }
-                    },
+                    "root_sample_id": "",
+                    "sample_type_collected": "",
+                    "sample_type_received": "",
+                    "sender_sample_id": "",
+                    "swab_site": "",
+                    "metadata": {},
                     "metrics": {},
                 },
             ],
@@ -337,5 +337,11 @@ class BiosampleArtifactTest(BasicAPITest):
             "client_version": 1,
         }
         bs = self._add_biosample(stomp_payload)
+
+        # Add the metadata and metrics back to show that blanking them does nothing
+        stomp_payload["biosamples"][0]["metadata"] = payload["biosamples"][0]["metadata"]
+        stomp_payload["biosamples"][0]["metrics"] = payload["biosamples"][0]["metrics"]
         self._test_biosample(bs, stomp_payload) # compare object to payload
 
+    # Test nuke metadata (with new None)
+    # Test nuke ct (currently only nuked on new)
