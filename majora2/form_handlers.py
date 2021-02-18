@@ -260,11 +260,6 @@ def handle_testsample(form, user=None, api_o=None, request=None):
             if api_o:
                 api_o["new"].append(_format_tuple(source))
                 TatlVerb(request=request.treq, verb="CREATE", content_object=source).save()
-        else:
-            if api_o:
-                api_o["ignored"].append(source.dice_name)
-                #api_o["messages"].append({"biosample_source_id": [{"message": "Biosample Sources cannot be updated", "code": "immutable"}]})
-                #api_o["warnings"] += 1
     else:
         source = None
 
