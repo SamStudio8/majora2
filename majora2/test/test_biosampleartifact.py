@@ -33,12 +33,15 @@ class BiosampleArtifactTest(BasicAPITest):
                     "adm2_private": "B20",
                     "biosample_source_id": "ABC12345",
                     "collecting_org": "Hypothetical University of Hooting",
-                    "collection_pillar": 1,
                     "root_sample_id": "PHA_12345",
                     "sample_type_collected": "swab",
                     "sample_type_received": "primary",
                     "sender_sample_id": "LAB12345",
                     "swab_site": "nose-throat",
+
+                    "collection_pillar": 1,
+                    "is_hcw": False,
+
                     "metadata": {
                         "test": {
                             "bubo": "bubo",
@@ -99,7 +102,10 @@ class BiosampleArtifactTest(BasicAPITest):
         self.assertEqual(payload["biosamples"][0]["central_sample_id"], bs.dice_name)
 
         self.assertEqual(datetime.datetime.strptime(payload["biosamples"][0]["collection_date"], "%Y-%m-%d").date(), bs.created.collection_date)
-        self.assertEqual(payload["biosamples"][0]["is_surveillance"], bs.created.coguk_supp.is_surveillance)
+        if hasattr(bs.created.coguk_supp, "coguk_supp"):
+            self.assertEqual(payload["biosamples"][0]["is_surveillance"], bs.created.coguk_supp.is_surveillance)
+            self.assertEqual(payload["biosamples"][0]["collection_pillar"], bs.created.coguk_supp.collection_pillar)
+            self.assertEqual(payload["biosamples"][0]["is_hcw"], bs.created.coguk_supp.is_hcw)
 
         received_date = None
         try:
@@ -130,7 +136,6 @@ class BiosampleArtifactTest(BasicAPITest):
         self.assertEqual(self.user.profile.institute, bs.created.submission_org)
         self.assertEqual(self.user.profile.institute.name, bs.created.submitted_by)
 
-        self.assertEqual(payload["biosamples"][0]["collection_pillar"], bs.created.coguk_supp.collection_pillar)
         self.assertEqual(payload["biosamples"][0]["root_sample_id"], bs.root_sample_id)
         self.assertEqual(payload["biosamples"][0]["sample_type_collected"], bs.sample_type_collected)
         self.assertEqual(payload["biosamples"][0]["sample_type_received"], bs.sample_type_current)
@@ -324,6 +329,7 @@ class BiosampleArtifactTest(BasicAPITest):
                     "biosample_source_id": "ABC12345", # can't nuke biosample_source_id once it has been set
                     "collecting_org": "",
                     "collection_pillar": None,
+                    "is_hcw": None,
                     "root_sample_id": "",
                     "sample_type_collected": "",
                     "sample_type_received": "",
