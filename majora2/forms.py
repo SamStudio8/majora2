@@ -615,6 +615,7 @@ class TestSampleForm(forms.Form):
             (None, None),
             ("1", 1),
             ("2", 2),
+            ("34613", 34613),
         ], coerce=int, empty_value=None, required=False)
 
 
