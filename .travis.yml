@@ -7,6 +7,7 @@ install:
   - cp mylims/settings.py.example mylims/settings.py
   - export SECRET=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
   - echo "SECRET_KEY='$SECRET'" >> mylims/settings.py
+  - pip install coverage
 
 script:
-  - python manage.py test
+  - coverage run --source='.' manage.py test
