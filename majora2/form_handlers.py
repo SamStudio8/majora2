@@ -349,29 +349,6 @@ def handle_testsample(form, user=None, api_o=None, request=None):
     sample_p.source_age = form.cleaned_data.get("source_age")
     sample_p.source_sex = form.cleaned_data.get("source_sex")
 
-    #TODO Again, there should be a shim that catches all the applicable supplements but we dont have time
-    if hasattr(sample_p, "coguk_supp"):
-        supp = sample_p.coguk_supp
-    else:
-        supp = models.COGUK_BiosourceSamplingProcessSupplement(sampling=sample_p)
-        supp.save()
-
-    supp.is_surveillance = form.cleaned_data.get("is_surveillance")
-    supp.is_hcw = form.cleaned_data.get("is_hcw")
-    supp.employing_hospital_name = form.cleaned_data.get("employing_hospital_name")
-    supp.employing_hospital_trust_or_board = form.cleaned_data.get("employing_hospital_trust_or_board")
-    supp.is_hospital_patient = form.cleaned_data.get("is_hospital_patient")
-    supp.is_icu_patient = form.cleaned_data.get("is_icu_patient")
-    supp.admission_date = form.cleaned_data.get("admission_date")
-    supp.admitted_hospital_name = form.cleaned_data.get("admitted_hospital_name")
-    supp.admitted_hospital_trust_or_board = form.cleaned_data.get("admitted_hospital_trust_or_board")
-    supp.is_care_home_worker = form.cleaned_data.get("is_care_home_worker")
-    supp.is_care_home_resident = form.cleaned_data.get("is_care_home_resident")
-    supp.anonymised_care_home_code = form.cleaned_data.get("anonymised_care_home_code")
-    supp.admitted_with_covid_diagnosis = form.cleaned_data.get("admitted_with_covid_diagnosis")
-    supp.collection_pillar = form.cleaned_data.get("collection_pillar")
-
-    supp.save()
     sample_p.save()
 
     if source and sample.created:

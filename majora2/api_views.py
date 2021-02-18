@@ -884,7 +884,7 @@ def add_biosample(request):
                     api_o["errors"] += 1
                     api_o["ignored"].append(sample_id)
                     api_o["messages"].append(coguk_supp_form.errors.get_json_data())
-                    return api_o
+                    continue
 
                 # Handle old non-model Forms
                 biosample = forms.TestSampleForm.modify_preform(biosample)
@@ -897,6 +897,22 @@ def add_biosample(request):
                         api_o["ignored"].append(sample_id)
                         api_o["errors"] += 1
                     else:
+                        # Link the supp
+                        supp = None
+                        if hasattr(sample.created, "coguk_supp"):
+                            supp = sample.created.coguk_supp
+
+                        coguk_supp_form = forms.COGUK_BiosourceSamplingProcessSupplement_ModelForm(biosample, initial=initial, instance=supp)
+                        if not coguk_supp_form.is_valid():
+                            api_o["errors"] += 1
+                            api_o["ignored"].append(sample_id)
+                            api_o["messages"].append(coguk_supp_form.errors.get_json_data())
+                            continue
+                        else:
+                            coguk_supp = coguk_supp_form.save(commit=False)
+                            coguk_supp.sampling = sample.created
+                            coguk_supp.save()
+
                         handle_metadata(biosample.get("metadata", {}), 'artifact', sample.dice_name, user, api_o)
                         handle_metrics(biosample.get("metrics", {}), 'artifact', sample, user, api_o) #TODO clean this as it duplicates the add_metric view
                 else:

@@ -1,7 +1,7 @@
 import datetime
 import uuid
 
-from django.test import Client, TestCase
+from django.test import Client, TestCase, TransactionTestCase
 from django.contrib.auth.models import User
 from django.urls import reverse
 
@@ -10,7 +10,7 @@ from django_otp.plugins.otp_static.models import StaticDevice
 
 from majora2 import models
 
-class BasicAPITest(TestCase):
+class BasicAPITest(TransactionTestCase):
     def setUp(self):
         self.c = Client()
 
