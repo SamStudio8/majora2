@@ -464,6 +464,13 @@ class TestSequencingForm(forms.Form):
 #    class Meta:
 #        model = models.BiosourceSamplingProcess
 #        exclude = []
+class COGUK_BiosourceSamplingProcessSupplement_ModelForm(forms.ModelForm):
+    class Meta:
+        model = models.COGUK_BiosourceSamplingProcessSupplement
+        exclude = [
+            "sampling" # Although this FK needs linking, we'll link this ourselves rather than with the form
+        ]
+
 
 class TestSampleForm(forms.Form):
 

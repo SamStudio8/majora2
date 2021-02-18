@@ -878,6 +878,15 @@ def add_biosample(request):
                 sample_id = biosample.get("central_sample_id")
                 initial = fixed_data.fill_fixed_data("api.artifact.biosample.add", user)
 
+                # Handle new 2021-style fancy ModelForm
+                coguk_supp_form = forms.COGUK_BiosourceSamplingProcessSupplement_ModelForm(biosample, initial=initial)
+                if not coguk_supp_form.is_valid():
+                    api_o["errors"] += 1
+                    api_o["ignored"].append(sample_id)
+                    api_o["messages"].append(coguk_supp_form.errors.get_json_data())
+                    return api_o
+
+                # Handle old non-model Forms
                 biosample = forms.TestSampleForm.modify_preform(biosample)
                 form = forms.TestSampleForm(biosample, initial=initial)
                 if form.is_valid():
