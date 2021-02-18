@@ -35,6 +35,17 @@ class BiosampleArtifactTest(BasicAPITest):
                     "sample_type_received": "primary",
                     "sender_sample_id": "LAB12345",
                     "swab_site": "nose-throat",
+                    "metadata": {
+                        "test": {
+                            "bubo": "bubo",
+                            "hoots": 8,
+                            "hooting": False,
+
+                        },
+                        "majora": {
+                            "mask": "creepy",
+                        }
+                    }
                 },
             ],
             "client_name": "pytest",
@@ -86,6 +97,11 @@ class BiosampleArtifactTest(BasicAPITest):
         self.assertEqual(self.default_payload["biosamples"][0]["sample_type_received"], bs.sample_type_current)
         self.assertEqual(self.default_payload["biosamples"][0]["sender_sample_id"], bs.sender_sample_id)
         self.assertEqual(self.default_payload["biosamples"][0]["swab_site"], bs.sample_site)
+
+        self.assertEqual(bs.metadata.count(), 4)
+        for record in bs.metadata.all():
+            self.assertEqual(str(self.default_payload["biosamples"][0]["metadata"][record.meta_tag][record.meta_name]), record.value) # all metadata is str atm
+
 
     def test_biosample_update(self):
         # create a biosample

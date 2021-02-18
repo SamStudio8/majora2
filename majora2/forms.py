@@ -453,6 +453,18 @@ class TestSequencingForm(forms.Form):
                 break
 
 
+#class BiosampleArtifactModelForm(forms.ModelForm):
+#    #"biosample_source_id",
+#    class Meta:
+#        model = models.BiosampleArtifact
+#        fields = [
+#            "root_sample_id",
+#        ]
+#class BiosourceSamplingProcessModelForm(forms.ModelForm):
+#    class Meta:
+#        model = models.BiosourceSamplingProcess
+#        exclude = []
+
 class TestSampleForm(forms.Form):
 
     biosample_source_id = forms.CharField(
