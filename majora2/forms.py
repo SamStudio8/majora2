@@ -474,6 +474,31 @@ class MajoraPossiblePartialModelForm(forms.ModelForm):
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
 
+    # Shim function that allows form interfaces to present a different name for
+    # a field from the one it represents in the model. This will return the payload
+    # dict with keys renamed to the one on the model as appropriate for validation
+    def map_request_fields(self, payload):
+        data = {}
+        for k, v in payload.items():
+            if k in self.Meta.field_map:
+                data[self.Meta.field_map[k]] = v
+            else:
+                data[k] = v
+        return data
+
+    def _post_clean(self):
+        super()._post_clean()
+
+        # Fix the error struct such that the hacked field names match those the
+        # user expects to know about
+        for k, error in self._errors.items():
+            if k in self.Meta.field_map[k]:
+        for k, v in self.Meta.field_map.items():
+            if k in self._errors:
+                self._errors[v] = self._errors[k]
+                del self._errors[k]
+
+
 class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
 
     country = forms.CharField(disabled=True)
