@@ -464,12 +464,95 @@ class TestSequencingForm(forms.Form):
 #    class Meta:
 #        model = models.BiosourceSamplingProcess
 #        exclude = []
-class COGUK_BiosourceSamplingProcessSupplement_ModelForm(forms.ModelForm):
+
+class MajoraPossiblePartialModelForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        partial_request_keys = kwargs.pop('partial_request_keys', [])
+        super().__init__(*args, **kwargs)
+
+        # Drop any fields that are not specified in the request
+        if partial and partial_request_keys:
+            allowed = set(partial_request_keys)
+            existing = set(self.fields)
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
+
+
+class COGUK_BiosourceSamplingProcessSupplement_ModelForm(MajoraPossiblePartialModelForm):
+
+    # Override collection_pillar from model to specify options
+    collection_pillar = forms.TypedChoiceField(choices=[
+            (None, None),
+            ("1", 1),
+            ("2", 2),
+            ("34613", 34613),
+        ], coerce=int, empty_value=None, required=False)
+
     class Meta:
         model = models.COGUK_BiosourceSamplingProcessSupplement
-        exclude = [
+        fields = [
+            "is_surveillance",
+            "is_hcw",
+            "employing_hospital_name",
+            "employing_hospital_trust_or_board",
+            "is_hospital_patient",
+            "is_icu_patient",
+            "admission_date",
+            "admitted_hospital_name",
+            "admitted_hospital_trust_or_board",
+            "is_care_home_worker",
+            "is_care_home_resident",
+            "anonymised_care_home_code",
+            "admitted_with_covid_diagnosis",
+            "collection_pillar",
+        ]
+        exclude = [ # It is redundant to list these as they are excluded by virtue of being missing from fields, but nice to explain why
             "sampling" # Although this FK needs linking, we'll link this ourselves rather than with the form
         ]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # Force is_surveillance
+        if cleaned_data.get("is_surveillance") is None:
+            self.add_error("is_surveillance", "You must set is_surveillance to Y or N")
+        if cleaned_data.get("admission_date") and not cleaned_data.get("is_hospital_patient"):
+            self.add_error("is_hospital_patient", "Admission date implies patient was admitted to hospital but you've not set is_hospital_patient to Y")
+
+    @staticmethod
+    def modify_preform(data):
+        LOWERCASE_FIELDS = [
+        ]
+        UPPERCASE_FIELDS = [
+        ]
+        COERCE_BOOLEAN = [
+            "is_surveillance",
+            "is_hcw",
+            "is_hospital_patient",
+            "is_care_home_worker",
+            "is_care_home_resident",
+            "admitted_with_covid_diagnosis",
+            "is_icu_patient",
+        ]
+        for field in LOWERCASE_FIELDS:
+            if data.get(field):
+                data[field] = data[field].strip()
+                if data[field] != "BAL":
+                    data[field] = data[field].strip().lower()
+        for field in UPPERCASE_FIELDS:
+            if data.get(field):
+                data[field] = data[field].strip().upper()
+        for field in COERCE_BOOLEAN:
+            if data.get(field):
+                if type(data.get(field)) is str:
+                    b = data[field].strip().upper()
+                    if b == "Y" or b == "YES":
+                        data[field] = True
+                    elif b == "N" or b == "NO":
+                        data[field] = False
+                    else:
+                        data[field] = None
+        return data
 
 
 class TestSampleForm(forms.Form):
@@ -600,33 +683,6 @@ class TestSampleForm(forms.Form):
     #quarantine_reason = forms.ChoiceField()
     #received_date =
 
-    #TODO Extra COGUK supplemental fields
-    # In an ideal world where we have more time, we'd pin a bunch of supplemental modelforms but we need this asappppp
-    is_surveillance = forms.NullBooleanField()
-    is_hcw = forms.NullBooleanField()
-    employing_hospital_name = forms.CharField(max_length=100, required=False)
-    employing_hospital_trust_or_board = forms.CharField(max_length=100, required=False)
-    is_hospital_patient = forms.NullBooleanField()
-    is_icu_patient = forms.NullBooleanField()
-    admission_date = forms.DateField(
-            label="Received date",
-            help_text="YYYY-MM-DD",
-            required=False,
-    )
-    admitted_hospital_name = forms.CharField(max_length=100, required=False)
-    admitted_hospital_trust_or_board = forms.CharField(max_length=100, required=False)
-    is_care_home_worker = forms.NullBooleanField()
-    is_care_home_resident = forms.NullBooleanField()
-    anonymised_care_home_code = forms.CharField(max_length=10, required=False)
-    admitted_with_covid_diagnosis = forms.NullBooleanField()
-
-    collection_pillar = forms.TypedChoiceField(choices=[
-            (None, None),
-            ("1", 1),
-            ("2", 2),
-            ("34613", 34613),
-        ], coerce=int, empty_value=None, required=False)
-
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -700,13 +756,6 @@ class TestSampleForm(forms.Form):
         UPPERCASE_FIELDS = [
         ]
         COERCE_BOOLEAN = [
-            "is_surveillance",
-            "is_hcw",
-            "is_hospital_patient",
-            "is_care_home_worker",
-            "is_care_home_resident",
-            "admitted_with_covid_diagnosis",
-            "is_icu_patient",
         ]
         for field in LOWERCASE_FIELDS:
             if data.get(field):
@@ -776,11 +825,6 @@ class TestSampleForm(forms.Form):
         #if sample_type == "swab" and not swab_site:
         #    self.add_error("sample_type_collected", "Sample was a swab but you did not specify the swab site")
 
-        # Force is_surveillance
-        if cleaned_data.get("is_surveillance") is None:
-            self.add_error("is_surveillance", "You must set is_surveillance to Y or N")
-        if cleaned_data.get("admission_date") and not cleaned_data.get("is_hospital_patient"):
-            self.add_error("is_hospital_patient", "Admission date implies patient was admitted to hospital but you've not set is_hospital_patient to Y")
 
 
 class TestFileForm(forms.Form):
