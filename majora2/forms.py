@@ -475,6 +475,34 @@ class MajoraPossiblePartialModelForm(forms.ModelForm):
                 self.fields.pop(field_name)
 
 class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
+
+    country = forms.CharField(disabled=True)
+    adm1 = forms.ChoiceField(
+            label="Region",
+            choices=[
+                (None, ""),
+                ("UK-ENG", "England"),
+                ("UK-SCT", "Scotland"),
+                ("UK-WLS", "Wales"),
+                ("UK-NIR", "Northern Ireland"),
+            ],
+    )
+    #adm2 = forms.ModelChoiceField(
+    #        queryset=models.County.objects.all(),
+    #        to_field_name="name",
+    #        label="County",
+    #        required=False,
+    #        help_text="Enter the COUNTY from the patient's address. Leave blank if this was not available."
+    #)
+    source_age = forms.IntegerField(min_value=0, required=False, help_text="Age in years")
+    source_sex = forms.ChoiceField(choices=[
+            (None, ""),
+            ("F", "F"),
+            ("M", "M"),
+            ("Other", "Other"),
+        ], required=False, help_text="Reported sex"
+    )
+
     class Meta:
         model = models.BiosourceSamplingProcess
         fields = [
@@ -502,6 +530,35 @@ class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
             "adm2":             "collection_location_adm2",
             "adm2_private":     "private_collection_location_adm2",
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # Check a received_date was provided for samples without a collection date
+        if not cleaned_data.get("collection_date") and not cleaned_data.get("received_date"):
+            self.add_error("received_date", "You must provide a received date for samples without a collection date")
+
+        # Check sample date is not in the future
+        if cleaned_data.get("collection_date"):
+            if cleaned_data["collection_date"] > timezone.now().date():
+                self.add_error("collection_date", "Sample cannot be collected in the future")
+            elif cleaned_data["collection_date"] < (timezone.now().date() - datetime.timedelta(days=365)):
+                self.add_error("collection_date", "Sample cannot be collected more than a year ago...")
+        if cleaned_data.get("received_date"):
+            if cleaned_data["received_date"] > timezone.now().date():
+                self.add_error("received_date", "Sample cannot be received in the future")
+            elif cleaned_data["received_date"] < (timezone.now().date() - datetime.timedelta(days=365)):
+                self.add_error("received_date", "Sample cannot be received more than a year ago...")
+
+        # Check if the adm2 looks like a postcode
+        adm2 = cleaned_data.get("adm2", "")
+        if len(adm2) > 0 and re.search('\d', adm2):
+            self.add_error("adm2", "adm2 cannot contain numbers. Use adm2_private if you are trying to provide an outer postcode")
+
+        # Check for full postcode mistake
+        adm2_private = cleaned_data.get("adm2_private")
+        if " " in adm2_private:
+            self.add_error("adm2_private", "Enter the first part of the postcode only")
 
 class COGUK_BiosourceSamplingProcessSupplement_ModelForm(MajoraPossiblePartialModelForm):
 
@@ -597,57 +654,6 @@ class TestSampleForm(forms.Form):
             label="New sample identifier", max_length=56, min_length=5,
             help_text="Heron barcode assigned by WSI"
     )
-    collection_date = forms.DateField(
-            label="Collection date",
-            help_text="YYYY-MM-DD",
-            required=False,
-    )
-    received_date = forms.DateField(
-            label="Received date",
-            help_text="YYYY-MM-DD",
-            required=False,
-    )
-    country = forms.CharField(disabled=True)
-    adm1 = forms.ChoiceField(
-            label="Region",
-            choices=[
-                (None, ""),
-                ("UK-ENG", "England"),
-                ("UK-SCT", "Scotland"),
-                ("UK-WLS", "Wales"),
-                ("UK-NIR", "Northern Ireland"),
-            ],
-    )
-    source_age = forms.IntegerField(min_value=0, required=False, help_text="Age in years")
-    source_sex = forms.ChoiceField(choices=[
-            (None, ""),
-            ("F", "F"),
-            ("M", "M"),
-            ("Other", "Other"),
-        ], required=False, help_text="Reported sex")
-
-    adm2 = forms.CharField(
-            label="County",
-            max_length=100,
-            required=False,
-            help_text="Enter the COUNTY from the patient's address. Leave blank if this was not available."
-    )
-    #adm2 = forms.ModelChoiceField(
-    #        queryset=models.County.objects.all(),
-    #        to_field_name="name",
-    #        label="County",
-    #        required=False,
-    #        help_text="Enter the COUNTY from the patient's address. Leave blank if this was not available."
-    #)
-    adm2_private = forms.CharField(
-            label="Outward postcode",
-            max_length=10,
-            required=False,
-            help_text="Enter the <b>first part</b> of the patients home postcode. Leave blank if this was not available."
-    )
-    submitting_user = forms.CharField(disabled=True, required=False)
-    submitting_org = forms.ModelChoiceField(queryset=models.Institute.objects.exclude(code__startswith="?").order_by("name"), disabled=True, required=False)
-    collecting_org = forms.CharField(max_length=100, required=False, help_text="The site that this sample was collected by. Use the first line of the 'sender' from the corresponding E28")
 
     source_type = forms.ChoiceField(
         choices = [
@@ -693,12 +699,6 @@ class TestSampleForm(forms.Form):
         required=False,
     )
 
-    #override_heron = forms.BooleanField(
-    #        label="Override Heron validator",
-    #        help_text="Enable this checkbox if your sample has not been assigned a Heron identifier. <i>e.g.</i> The sample has already been submitted to GISAID",
-    #        required=False)
-
-
     #tube_dice = forms.CharField()
     #box_dice = forms.CharField()
     #tube_x = forms.IntegerField()
@@ -708,68 +708,6 @@ class TestSampleForm(forms.Form):
     #quarantine_reason = forms.ChoiceField()
     #received_date =
 
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.helper = FormHelper()
-        self.helper.layout = Layout(
-            Fieldset("Identifiers",
-                Row(
-                    Column('biosample_source_id', css_class="form-group col-md-3 mb-0"),
-                    Column('root_sample_id', css_class="form-group col-md-3 mb-0"),
-                    Column('sender_sample_id', css_class="form-group col-md-3 mb-0"),
-                    Column('central_sample_id', css_class="form-group col-md-3 mb-0"),
-                    css_class="form-row",
-                )
-            ),
-            Fieldset("Form",
-                Row(
-                    Column('source_type', css_class="form-group col-md-3 mb-0"),
-                    Column('source_taxon', css_class="form-group col-md-3 mb-0"),
-                    Column('sample_type_collected', css_class="form-group col-md-2 mb-0"),
-                    Column('swab_site', css_class="form-group col-md-2 mb-0"),
-                    Column('sample_type_received', css_class="form-group col-md-2 mb-0"),
-                    css_class="form-row",
-                )
-            ),
-            Fieldset("Locality",
-                Row(
-                    Column('country', css_class="form-group col-md-3 mb-0"),
-                    Column('adm1', css_class="form-group col-md-2 mb-0"),
-                    Column('adm2', css_class="form-group col-md-4 mb-0"),
-                    Column('adm2_private', css_class="form-group col-md-3 mb-0"),
-                    css_class="form-row",
-                )
-            ),
-            Fieldset("Key information",
-                Row(
-                    Column('collection_date', css_class="form-group col-md-3 mb-0"),
-                    Column('received_date', css_class="form-group col-md-3 mb-0"),
-                    Column('age', css_class="form-group col-md-2 mb-0"),
-                    Column('sex', css_class="form-group col-md-2 mb-0"),
-                    css_class="form-row",
-                ),
-            ),
-            Fieldset("Collecting and sequencing",
-                Row(
-                    Column('collecting_org', css_class="form-group col-md-5 mb-0"),
-                    Column('submitting_user', css_class="form-group col-md-3 mb-0"),
-                    Column('submitting_org', css_class="form-group col-md-4 mb-0"),
-                    css_class="form-row",
-                )
-            ),
-            Fieldset("Advanced Options",
-                #Row(
-                #    Column('override_heron', css_class="form-group col-md-6 mb-0"),
-                #    css_class="form-row",
-                #)
-            ),
-            FormActions(
-                    Submit('save', 'Submit sample'),
-                    css_class="text-right",
-            )
-        )
 
     @staticmethod
     def modify_preform(data):
@@ -807,40 +745,6 @@ class TestSampleForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-
-        # Check barcode starts with a Heron prefix, unless this has been overridden
-        #sample_id = cleaned_data.get("central_sample_id")
-        #if sample_id:
-        #    if cleaned_data["override_heron"] is False:
-        #        valid_sites = [x.code for x in models.Institute.objects.exclude(code__startswith="?")]
-        #        if sum([sample_id.startswith(x) for x in valid_sites]) == 0:
-        #            self.add_error("central_sample_id", "Sample identifier does not match the WSI manifest.")
-
-        # Check a received_date was provided for samples without a collection date
-        if not cleaned_data.get("collection_date") and not cleaned_data.get("received_date"):
-            self.add_error("received_date", "You must provide a received date for samples without a collection date")
-
-        # Check sample date is not in the future
-        if cleaned_data.get("collection_date"):
-            if cleaned_data["collection_date"] > timezone.now().date():
-                self.add_error("collection_date", "Sample cannot be collected in the future")
-            elif cleaned_data["collection_date"] < (timezone.now().date() - datetime.timedelta(days=365)):
-                self.add_error("collection_date", "Sample cannot be collected more than a year ago...")
-        if cleaned_data.get("received_date"):
-            if cleaned_data["received_date"] > timezone.now().date():
-                self.add_error("received_date", "Sample cannot be received in the future")
-            elif cleaned_data["received_date"] < (timezone.now().date() - datetime.timedelta(days=365)):
-                self.add_error("received_date", "Sample cannot be received more than a year ago...")
-
-        # Check if the adm2 looks like a postcode
-        adm2 = cleaned_data.get("adm2", "")
-        if len(adm2) > 0 and re.search('\d', adm2):
-            self.add_error("adm2", "adm2 cannot contain numbers. Use adm2_private if you are trying to provide an outer postcode")
-
-        # Check for full postcode mistake
-        adm2_private = cleaned_data.get("adm2_private")
-        if " " in adm2_private:
-            self.add_error("adm2_private", "Enter the first part of the postcode only")
 
         # Validate swab site
         swab_site = cleaned_data.get("swab_site")
