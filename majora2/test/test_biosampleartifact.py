@@ -51,7 +51,7 @@ class BiosampleArtifactTest(BasicAPITest):
                     "admitted_hospital_trust_or_board": "Hooting Hospital Trust",
                     "is_care_home_worker": False,
                     "is_care_home_resident": False,
-                    "anonymised_care_home_code": "",
+                    "anonymised_care_home_code": None,
 
                     "metadata": {
                         "test": {
@@ -113,10 +113,28 @@ class BiosampleArtifactTest(BasicAPITest):
         self.assertEqual(payload["biosamples"][0]["central_sample_id"], bs.dice_name)
 
         self.assertEqual(datetime.datetime.strptime(payload["biosamples"][0]["collection_date"], "%Y-%m-%d").date(), bs.created.collection_date)
-        if hasattr(bs.created.coguk_supp, "coguk_supp"):
+        if hasattr(bs.created, "coguk_supp"):
             self.assertEqual(payload["biosamples"][0]["is_surveillance"], bs.created.coguk_supp.is_surveillance)
             self.assertEqual(payload["biosamples"][0]["collection_pillar"], bs.created.coguk_supp.collection_pillar)
             self.assertEqual(payload["biosamples"][0]["is_hcw"], bs.created.coguk_supp.is_hcw)
+            self.assertEqual(payload["biosamples"][0]["is_hospital_patient"], bs.created.coguk_supp.is_hospital_patient)
+            self.assertEqual(payload["biosamples"][0]["is_icu_patient"], bs.created.coguk_supp.is_icu_patient)
+            self.assertEqual(payload["biosamples"][0]["admitted_with_covid_diagnosis"], bs.created.coguk_supp.admitted_with_covid_diagnosis)
+            self.assertEqual(payload["biosamples"][0]["employing_hospital_name"], bs.created.coguk_supp.employing_hospital_name)
+            self.assertEqual(payload["biosamples"][0]["employing_hospital_trust_or_board"], bs.created.coguk_supp.employing_hospital_trust_or_board)
+
+            admission_date = None
+            try:
+                admission_date = datetime.datetime.strptime(payload["biosamples"][0]["admission_date"], "%Y-%m-%d").date()
+            except TypeError:
+                pass
+            self.assertEqual(admission_date, bs.created.coguk_supp.admission_date)
+
+            self.assertEqual(payload["biosamples"][0]["admitted_hospital_name"], bs.created.coguk_supp.admitted_hospital_name)
+            self.assertEqual(payload["biosamples"][0]["admitted_hospital_trust_or_board"], bs.created.coguk_supp.admitted_hospital_trust_or_board)
+            self.assertEqual(payload["biosamples"][0]["is_care_home_worker"], bs.created.coguk_supp.is_care_home_worker)
+            self.assertEqual(payload["biosamples"][0]["is_care_home_resident"], bs.created.coguk_supp.is_care_home_resident)
+            self.assertEqual(payload["biosamples"][0]["anonymised_care_home_code"], bs.created.coguk_supp.anonymised_care_home_code)
 
         received_date = None
         try:
@@ -238,8 +256,8 @@ class BiosampleArtifactTest(BasicAPITest):
                     "is_hospital_patient": True,
                     "is_icu_patient": True,
                     "admitted_with_covid_diagnosis": False,
-                    "employing_hospital_name": "",
-                    "employing_hospital_trust_or_board": "",
+                    "employing_hospital_name": None,
+                    "employing_hospital_trust_or_board": None,
                     "admission_date": datetime.date.today().strftime("%Y-%m-%d"),
                     "admitted_hospital_name": "HOSPITAL",
                     "admitted_hospital_trust_or_board": "HOSPITAL",
@@ -331,7 +349,7 @@ class BiosampleArtifactTest(BasicAPITest):
         bs = self._add_biosample(payload)
         self._test_biosample(bs, payload) # compare object to payload
 
-    def test_biosample_add_update_stomp(self):
+    def test_biosample_add_update_nuke_stomp(self):
         #NOTE Some fields become "" empty string when sending None
         #TODO   it would be nice if that behaviour was consistent
 
@@ -367,14 +385,14 @@ class BiosampleArtifactTest(BasicAPITest):
                     "is_hospital_patient": None,
                     "is_icu_patient": None,
                     "admitted_with_covid_diagnosis": None,
-                    "employing_hospital_name": "",
-                    "employing_hospital_trust_or_board": "",
+                    "employing_hospital_name": None,
+                    "employing_hospital_trust_or_board": None,
                     "admission_date": None,
-                    "admitted_hospital_name": "",
-                    "admitted_hospital_trust_or_board": "",
+                    "admitted_hospital_name": None,
+                    "admitted_hospital_trust_or_board": None,
                     "is_care_home_worker": None,
                     "is_care_home_resident": None,
-                    "anonymised_care_home_code": "",
+                    "anonymised_care_home_code": None,
                     "metadata": {},
                     "metrics": {},
                 },
@@ -392,5 +410,52 @@ class BiosampleArtifactTest(BasicAPITest):
         # Check the supp has been updated and not recreated
         self.assertEqual(models.COGUK_BiosourceSamplingProcessSupplement.objects.count(), 1)
 
+    def test_biosample_add_update_partial_supp_stomp(self):
+        # create a biosample
+        payload = copy.deepcopy(self.default_payload)
+        bs = self._add_biosample(payload)
+
+        del payload["biosamples"][0]["is_hcw"]
+        del payload["biosamples"][0]["is_hospital_patient"]
+        del payload["biosamples"][0]["is_icu_patient"]
+        del payload["biosamples"][0]["admitted_with_covid_diagnosis"]
+        del payload["biosamples"][0]["employing_hospital_name"]
+        del payload["biosamples"][0]["employing_hospital_trust_or_board"]
+        del payload["biosamples"][0]["admission_date"]
+        del payload["biosamples"][0]["admitted_hospital_name"]
+        del payload["biosamples"][0]["admitted_hospital_trust_or_board"]
+        del payload["biosamples"][0]["is_care_home_worker"]
+        del payload["biosamples"][0]["is_care_home_resident"]
+        del payload["biosamples"][0]["anonymised_care_home_code"]
+
+        partial_fields = {
+            "is_hcw": False,
+            "is_hospital_patient": False,
+            "is_icu_patient": True,
+            "admitted_with_covid_diagnosis": False,
+            "employing_hospital_name": "HOSPITAL",
+            "employing_hospital_trust_or_board": "HOSPITAL",
+            "admission_date": None,
+            "admitted_hospital_name": "HOSPITAL",
+            "admitted_hospital_trust_or_board": "HOSPITAL",
+            "is_care_home_worker": True,
+            "is_care_home_resident": True,
+            "anonymised_care_home_code": "CC-X00",
+        }
+        check_payload = copy.deepcopy(self.default_payload)
+        for k, v in partial_fields.items():
+            update_payload = copy.deepcopy(payload)
+            update_payload["biosamples"][0][k] = v
+
+            bs = self._add_biosample(update_payload)
+
+            with self.assertRaises(AssertionError):
+                # Check that the biosample has changed from the last
+                self._test_biosample(bs, check_payload)
+
+            check_payload["biosamples"][0][k] = v
+            self._test_biosample(bs, check_payload) # compare object to payload
+
     # Test nuke metadata (with new None)
     # Test nuke ct (currently only nuked on new)
+    # Test mod preform
