@@ -453,14 +453,6 @@ class TestSequencingForm(forms.Form):
                 break
 
 
-#class BiosampleArtifactModelForm(forms.ModelForm):
-#    #"biosample_source_id",
-#    class Meta:
-#        model = models.BiosampleArtifact
-#        fields = [
-#            "root_sample_id",
-#        ]
-
 class MajoraPossiblePartialModelForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -525,6 +517,130 @@ class MajoraPossiblePartialModelForm(forms.ModelForm):
                     else:
                         data[field] = None
         return data
+
+
+class BiosampleArtifactModelForm(MajoraPossiblePartialModelForm):
+
+    source_taxon = forms.CharField(
+            max_length=24,
+            disabled=True,
+            required=False,
+    )
+    sample_type_collected = forms.ChoiceField(
+        choices= [
+            (None, "Unknown"),
+            ("dry swab", "dry swab"),
+            ("swab", "swab"),
+            ("aspirate", "aspirate"),
+            ("sputum", "sputum"),
+            ("BAL", "BAL"),
+        ],
+        required=False,
+    )
+    sample_type_received = forms.ChoiceField(
+        choices= [
+            (None, "Unknown"),
+            ("primary", "primary"),
+            ("extract", "extract"),
+            ("lysate", "lysate"),
+            ("culture", "culture"),
+        ],
+        required=False,
+    )
+    swab_site = forms.ChoiceField(
+        choices= [
+            (None, None),
+            ("nose", "nose"),
+            ("throat", "throat"),
+            ("nose-throat", "nose and throat"),
+            ("endotracheal", "endotracheal"),
+            ("rectal", "rectal"),
+        ],
+        help_text="Provide only if sample_type_collected is swab",
+        required=False,
+    )
+
+    class Meta:
+        model = models.BiosampleArtifact
+        fields = [
+            "root_sample_id",
+            "sender_sample_id",
+            "central_sample_id",
+            "sample_type_collected",
+            "sample_type_current",
+            "sample_site",
+            "taxonomy_identifier", # injected
+            "root_biosample_source_id",
+        ]
+        exclude = [ # It is redundant to list these as they are excluded by virtue of being missing from fields, but nice to explain why
+            "sample_longitude", # not currently used
+            "sample_batch", # not currently used
+            "sample_batch_longitude", # not currently used
+            "sample_orig_id", # deprecated
+            "secondary_identifier", # deprecated
+            "secondary_accession", # deprecated
+        ]
+        field_map = {
+            # FROM FORM             TO MODEL
+            "swab_site":            "sample_site",
+            "sample_type_received": "sample_type_current",
+            "source_taxon":         "taxonomy_identifier",
+        }
+        LOWERCASE_FIELDS = [
+            "swab_site",
+            "sample_type_collected",
+            "sample_type_received",
+        ]
+
+    def modify_preform(self, data):
+        for field in getattr(self.Meta, "LOWERCASE_FIELDS", []):
+            if data.get(field):
+                data[field] = data[field].strip()
+                if data[field] != "BAL":
+                    data[field] = data[field].strip().lower()
+        return data
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # Validate swab site
+        swab_site = cleaned_data.get("sample_site")
+        sample_type = cleaned_data.get("sample_type_collected")
+        if sample_type and ("swab" not in sample_type and sample_type != "aspirate") and swab_site:
+            self.add_error("sample_type_collected", "Swab site specified but the sample type is not 'swab'")
+        #if sample_type == "swab" and not swab_site:
+        #    self.add_error("sample_type_collected", "Sample was a swab but you did not specify the swab site")
+
+
+
+
+
+
+
+class BiosampleSourceModelForm(MajoraPossiblePartialModelForm):
+
+    source_type = forms.ChoiceField(
+        choices = [
+            ("human", "human"),
+        ],
+        disabled = True,
+    )
+
+    class Meta:
+        model = models.BiosampleSource
+        fields = [
+            "secondary_id",
+        ]
+        exclude = [ # It is redundant to list these as they are excluded by virtue of being missing from fields, but nice to explain why
+            "source_type", # injected automatically by initial
+        ]
+        field_map = {
+            # FROM FORM             TO MODEL
+            "biosample_source_id":  "secondary_id",
+            #"biosample_source_id":  "dice_name",
+        }
+        UPPERCASE_FIELDS = [
+        ]
 
 
 class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
@@ -671,125 +787,6 @@ class COGUK_BiosourceSamplingProcessSupplement_ModelForm(MajoraPossiblePartialMo
             self.add_error("is_surveillance", "You must set is_surveillance to Y or N")
         if cleaned_data.get("admission_date") and not cleaned_data.get("is_hospital_patient"):
             self.add_error("is_hospital_patient", "Admission date implies patient was admitted to hospital but you've not set is_hospital_patient to Y")
-
-
-class TestSampleForm(forms.Form):
-
-    biosample_source_id = forms.CharField(
-            label="Pseudonymous patient identifier", max_length=56,
-            help_text="Leave blank if not available. <b>DO NOT enter an NHS number here</b>", required=False)
-    root_sample_id = forms.CharField(
-            label="Health Agency sample identifier", max_length=56, required=False,
-            help_text="Leave blank if not applicable or available. It will not be possible to collect private metadata for this sample without this"
-    )
-    sender_sample_id = forms.CharField(
-            label="Local sample identifier", max_length=56, required=False,
-            help_text="Leave blank if not applicable or available. It will not be possible to collect private metadata for this sample without this"
-    )
-    central_sample_id = forms.CharField(
-            label="New sample identifier", max_length=56, min_length=5,
-            help_text="Heron barcode assigned by WSI"
-    )
-
-    source_type = forms.ChoiceField(
-        choices = [
-            ("human", "human"),
-        ],
-        disabled = True,
-    )
-    source_taxon = forms.CharField(
-            max_length=24,
-            disabled=True,
-    )
-    sample_type_collected = forms.ChoiceField(
-        choices= [
-            (None, "Unknown"),
-            ("dry swab", "dry swab"),
-            ("swab", "swab"),
-            ("aspirate", "aspirate"),
-            ("sputum", "sputum"),
-            ("BAL", "BAL"),
-        ],
-        required=False,
-    )
-    sample_type_received = forms.ChoiceField(
-        choices= [
-            (None, "Unknown"),
-            ("primary", "primary"),
-            ("extract", "extract"),
-            ("lysate", "lysate"),
-            ("culture", "culture"),
-        ],
-        required=False,
-    )
-    swab_site = forms.ChoiceField(
-        choices= [
-            (None, None),
-            ("nose", "nose"),
-            ("throat", "throat"),
-            ("nose-throat", "nose and throat"),
-            ("endotracheal", "endotracheal"),
-            ("rectal", "rectal"),
-        ],
-        help_text="Provide only if sample_type_collected is swab",
-        required=False,
-    )
-
-    #tube_dice = forms.CharField()
-    #box_dice = forms.CharField()
-    #tube_x = forms.IntegerField()
-    #tube_y = forms.IntegerField()
-    #current_sample_type = forms.ChoiceField()
-    #accepted = forms.BooleanField()
-    #quarantine_reason = forms.ChoiceField()
-    #received_date =
-
-
-    @staticmethod
-    def modify_preform(data):
-        LOWERCASE_FIELDS = [
-            "swab_site",
-            "sample_type_collected",
-            "sample_type_received",
-        ]
-        UPPERCASE_FIELDS = [
-        ]
-        COERCE_BOOLEAN = [
-        ]
-        for field in LOWERCASE_FIELDS:
-            if data.get(field):
-                data[field] = data[field].strip()
-                if data[field] != "BAL":
-                    data[field] = data[field].strip().lower()
-        for field in UPPERCASE_FIELDS:
-            if data.get(field):
-                data[field] = data[field].strip().upper()
-        for field in COERCE_BOOLEAN:
-            if data.get(field):
-                if type(data.get(field)) is str:
-                    b = data[field].strip().upper()
-                    if b == "Y" or b == "YES":
-                        data[field] = True
-                    elif b == "N" or b == "NO":
-                        data[field] = False
-                    else:
-                        data[field] = None
-
-        #if data.get("swab_site", "").upper() == "NSTS" or data.get("swab_site", "").lower() == "nose and throat":
-        #    data["swab_site"] = "nose-throat"
-        return data
-
-    def clean(self):
-        cleaned_data = super().clean()
-
-        # Validate swab site
-        swab_site = cleaned_data.get("swab_site")
-        sample_type = cleaned_data.get("sample_type_collected")
-        if sample_type and ("swab" not in sample_type and sample_type != "aspirate") and swab_site:
-            self.add_error("sample_type_collected", "Swab site specified but the sample type is not 'swab'")
-        #if sample_type == "swab" and not swab_site:
-        #    self.add_error("sample_type_collected", "Sample was a swab but you did not specify the swab site")
-
 
 
 class TestFileForm(forms.Form):

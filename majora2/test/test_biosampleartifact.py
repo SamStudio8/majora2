@@ -109,6 +109,7 @@ class BiosampleArtifactTest(BasicAPITest):
         self._test_biosample(bs, payload)
 
     def _test_biosample(self, bs, payload):
+        self.assertEqual("United Kingdom", bs.created.collection_location_country)
         self.assertEqual(payload["biosamples"][0]["adm1"], bs.created.collection_location_adm1)
         self.assertEqual(payload["biosamples"][0]["central_sample_id"], bs.dice_name)
 
@@ -159,6 +160,7 @@ class BiosampleArtifactTest(BasicAPITest):
                 biosample_sources.append(record.in_group.secondary_id)
         self.assertEqual(len(biosample_sources), 1)
         self.assertEqual(payload["biosamples"][0]["biosample_source_id"], biosample_sources[0])
+        self.assertEqual(payload["biosamples"][0]["biosample_source_id"], bs.primary_group.dice_name)
 
         self.assertEqual(payload["biosamples"][0]["collecting_org"], bs.created.collected_by)
         self.assertEqual(self.user, bs.created.submission_user)
@@ -249,7 +251,7 @@ class BiosampleArtifactTest(BasicAPITest):
                     "sample_type_collected": "BAL",
                     "sample_type_received": "primary",
                     "sender_sample_id": "LAB67890",
-                    "swab_site": "", # None will turn to ""
+                    "swab_site": None,
 
                     "collection_pillar": 2,
                     "is_hcw": False,
@@ -374,11 +376,11 @@ class BiosampleArtifactTest(BasicAPITest):
                     "adm2_private": None,
                     "biosample_source_id": "ABC12345", # can't nuke biosample_source_id once it has been set
                     "collecting_org": None,
-                    "root_sample_id": "",
+                    "root_sample_id": None,
                     "sample_type_collected": "",
-                    "sample_type_received": "",
-                    "sender_sample_id": "",
-                    "swab_site": "",
+                    "sample_type_received": None,
+                    "sender_sample_id": None,
+                    "swab_site": None,
 
                     "collection_pillar": None,
                     "is_hcw": None,
@@ -437,6 +439,9 @@ class BiosampleArtifactTest(BasicAPITest):
         del payload["biosamples"][0]["adm2_private"]
         del payload["biosamples"][0]["collecting_org"]
 
+        # Activate partial
+        payload["partial"] = True
+
         yesterday = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
         partial_fields = {
             #"collection_date": yesterday,
@@ -478,3 +483,4 @@ class BiosampleArtifactTest(BasicAPITest):
     # Test nuke metadata (with new None)
     # Test nuke ct (currently only nuked on new)
     # Test mod preform
+    # Test initial data is stompy

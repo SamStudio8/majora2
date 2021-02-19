@@ -1089,7 +1089,6 @@ class BiosampleArtifact(MajoraArtifact):
     sender_sample_id = models.CharField(max_length=48, blank=True, null=True)
     central_sample_id = models.CharField(max_length=48, blank=True, null=True, unique=True)
 
-    sample_orig_id = models.CharField(max_length=24, blank=True, null=True)
     sample_type_collected = models.CharField(max_length=24, blank=True, null=True)        #THIS should be a lookup
     sample_site = models.CharField(max_length=24, blank=True, null=True)        #THIS should be a lookup
     sample_type_current = models.CharField(max_length=24, blank=True, null=True)
@@ -1098,6 +1097,7 @@ class BiosampleArtifact(MajoraArtifact):
     sample_batch = models.PositiveSmallIntegerField(default=0)
     sample_batch_longitude = models.PositiveSmallIntegerField(default=0)
 
+    sample_orig_id = models.CharField(max_length=24, blank=True, null=True) # deprecated
     secondary_identifier = models.CharField(max_length=256, blank=True, null=True) # deprecated
     secondary_accession = models.CharField(max_length=256, blank=True, null=True) # deprecated
     taxonomy_identifier = models.CharField(max_length=24, blank=True, null=True)

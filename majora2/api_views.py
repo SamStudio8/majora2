@@ -15,6 +15,8 @@ from . import forms
 from . import signals
 from . import fixed_data
 from . import form_handlers
+from .form_handlers import _format_tuple
+
 
 import json
 import uuid
@@ -238,7 +240,7 @@ def handle_metrics(metrics, tag_type, tag_to, user, api_o):
             try:
                 metric_ob = form.save()
                 if metric_ob:
-                    api_o["updated"].append(form_handlers._format_tuple(tag_to))
+                    api_o["updated"].append(_format_tuple(tag_to))
 
                     # Handle optional records
                     first_valid = True
@@ -770,7 +772,7 @@ def add_metrics(request):
                 try:
                     metric = form.save()
                     if metric:
-                        api_o["updated"].append(form_handlers._format_tuple(a))
+                        api_o["updated"].append(_format_tuple(a))
                     else:
                         api_o["ignored"].append(metric)
                         api_o["errors"] += 1
@@ -799,9 +801,9 @@ def addempty_biosample(request):
             )
             if created:
                 TatlVerb(request=request.treq, verb="CREATE", content_object=biosample).save()
-                api_o["new"].append(form_handlers._format_tuple(biosample))
+                api_o["new"].append(_format_tuple(biosample))
             else:
-                api_o["ignored"].append(form_handlers._format_tuple(biosample))
+                api_o["ignored"].append(_format_tuple(biosample))
                 api_o["warnings"] += 1
             if not biosample.created:
                 sample_p = models.BiosourceSamplingProcess()
@@ -855,7 +857,7 @@ def update_biosample(request):
                                 changed = True
 
                 if changed:
-                    api_o["updated"].append(form_handlers._format_tuple(biosample))
+                    api_o["updated"].append(_format_tuple(biosample))
                     TatlVerb(request=request.treq, verb="UPDATE", content_object=biosample).save()
                     biosample.save()
 
@@ -873,12 +875,13 @@ def add_biosample(request):
             api_o["messages"].append("'biosamples' key missing or empty")
             api_o["errors"] += 1
 
+        partial_mode = json_data.get("partial")
         for biosample in biosamples:
             try:
                 sample_id = biosample.get("central_sample_id")
                 initial = fixed_data.fill_fixed_data("api.artifact.biosample.add", user)
 
-                # Handle new 2021-style fancy ModelForm
+                # Fetch objects for update (if applicable)
                 supp = None
                 sample_p = None
                 bs = models.BiosampleArtifact.objects.filter(central_sample_id=sample_id).first()
@@ -888,77 +891,111 @@ def add_biosample(request):
                     if hasattr(bs.created, "coguk_supp"):
                         supp = bs.created.coguk_supp
 
-                coguk_supp_form = forms.COGUK_BiosourceSamplingProcessSupplement_ModelForm(biosample, initial=initial, instance=supp, partial=True)
+                # Pre screen the cog uk supplementary form
+                coguk_supp_form = forms.COGUK_BiosourceSamplingProcessSupplement_ModelForm(biosample, initial=initial, instance=supp, partial=partial_mode)
                 if not coguk_supp_form.is_valid():
                     api_o["errors"] += 1
                     api_o["ignored"].append(sample_id)
                     api_o["messages"].append(coguk_supp_form.errors.get_json_data())
                     continue
 
-                sample_process_form = forms.BiosourceSamplingProcessModelForm(biosample, initial=initial, instance=sample_p, partial=True)
+                # Pre screen the sample collection process form
+                sample_process_form = forms.BiosourceSamplingProcessModelForm(biosample, initial=initial, instance=sample_p, partial=partial_mode)
                 if not sample_process_form.is_valid():
                     api_o["errors"] += 1
                     api_o["ignored"].append(sample_id)
                     api_o["messages"].append(sample_process_form.errors.get_json_data())
                     continue
 
-                # Handle old non-model Forms
-                biosample = forms.TestSampleForm.modify_preform(biosample)
-                form = forms.TestSampleForm(biosample, initial=initial)
-                if form.is_valid():
-                    del initial["submission_org"]
-                    form.cleaned_data.update(initial)
-                    sample, sample_created = form_handlers.handle_testsample(form, user=user, api_o=api_o, request=request)
-                    if not sample:
-                        api_o["ignored"].append(sample_id)
-                        api_o["errors"] += 1
-                    else:
-
-                        # Save the sample process
-                        sample_p = sample_process_form.save(commit=False)
-                        if not sample_p.who:
-                            try:
-                                submitted_by = sample_process_form.cleaned_data.get("submission_org").name
-                            except:
-                                submitted_by = None
-                            sample_p.who = user
-                            sample_p.when = sample_p.collection_date if sample_p.collection_date else sample_p.received_date
-                            sample_p.submitted_by = submitted_by
-                            sample_p.submission_user = user
-                            # fuck
-                            #if source:
-                            #    for record in sample_p.records.all():
-                            #        if record.out_artifact == sample:
-                            #            record.in_group = source
-                            #            record.save()
-                            #               if sample_created:
-                            #                    # Attach the sample process if it is new
-                            #                    sample.created = sample_p
-                        sample_p.save()
-
-                        if not sample.created:
-                            sample.created = sample_p
-                            if sample_p.records.count() == 0:
-                                sampling_rec = models.BiosourceSamplingProcessRecord(
-                                    process=sample_p,
-                                    in_group=sample.primary_group,
-                                    out_artifact=sample,
-                                )
-                                sampling_rec.save()
-                        sample.save()
-
-                        # Link the supp
-                        coguk_supp = coguk_supp_form.save(commit=False)
-                        coguk_supp.sampling = sample.created
-                        coguk_supp.save()
-
-                        handle_metadata(biosample.get("metadata", {}), 'artifact', sample.dice_name, user, api_o)
-                        handle_metrics(biosample.get("metrics", {}), 'artifact', sample, user, api_o) #TODO clean this as it duplicates the add_metric view
-
-                else:
+                # Handle new sample
+                sample_form = forms.BiosampleArtifactModelForm(biosample, initial=initial, instance=bs, partial=partial_mode)
+                if not sample_form.is_valid():
                     api_o["errors"] += 1
                     api_o["ignored"].append(sample_id)
-                    api_o["messages"].append(form.errors.get_json_data())
+                    api_o["messages"].append(sample_form.errors.get_json_data())
+                    continue
+
+                # Hit it
+                sample = sample_form.save(commit=False)
+                if not sample:
+                    api_o["errors"] += 1
+                    api_o["ignored"].append(sample_id)
+                    continue
+
+                # Create (or fetch) the biosample source (host)
+                #TODO There is a form for this but it seems overkill for one field
+                biosample_source_id = biosample.get("biosample_source_id")
+                if biosample_source_id:
+                    if biosample_source_id:
+                        source, source_created = models.BiosampleSource.objects.get_or_create(
+                                dice_name=biosample_source_id,
+                                secondary_id=biosample_source_id,
+                                source_type = initial.get("source_type"), # previously fetched from form
+                                physical=True,
+                        )
+                        source.save()
+                    else:
+                        source = None
+
+                # Create and save the sample collection process
+                sample_p = sample_process_form.save(commit=False)
+                if not sample_p.who:
+                    try:
+                        submitted_by = sample_process_form.cleaned_data.get("submission_org").name
+                    except:
+                        submitted_by = None
+                    sample_p.who = user
+                    sample_p.when = sample_p.collection_date if sample_p.collection_date else sample_p.received_date
+                    sample_p.submitted_by = submitted_by
+                    sample_p.submission_user = user
+                sample_p.save()
+
+                # Update remaining sample fields
+                sample.dice_name = sample.central_sample_id
+                sample.primary_group = source
+                sample.save()
+
+                # Bind sample and sample collection process if sample_p is new
+                if not sample.created:
+                    sample.created = sample_p
+                    if sample_p.records.count() == 0:
+                        sampling_rec = models.BiosourceSamplingProcessRecord(
+                            process=sample_p,
+                            in_group=sample.primary_group,
+                            out_artifact=sample,
+                        )
+                        sampling_rec.save()
+                    sample.save()
+
+                # Create and link the supplementary model data
+                coguk_supp = coguk_supp_form.save(commit=False)
+                coguk_supp.sampling = sample.created
+                coguk_supp.save()
+
+                # Hack to fix source if it has been changed at some point
+                #TODO This only works in the cog context where we can assume 1:1 between sample and collection
+                if source and sample.created:
+                    for record in sample.created.records.all():
+                        if record.in_group != source and record.out_artifact == sample:
+                            record.in_group = source
+                            record.save()
+
+                handle_metadata(biosample.get("metadata", {}), 'artifact', sample.dice_name, user, api_o)
+                handle_metrics(biosample.get("metrics", {}), 'artifact', sample, user, api_o) #TODO clean this as it duplicates the add_metric view
+
+                #if sample_created:
+                #    if api_o:
+                #        api_o["new"].append(_format_tuple(sample))
+                #        TatlVerb(request=request.treq, verb="CREATE", content_object=sample).save()
+                #else:
+                #    if api_o:
+                #        api_o["updated"].append(_format_tuple(sample))
+                #        TatlVerb(request=request.treq, verb="UPDATE", content_object=sample).save()
+                if source_created:
+                    if api_o:
+                        api_o["new"].append(_format_tuple(source))
+                        TatlVerb(request=request.treq, verb="CREATE", content_object=source).save()
+
             except Exception as e:
                 api_o["errors"] += 1
                 api_o["messages"].append(str(e))
@@ -1018,7 +1055,7 @@ def add_library(request):
                 )
                 if created:
                     TatlVerb(request=request.treq, verb="CREATE", content_object=biosample).save()
-                    api_o["new"].append(form_handlers._format_tuple(biosample))
+                    api_o["new"].append(_format_tuple(biosample))
                     api_o["warnings"] += 1
                     sample_forced = True
                 if not biosample.created:
@@ -1204,7 +1241,7 @@ def add_pag_accession(request):
             accession.tertiary_accession = json_data.get("accession3")
             accession.save()
             if api_o:
-                api_o["updated"].append(form_handlers._format_tuple(pag))
+                api_o["updated"].append(_format_tuple(pag))
 
             if not accession.requested_timestamp and json_data.get("submitted"):
                 accession.requested_timestamp = timezone.now()
@@ -1552,7 +1589,7 @@ def suppress_pag(request):
             pag.suppressed_date = timezone.now()
             pag.suppressed_reason = reason.upper()
             pag.save()
-            api_o["updated"].append(form_handlers._format_tuple(pag))
+            api_o["updated"].append(_format_tuple(pag))
             TatlVerb(request=request.treq, verb="SUPPRESS", content_object=pag).save()
 
     return wrap_api_v2(request, f) # TODO Needs OAuth will fallback to Owner
