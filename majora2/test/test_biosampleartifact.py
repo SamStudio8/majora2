@@ -143,7 +143,7 @@ class BiosampleArtifactTest(BasicAPITest):
             pass
         self.assertEqual(received_date, bs.created.received_date)
 
-        adm2 = "" # None to ""
+        adm2 = None # None to ""
         try:
             adm2 = payload["biosamples"][0]["adm2"].upper() #adm2 coerced to upper
         except AttributeError:
@@ -368,12 +368,12 @@ class BiosampleArtifactTest(BasicAPITest):
                     "is_surveillance": False,
 
                     "received_date": None,
-                    "adm2": "",
+                    "adm2": None,
                     "source_age": None,
                     "source_sex": "",
-                    "adm2_private": "",
+                    "adm2_private": None,
                     "biosample_source_id": "ABC12345", # can't nuke biosample_source_id once it has been set
-                    "collecting_org": "",
+                    "collecting_org": None,
                     "root_sample_id": "",
                     "sample_type_collected": "",
                     "sample_type_received": "",

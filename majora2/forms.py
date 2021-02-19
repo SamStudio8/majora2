@@ -611,13 +611,15 @@ class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
 
         # Check if the adm2 looks like a postcode
         adm2 = cleaned_data.get("collection_location_adm2", "")
-        if len(adm2) > 0 and re.search('\d', adm2):
-            self.add_error("collection_location_adm2", "adm2 cannot contain numbers. Use adm2_private if you are trying to provide an outer postcode")
+        if adm2:
+            if len(adm2) > 0 and re.search('\d', adm2):
+                self.add_error("collection_location_adm2", "adm2 cannot contain numbers. Use adm2_private if you are trying to provide an outer postcode")
 
         # Check for full postcode mistake
         adm2_private = cleaned_data.get("private_collection_location_adm2")
-        if " " in adm2_private:
-            self.add_error("private_collection_location_adm2", "Enter the first part of the postcode only")
+        if adm2_private:
+            if " " in adm2_private:
+                self.add_error("private_collection_location_adm2", "Enter the first part of the postcode only")
 
 
 class COGUK_BiosourceSamplingProcessSupplement_ModelForm(MajoraPossiblePartialModelForm):
