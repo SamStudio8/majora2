@@ -501,8 +501,8 @@ class MajoraPossiblePartialModelForm(forms.ModelForm):
 
 class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
 
-    country = forms.CharField(disabled=True)
-    adm1 = forms.ChoiceField(
+    collection_location_country = forms.CharField(disabled=True)
+    collection_location_adm1 = forms.ChoiceField(
             label="Region",
             choices=[
                 (None, ""),
