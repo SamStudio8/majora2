@@ -565,11 +565,11 @@ class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
             "source_age",
             "source_sex",
             "collected_by",
-            "collection_location_country",
             "collection_location_adm1",
             "collection_location_adm2",
             "private_collection_location_adm2",
             "submission_org", # this is handled automatically by Majora but it still injected into the form data after being received so needs validation
+            "collection_location_country", # injected as initial
         ]
         exclude = [ # It is redundant to list these as they are excluded by virtue of being missing from fields, but nice to explain why
             "submitted_by", # submission fields are set by Majora, not the user
