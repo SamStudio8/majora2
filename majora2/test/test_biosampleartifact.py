@@ -162,8 +162,8 @@ class BiosampleArtifactTest(BasicAPITest):
 
         self.assertEqual(payload["biosamples"][0]["collecting_org"], bs.created.collected_by)
         self.assertEqual(self.user, bs.created.submission_user)
-        self.assertEqual(self.user.profile.institute, bs.created.submission_org)
         self.assertEqual(self.user.profile.institute.name, bs.created.submitted_by)
+        self.assertEqual(self.user.profile.institute, bs.created.submission_org)
 
         self.assertEqual(payload["biosamples"][0]["root_sample_id"], bs.root_sample_id)
         self.assertEqual(payload["biosamples"][0]["sample_type_collected"], bs.sample_type_collected)

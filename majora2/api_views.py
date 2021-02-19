@@ -880,30 +880,73 @@ def add_biosample(request):
 
                 # Handle new 2021-style fancy ModelForm
                 supp = None
+                sample_p = None
                 bs = models.BiosampleArtifact.objects.filter(central_sample_id=sample_id).first()
                 if bs:
+                    if hasattr(bs, "created"):
+                        sample_p = bs.created
                     if hasattr(bs.created, "coguk_supp"):
                         supp = bs.created.coguk_supp
 
-                coguk_supp_data = forms.COGUK_BiosourceSamplingProcessSupplement_ModelForm.modify_preform(biosample)
-                coguk_supp_form = forms.COGUK_BiosourceSamplingProcessSupplement_ModelForm(coguk_supp_data, initial=initial, instance=supp, partial=True, partial_request_keys=coguk_supp_data.keys())
+                coguk_supp_form = forms.COGUK_BiosourceSamplingProcessSupplement_ModelForm(biosample, initial=initial, instance=supp, partial=True)
                 if not coguk_supp_form.is_valid():
                     api_o["errors"] += 1
                     api_o["ignored"].append(sample_id)
                     api_o["messages"].append(coguk_supp_form.errors.get_json_data())
                     continue
 
+                sample_process_form = forms.BiosourceSamplingProcessModelForm(biosample, initial=initial, instance=sample_p, partial=True)
+                if not sample_process_form.is_valid():
+                    api_o["errors"] += 1
+                    api_o["ignored"].append(sample_id)
+                    api_o["messages"].append(sample_process_form.errors.get_json_data())
+                    continue
+
                 # Handle old non-model Forms
                 biosample = forms.TestSampleForm.modify_preform(biosample)
                 form = forms.TestSampleForm(biosample, initial=initial)
                 if form.is_valid():
-                    del initial["submitting_org"]
+                    del initial["submission_org"]
                     form.cleaned_data.update(initial)
                     sample, sample_created = form_handlers.handle_testsample(form, user=user, api_o=api_o, request=request)
                     if not sample:
                         api_o["ignored"].append(sample_id)
                         api_o["errors"] += 1
                     else:
+
+                        # Save the sample process
+                        sample_p = sample_process_form.save(commit=False)
+                        if not sample_p.who:
+                            try:
+                                submitted_by = sample_process_form.cleaned_data.get("submission_org").name
+                            except:
+                                submitted_by = None
+                            sample_p.who = user
+                            sample_p.when = sample_p.collection_date if sample_p.collection_date else sample_p.received_date
+                            sample_p.submitted_by = submitted_by
+                            sample_p.submission_user = user
+                            # fuck
+                            #if source:
+                            #    for record in sample_p.records.all():
+                            #        if record.out_artifact == sample:
+                            #            record.in_group = source
+                            #            record.save()
+                            #               if sample_created:
+                            #                    # Attach the sample process if it is new
+                            #                    sample.created = sample_p
+                        sample_p.save()
+
+                        if not sample.created:
+                            sample.created = sample_p
+                            if sample_p.records.count() == 0:
+                                sampling_rec = models.BiosourceSamplingProcessRecord(
+                                    process=sample_p,
+                                    in_group=sample.primary_group,
+                                    out_artifact=sample,
+                                )
+                                sampling_rec.save()
+                        sample.save()
+
                         # Link the supp
                         coguk_supp = coguk_supp_form.save(commit=False)
                         coguk_supp.sampling = sample.created
@@ -911,6 +954,7 @@ def add_biosample(request):
 
                         handle_metadata(biosample.get("metadata", {}), 'artifact', sample.dice_name, user, api_o)
                         handle_metrics(biosample.get("metrics", {}), 'artifact', sample, user, api_o) #TODO clean this as it duplicates the add_metric view
+
                 else:
                     api_o["errors"] += 1
                     api_o["ignored"].append(sample_id)

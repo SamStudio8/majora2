@@ -464,26 +464,37 @@ class TestSequencingForm(forms.Form):
 class MajoraPossiblePartialModelForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         partial = kwargs.pop('partial', False)
-        partial_request_keys = kwargs.pop('partial_request_keys', [])
+
+        # Map initial data if needed
+        kwargs["initial"] = self.map_request_fields(kwargs["initial"])
+
         super().__init__(*args, **kwargs)
 
+        self.data = self.map_request_fields(self.data)
+        self.data = self.modify_preform(self.data)
+
+        # Fix data fields
+        # Add the initial keys here too, to allow initial fields to be updated when
+        # working with partial forms (e.g. filling in submission_org automatically)
+        # Initial data is only used for disabled form fields so this shoudn't cause accidental stomps
+        self.partial_request_keys = set(self.data.keys()) | set(kwargs["initial"].keys())
+
         # Drop any fields that are not specified in the request
-        if partial and partial_request_keys:
-            allowed = set(partial_request_keys)
+        if partial:
+            allowed = self.partial_request_keys
             existing = set(self.fields)
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
 
+
     # Shim function that allows form interfaces to present a different name for
     # a field from the one it represents in the model. This will return the payload
     # dict with keys renamed to the one on the model as appropriate for validation
-    def map_request_fields(self, payload):
-        data = {}
-        for k, v in payload.items():
-            if k in self.Meta.field_map:
-                data[self.Meta.field_map[k]] = v
-            else:
-                data[k] = v
+    def map_request_fields(self, data):
+        for k, v in self.Meta.field_map.items():
+            if k in data:
+                data[v] = data[k]
+                del data[k]
         return data
 
     def _post_clean(self):
@@ -491,12 +502,29 @@ class MajoraPossiblePartialModelForm(forms.ModelForm):
 
         # Fix the error struct such that the hacked field names match those the
         # user expects to know about
-        for k, error in self._errors.items():
-            if k in self.Meta.field_map[k]:
         for k, v in self.Meta.field_map.items():
             if k in self._errors:
                 self._errors[v] = self._errors[k]
                 del self._errors[k]
+
+    def modify_preform(self, data):
+        for field in getattr(self.Meta, "LOWERCASE_FIELDS", []):
+            if data.get(field):
+                data[field] = data[field].strip()
+        for field in getattr(self.Meta, "UPPERCASE_FIELDS", []):
+            if data.get(field):
+                data[field] = data[field].strip().upper()
+        for field in getattr(self.Meta, "COERCE_BOOLEAN", []):
+            if data.get(field):
+                if type(data.get(field)) is str:
+                    b = data[field].strip().upper()
+                    if b == "Y" or b == "YES":
+                        data[field] = True
+                    elif b == "N" or b == "NO":
+                        data[field] = False
+                    else:
+                        data[field] = None
+        return data
 
 
 class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
@@ -512,7 +540,7 @@ class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
                 ("UK-NIR", "Northern Ireland"),
             ],
     )
-    #adm2 = forms.ModelChoiceField(
+    #collection_location_adm2 = forms.ModelChoiceField(
     #        queryset=models.County.objects.all(),
     #        to_field_name="name",
     #        label="County",
@@ -527,6 +555,7 @@ class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
             ("Other", "Other"),
         ], required=False, help_text="Reported sex"
     )
+    submission_org = forms.ModelChoiceField(queryset=models.Institute.objects.exclude(code__startswith="?").order_by("name"), disabled=True, required=False) # required to be defined for correct injection of FIXED data
 
     class Meta:
         model = models.BiosourceSamplingProcess
@@ -540,12 +569,14 @@ class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
             "collection_location_adm1",
             "collection_location_adm2",
             "private_collection_location_adm2",
+            "submission_org", # this is handled automatically by Majora but it still injected into the form data after being received so needs validation
         ]
         exclude = [ # It is redundant to list these as they are excluded by virtue of being missing from fields, but nice to explain why
             "submitted_by", # submission fields are set by Majora, not the user
-            "submission_org",
             "submission_user",
             "collection_org", # field is no longer used
+            "who",
+            "when", # majora fields
         ]
         field_map = {
             # FROM FORM         TO MODEL
@@ -555,6 +586,9 @@ class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
             "adm2":             "collection_location_adm2",
             "adm2_private":     "private_collection_location_adm2",
         }
+        UPPERCASE_FIELDS = [
+            "collection_location_adm2",
+        ]
 
     def clean(self):
         cleaned_data = super().clean()
@@ -584,6 +618,7 @@ class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
         adm2_private = cleaned_data.get("private_collection_location_adm2")
         if " " in adm2_private:
             self.add_error("private_collection_location_adm2", "Enter the first part of the postcode only")
+
 
 class COGUK_BiosourceSamplingProcessSupplement_ModelForm(MajoraPossiblePartialModelForm):
 
@@ -617,21 +652,6 @@ class COGUK_BiosourceSamplingProcessSupplement_ModelForm(MajoraPossiblePartialMo
             "sampling" # Although this FK needs linking, we'll link this ourselves rather than with the form
         ]
         field_map = {}
-
-    def clean(self):
-        cleaned_data = super().clean()
-        # Force is_surveillance
-        if cleaned_data.get("is_surveillance") is None:
-            self.add_error("is_surveillance", "You must set is_surveillance to Y or N")
-        if cleaned_data.get("admission_date") and not cleaned_data.get("is_hospital_patient"):
-            self.add_error("is_hospital_patient", "Admission date implies patient was admitted to hospital but you've not set is_hospital_patient to Y")
-
-    @staticmethod
-    def modify_preform(data):
-        LOWERCASE_FIELDS = [
-        ]
-        UPPERCASE_FIELDS = [
-        ]
         COERCE_BOOLEAN = [
             "is_surveillance",
             "is_hcw",
@@ -641,25 +661,14 @@ class COGUK_BiosourceSamplingProcessSupplement_ModelForm(MajoraPossiblePartialMo
             "admitted_with_covid_diagnosis",
             "is_icu_patient",
         ]
-        for field in LOWERCASE_FIELDS:
-            if data.get(field):
-                data[field] = data[field].strip()
-                if data[field] != "BAL":
-                    data[field] = data[field].strip().lower()
-        for field in UPPERCASE_FIELDS:
-            if data.get(field):
-                data[field] = data[field].strip().upper()
-        for field in COERCE_BOOLEAN:
-            if data.get(field):
-                if type(data.get(field)) is str:
-                    b = data[field].strip().upper()
-                    if b == "Y" or b == "YES":
-                        data[field] = True
-                    elif b == "N" or b == "NO":
-                        data[field] = False
-                    else:
-                        data[field] = None
-        return data
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # Force is_surveillance
+        if cleaned_data.get("is_surveillance") is None:
+            self.add_error("is_surveillance", "You must set is_surveillance to Y or N")
+        if cleaned_data.get("admission_date") and not cleaned_data.get("is_hospital_patient"):
+            self.add_error("is_hospital_patient", "Admission date implies patient was admitted to hospital but you've not set is_hospital_patient to Y")
 
 
 class TestSampleForm(forms.Form):
