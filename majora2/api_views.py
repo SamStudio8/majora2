@@ -924,18 +924,17 @@ def add_biosample(request):
 
                 # Create (or fetch) the biosample source (host)
                 #TODO There is a form for this but it seems overkill for one field
+                source = None
+                source_created = None
                 biosample_source_id = biosample.get("biosample_source_id")
                 if biosample_source_id:
-                    if biosample_source_id:
-                        source, source_created = models.BiosampleSource.objects.get_or_create(
-                                dice_name=biosample_source_id,
-                                secondary_id=biosample_source_id,
-                                source_type = initial.get("source_type"), # previously fetched from form
-                                physical=True,
-                        )
-                        source.save()
-                    else:
-                        source = None
+                    source, source_created = models.BiosampleSource.objects.get_or_create(
+                            dice_name=biosample_source_id,
+                            secondary_id=biosample_source_id,
+                            source_type = initial.get("source_type"), # previously fetched from form
+                            physical=True,
+                    )
+                    source.save()
 
                 # Create and save the sample collection process
                 sample_p = sample_process_form.save(commit=False)
@@ -983,14 +982,15 @@ def add_biosample(request):
                 handle_metadata(biosample.get("metadata", {}), 'artifact', sample.dice_name, user, api_o)
                 handle_metrics(biosample.get("metrics", {}), 'artifact', sample, user, api_o) #TODO clean this as it duplicates the add_metric view
 
-                #if sample_created:
-                #    if api_o:
-                #        api_o["new"].append(_format_tuple(sample))
-                #        TatlVerb(request=request.treq, verb="CREATE", content_object=sample).save()
-                #else:
-                #    if api_o:
-                #        api_o["updated"].append(_format_tuple(sample))
-                #        TatlVerb(request=request.treq, verb="UPDATE", content_object=sample).save()
+                if not bs and sample:
+                    # Created
+                    if api_o:
+                        api_o["new"].append(_format_tuple(sample))
+                        TatlVerb(request=request.treq, verb="CREATE", content_object=sample).save()
+                else:
+                    if api_o:
+                        api_o["updated"].append(_format_tuple(sample))
+                        TatlVerb(request=request.treq, verb="UPDATE", content_object=sample).save()
                 if source_created:
                     if api_o:
                         api_o["new"].append(_format_tuple(source))
