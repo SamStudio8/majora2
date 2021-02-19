@@ -455,7 +455,7 @@ class TestSequencingForm(forms.Form):
 
 class MajoraPossiblePartialModelForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
+        self.partial = kwargs.pop('partial', False)
 
         # Map initial data if needed
         kwargs["initial"] = self.map_request_fields(kwargs["initial"])
@@ -472,7 +472,7 @@ class MajoraPossiblePartialModelForm(forms.ModelForm):
         self.partial_request_keys = set(self.data.keys()) | set(kwargs["initial"].keys())
 
         # Drop any fields that are not specified in the request
-        if partial:
+        if self.partial:
             allowed = self.partial_request_keys
             existing = set(self.fields)
             for field_name in existing - allowed:
@@ -517,6 +517,16 @@ class MajoraPossiblePartialModelForm(forms.ModelForm):
                     else:
                         data[field] = None
         return data
+
+    def add_error(self, field, error):
+        if field not in self.fields:
+            # Move errors targeted for missing fields to NON_FIELD_ERRORS and send them to the client
+            # Unless we're in partial mode, then just ignore them
+            #if not self.partial:
+            #    super().add_error(None, error)
+            super().add_error(None, error)
+        else:
+            super().add_error(field, error)
 
 
 class BiosampleArtifactModelForm(MajoraPossiblePartialModelForm):
@@ -610,11 +620,6 @@ class BiosampleArtifactModelForm(MajoraPossiblePartialModelForm):
             self.add_error("sample_type_collected", "Swab site specified but the sample type is not 'swab'")
         #if sample_type == "swab" and not swab_site:
         #    self.add_error("sample_type_collected", "Sample was a swab but you did not specify the swab site")
-
-
-
-
-
 
 
 class BiosampleSourceModelForm(MajoraPossiblePartialModelForm):
@@ -711,7 +716,8 @@ class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
 
         # Check a received_date was provided for samples without a collection date
         if not cleaned_data.get("collection_date") and not cleaned_data.get("received_date"):
-            self.add_error("received_date", "You must provide a received date for samples without a collection date")
+            if not self.partial:
+               self.add_error("received_date", "You must provide a received date for samples without a collection date")
 
         # Check sample date is not in the future
         if cleaned_data.get("collection_date"):
