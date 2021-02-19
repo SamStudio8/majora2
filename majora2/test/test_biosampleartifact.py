@@ -115,85 +115,107 @@ class BiosampleArtifactTest(BasicAPITest):
 
         self.assertEqual(datetime.datetime.strptime(payload["biosamples"][0]["collection_date"], "%Y-%m-%d").date(), bs.created.collection_date)
         if hasattr(bs.created, "coguk_supp"):
-            self.assertEqual(payload["biosamples"][0]["is_surveillance"], bs.created.coguk_supp.is_surveillance)
-            self.assertEqual(payload["biosamples"][0]["collection_pillar"], bs.created.coguk_supp.collection_pillar)
-            self.assertEqual(payload["biosamples"][0]["is_hcw"], bs.created.coguk_supp.is_hcw)
-            self.assertEqual(payload["biosamples"][0]["is_hospital_patient"], bs.created.coguk_supp.is_hospital_patient)
-            self.assertEqual(payload["biosamples"][0]["is_icu_patient"], bs.created.coguk_supp.is_icu_patient)
-            self.assertEqual(payload["biosamples"][0]["admitted_with_covid_diagnosis"], bs.created.coguk_supp.admitted_with_covid_diagnosis)
-            self.assertEqual(payload["biosamples"][0]["employing_hospital_name"], bs.created.coguk_supp.employing_hospital_name)
-            self.assertEqual(payload["biosamples"][0]["employing_hospital_trust_or_board"], bs.created.coguk_supp.employing_hospital_trust_or_board)
+            self.assertEqual(payload["biosamples"][0].get("is_surveillance"), bs.created.coguk_supp.is_surveillance)
+            self.assertEqual(payload["biosamples"][0].get("collection_pillar"), bs.created.coguk_supp.collection_pillar)
+            self.assertEqual(payload["biosamples"][0].get("is_hcw"), bs.created.coguk_supp.is_hcw)
+            self.assertEqual(payload["biosamples"][0].get("is_hospital_patient"), bs.created.coguk_supp.is_hospital_patient)
+            self.assertEqual(payload["biosamples"][0].get("is_icu_patient"), bs.created.coguk_supp.is_icu_patient)
+            self.assertEqual(payload["biosamples"][0].get("admitted_with_covid_diagnosis"), bs.created.coguk_supp.admitted_with_covid_diagnosis)
+            self.assertEqual(payload["biosamples"][0].get("employing_hospital_name"), bs.created.coguk_supp.employing_hospital_name)
+            self.assertEqual(payload["biosamples"][0].get("employing_hospital_trust_or_board"), bs.created.coguk_supp.employing_hospital_trust_or_board)
 
             admission_date = None
             try:
-                admission_date = datetime.datetime.strptime(payload["biosamples"][0]["admission_date"], "%Y-%m-%d").date()
+                admission_date = datetime.datetime.strptime(payload["biosamples"][0].get("admission_date"), "%Y-%m-%d").date()
             except TypeError:
                 pass
             self.assertEqual(admission_date, bs.created.coguk_supp.admission_date)
 
-            self.assertEqual(payload["biosamples"][0]["admitted_hospital_name"], bs.created.coguk_supp.admitted_hospital_name)
-            self.assertEqual(payload["biosamples"][0]["admitted_hospital_trust_or_board"], bs.created.coguk_supp.admitted_hospital_trust_or_board)
-            self.assertEqual(payload["biosamples"][0]["is_care_home_worker"], bs.created.coguk_supp.is_care_home_worker)
-            self.assertEqual(payload["biosamples"][0]["is_care_home_resident"], bs.created.coguk_supp.is_care_home_resident)
-            self.assertEqual(payload["biosamples"][0]["anonymised_care_home_code"], bs.created.coguk_supp.anonymised_care_home_code)
+            self.assertEqual(payload["biosamples"][0].get("admitted_hospital_name"), bs.created.coguk_supp.admitted_hospital_name)
+            self.assertEqual(payload["biosamples"][0].get("admitted_hospital_trust_or_board"), bs.created.coguk_supp.admitted_hospital_trust_or_board)
+            self.assertEqual(payload["biosamples"][0].get("is_care_home_worker"), bs.created.coguk_supp.is_care_home_worker)
+            self.assertEqual(payload["biosamples"][0].get("is_care_home_resident"), bs.created.coguk_supp.is_care_home_resident)
+            self.assertEqual(payload["biosamples"][0].get("anonymised_care_home_code"), bs.created.coguk_supp.anonymised_care_home_code)
 
         received_date = None
         try:
-            received_date = datetime.datetime.strptime(payload["biosamples"][0]["received_date"], "%Y-%m-%d").date()
+            received_date = datetime.datetime.strptime(payload["biosamples"][0].get("received_date"), "%Y-%m-%d").date()
         except TypeError:
             pass
         self.assertEqual(received_date, bs.created.received_date)
 
-        adm2 = None # None to ""
+        adm2 = None
         try:
-            adm2 = payload["biosamples"][0]["adm2"].upper() #adm2 coerced to upper
+            adm2 = payload["biosamples"][0].get("adm2").upper() #adm2 coerced to upper
         except AttributeError:
             pass
         self.assertEqual(adm2, bs.created.collection_location_adm2)
-        self.assertEqual(payload["biosamples"][0]["source_age"], bs.created.source_age)
-        self.assertEqual(payload["biosamples"][0]["source_sex"], bs.created.source_sex)
-        self.assertEqual(payload["biosamples"][0]["adm2_private"], bs.created.private_collection_location_adm2)
+        self.assertEqual(payload["biosamples"][0].get("source_age"), bs.created.source_age)
+        self.assertEqual(payload["biosamples"][0].get("source_sex", ""), bs.created.source_sex)
+        self.assertEqual(payload["biosamples"][0].get("adm2_private"), bs.created.private_collection_location_adm2)
 
         biosample_sources = []
         for record in bs.created.records.all():
             if record.in_group and record.in_group.kind == "Biosample Source":
                 biosample_sources.append(record.in_group.secondary_id)
-        self.assertEqual(len(biosample_sources), 1)
-        self.assertEqual(payload["biosamples"][0]["biosample_source_id"], biosample_sources[0])
-        self.assertEqual(payload["biosamples"][0]["biosample_source_id"], bs.primary_group.dice_name)
 
-        self.assertEqual(payload["biosamples"][0]["collecting_org"], bs.created.collected_by)
+        if payload["biosamples"][0].get("biosample_source_id"):
+            self.assertEqual(payload["biosamples"][0]["biosample_source_id"], biosample_sources[0])
+            self.assertEqual(payload["biosamples"][0]["biosample_source_id"], bs.primary_group.dice_name)
+            self.assertEqual(len(biosample_sources), 1)
+        else:
+            self.assertEqual(len(biosample_sources), 0)
+            self.assertEqual(None, bs.primary_group)
+
+        self.assertEqual(payload["biosamples"][0].get("collecting_org"), bs.created.collected_by)
         self.assertEqual(self.user, bs.created.submission_user)
         self.assertEqual(self.user.profile.institute.name, bs.created.submitted_by)
         self.assertEqual(self.user.profile.institute, bs.created.submission_org)
 
-        self.assertEqual(payload["biosamples"][0]["root_sample_id"], bs.root_sample_id)
-        self.assertEqual(payload["biosamples"][0]["sample_type_collected"], bs.sample_type_collected)
-        self.assertEqual(payload["biosamples"][0]["sample_type_received"], bs.sample_type_current)
-        self.assertEqual(payload["biosamples"][0]["sender_sample_id"], bs.sender_sample_id)
-        self.assertEqual(payload["biosamples"][0]["swab_site"], bs.sample_site)
+        self.assertEqual(payload["biosamples"][0].get("root_sample_id"), bs.root_sample_id)
+        self.assertEqual(payload["biosamples"][0].get("sample_type_collected", ""), bs.sample_type_collected)
+        self.assertEqual(payload["biosamples"][0].get("sample_type_received"), bs.sample_type_current)
+        self.assertEqual(payload["biosamples"][0].get("sender_sample_id"), bs.sender_sample_id)
+        self.assertEqual(payload["biosamples"][0].get("swab_site"), bs.sample_site)
 
         # Metadata
-        self.assertEqual(bs.metadata.count(), 4)
+        expected_n_metadata = 0
+        for tag_name, tag_data in payload["biosamples"][0]["metadata"].items():
+            expected_n_metadata += len(tag_data.keys())
+
+        self.assertEqual(bs.metadata.count(), expected_n_metadata)
+        record_tests = 0
         for record in bs.metadata.all():
             self.assertEqual(str(payload["biosamples"][0]["metadata"][record.meta_tag][record.meta_name]), record.value) # all metadata is str atm
+            record_tests += 1
+        self.assertEqual(record_tests, expected_n_metadata)
 
         # Metrics
+        expected_n_metrics_objects = 0
+        expected_n_metrics_records = 0
+        for tag_name, tag_data in payload["biosamples"][0]["metrics"].items():
+            expected_n_metrics_objects += 1
+            expected_n_metrics_records += len(tag_data["records"])
+
         n_records = 0
-        self.assertEqual(bs.metrics.count(), 1)
+        self.assertEqual(bs.metrics.count(), expected_n_metrics_objects)
         for metric in bs.metrics.all():
             for record in metric.metric_records.all():
                 n_records += 1
-        self.assertEqual(n_records, 2)
+        self.assertEqual(n_records, expected_n_metrics_records)
 
-        for i, metric in payload["biosamples"][0]["metrics"]["ct"]["records"].items():
-            self.assertIsNotNone(models.TemporaryMajoraArtifactMetricRecord_ThresholdCycle.objects.filter(
-                artifact_metric__artifact=bs,
-                test_platform = metric["test_platform"],
-                test_kit = metric["test_kit"],
-                test_target = metric["test_target"],
-                ct_value = metric["ct_value"]
-            ).first())
+        record_tests = 0
+        if expected_n_metrics_objects > 0:
+            for i, metric in payload["biosamples"][0]["metrics"]["ct"]["records"].items():
+                self.assertIsNotNone(models.TemporaryMajoraArtifactMetricRecord_ThresholdCycle.objects.filter(
+                    artifact_metric__artifact=bs,
+                    test_platform = metric["test_platform"],
+                    test_kit = metric["test_kit"],
+                    test_target = metric["test_target"],
+                    ct_value = metric["ct_value"]
+                ).first())
+                record_tests += 1
+        self.assertEqual(record_tests, expected_n_metrics_records)
 
 
     def test_biosample_pha_update(self):
@@ -412,7 +434,57 @@ class BiosampleArtifactTest(BasicAPITest):
         # Check the supp has been updated and not recreated
         self.assertEqual(models.COGUK_BiosourceSamplingProcessSupplement.objects.count(), 1)
 
-    def test_biosample_add_update_partial_supp_stomp(self):
+
+    def test_biosample_minimal_add_metrics_update(self):
+        # Add a minimal biosample and update it with some metrics
+        pass
+    def test_biosample_full_add_partial_update(self):
+        # Add a full biosample and update a few additional fields that were placeholded
+        pass
+    def test_biosample_minimal_add_partial_update(self):
+        # Add a minimal biosample and update a few additional fields
+        payload = {
+            "username": self.user.username,
+            "token": self.key.key,
+            "biosamples": [
+                {
+                    "adm1": "UK-ENG",
+                    "central_sample_id": self.default_central_sample_id,
+                    "collection_date": datetime.date.today().strftime("%Y-%m-%d"),
+                    "is_surveillance": False,
+                    "is_hcw": True,
+                    "metadata": {},
+                    "metrics": {},
+                },
+            ],
+            "client_name": "pytest",
+            "client_version": 1,
+        }
+        bs = self._add_biosample(payload)
+        self._test_biosample(bs, payload)
+
+
+        new_payload = copy.deepcopy(payload)
+        del new_payload["biosamples"][0]["adm1"]
+        del new_payload["biosamples"][0]["collection_date"]
+
+        new_payload["biosamples"][0]["is_surveillance"] = True
+        payload["biosamples"][0]["is_surveillance"] = True
+
+        new_payload["biosamples"][0]["collection_pillar"] = 2
+        payload["biosamples"][0]["collection_pillar"] = 2
+
+        new_payload["partial"] = True
+
+        with self.assertRaises(AssertionError):
+            # Check that the biosample has changed from the last
+            self._test_biosample(bs, payload)
+
+        bs = self._add_biosample(new_payload)
+        self._test_biosample(bs, payload)
+
+
+    def test_biosample_full_add_single_update(self):
         # create a biosample
         payload = copy.deepcopy(self.default_payload)
         bs = self._add_biosample(payload)
