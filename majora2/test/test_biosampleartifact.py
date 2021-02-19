@@ -502,7 +502,7 @@ class BiosampleArtifactTest(BasicAPITest):
         del payload["biosamples"][0]["is_care_home_resident"]
         del payload["biosamples"][0]["anonymised_care_home_code"]
 
-        #del payload["biosamples"][0]["collection_date"]
+        del payload["biosamples"][0]["collection_date"]
         del payload["biosamples"][0]["received_date"]
         del payload["biosamples"][0]["source_age"]
         del payload["biosamples"][0]["source_sex"]
@@ -516,7 +516,7 @@ class BiosampleArtifactTest(BasicAPITest):
 
         yesterday = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
         partial_fields = {
-            #"collection_date": yesterday,
+            "collection_date": yesterday,
             "received_date": yesterday,
             "source_age": 29,
             "source_sex": "F",
