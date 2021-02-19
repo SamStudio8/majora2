@@ -460,10 +460,6 @@ class TestSequencingForm(forms.Form):
 #        fields = [
 #            "root_sample_id",
 #        ]
-#class BiosourceSamplingProcessModelForm(forms.ModelForm):
-#    class Meta:
-#        model = models.BiosourceSamplingProcess
-#        exclude = []
 
 class MajoraPossiblePartialModelForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -478,6 +474,34 @@ class MajoraPossiblePartialModelForm(forms.ModelForm):
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
 
+class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
+    class Meta:
+        model = models.BiosourceSamplingProcess
+        fields = [
+            "collection_date",
+            "received_date",
+            "source_age",
+            "source_sex",
+            "collected_by",
+            "collection_location_country",
+            "collection_location_adm1",
+            "collection_location_adm2",
+            "private_collection_location_adm2",
+        ]
+        exclude = [ # It is redundant to list these as they are excluded by virtue of being missing from fields, but nice to explain why
+            "submitted_by", # submission fields are set by Majora, not the user
+            "submission_org",
+            "submission_user",
+            "collection_org", # field is no longer used
+        ]
+        field_map = {
+            # FROM FORM         TO MODEL
+            "collecting_org":   "collected_by",
+            "country":          "collection_location_country",
+            "adm1":             "collection_location_adm1",
+            "adm2":             "collection_location_adm2",
+            "adm2_private":     "private_collection_location_adm2",
+        }
 
 class COGUK_BiosourceSamplingProcessSupplement_ModelForm(MajoraPossiblePartialModelForm):
 
@@ -510,6 +534,7 @@ class COGUK_BiosourceSamplingProcessSupplement_ModelForm(MajoraPossiblePartialMo
         exclude = [ # It is redundant to list these as they are excluded by virtue of being missing from fields, but nice to explain why
             "sampling" # Although this FK needs linking, we'll link this ourselves rather than with the form
         ]
+        field_map = {}
 
     def clean(self):
         cleaned_data = super().clean()

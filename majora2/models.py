@@ -1384,7 +1384,7 @@ class BiosourceSamplingProcess(MajoraArtifactProcess):
     source_sex = models.CharField(max_length=10, blank=True, null=True)
 
     collected_by = models.CharField(max_length=100, blank=True, null=True)
-    collection_org = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL, related_name="collected_sample_records")
+    collection_org = models.ForeignKey("Institute", blank=True, null=True, on_delete=models.SET_NULL, related_name="collected_sample_records") # deprecated
 
     collection_location_country = models.CharField(max_length=100, blank=True, null=True)
     collection_location_adm1 = models.CharField(max_length=100, blank=True, null=True)

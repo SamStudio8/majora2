@@ -885,7 +885,6 @@ def add_biosample(request):
                     if hasattr(bs.created, "coguk_supp"):
                         supp = bs.created.coguk_supp
 
-
                 coguk_supp_data = forms.COGUK_BiosourceSamplingProcessSupplement_ModelForm.modify_preform(biosample)
                 coguk_supp_form = forms.COGUK_BiosourceSamplingProcessSupplement_ModelForm(coguk_supp_data, initial=initial, instance=supp, partial=True, partial_request_keys=coguk_supp_data.keys())
                 if not coguk_supp_form.is_valid():
