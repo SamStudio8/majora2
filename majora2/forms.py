@@ -790,7 +790,8 @@ class COGUK_BiosourceSamplingProcessSupplement_ModelForm(MajoraPossiblePartialMo
         cleaned_data = super().clean()
         # Force is_surveillance
         if cleaned_data.get("is_surveillance") is None:
-            self.add_error("is_surveillance", "You must set is_surveillance to Y or N")
+            if not self.partial:
+                self.add_error("is_surveillance", "You must set is_surveillance to Y or N")
         if cleaned_data.get("admission_date") and not cleaned_data.get("is_hospital_patient"):
             self.add_error("is_hospital_patient", "Admission date implies patient was admitted to hospital but you've not set is_hospital_patient to Y")
 

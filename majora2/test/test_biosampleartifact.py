@@ -110,7 +110,7 @@ class BiosampleArtifactTest(BasicAPITest):
 
     def _test_biosample(self, bs, payload):
         self.assertEqual("United Kingdom", bs.created.collection_location_country)
-        self.assertEqual(payload["biosamples"][0]["adm1"], bs.created.collection_location_adm1)
+        self.assertEqual(payload["biosamples"][0].get("adm1"), bs.created.collection_location_adm1)
         self.assertEqual(payload["biosamples"][0]["central_sample_id"], bs.dice_name)
 
         self.assertEqual(datetime.datetime.strptime(payload["biosamples"][0]["collection_date"], "%Y-%m-%d").date(), bs.created.collection_date)
@@ -437,10 +437,84 @@ class BiosampleArtifactTest(BasicAPITest):
 
     def test_biosample_minimal_add_metrics_update(self):
         # Add a minimal biosample and update it with some metrics
-        pass
+        payload = {
+            "username": self.user.username,
+            "token": self.key.key,
+            "biosamples": [
+                {
+                    "adm1": "UK-ENG",
+                    "central_sample_id": self.default_central_sample_id,
+                    "collection_date": datetime.date.today().strftime("%Y-%m-%d"),
+                    "is_surveillance": False,
+                    "is_hcw": True,
+                    "metadata": {},
+                    "metrics": {},
+                },
+            ],
+            "client_name": "pytest",
+            "client_version": 1,
+        }
+        bs = self._add_biosample(payload)
+        self._test_biosample(bs, payload)
+
+        new_payload = {
+            "username": self.user.username,
+            "token": self.key.key,
+            "partial": True,
+            "biosamples": [
+                {
+                    "central_sample_id": self.default_central_sample_id,
+                    "metadata": {
+                        "test": {
+                            "bubo": "bubo",
+                            "hoots": 8,
+                            "hooting": False,
+
+                        },
+                        "majora": {
+                            "mask": "creepy",
+                        }
+                    },
+                    "metrics": {
+                        "ct": {
+                            "records": {
+                                1: {
+                                    "test_platform": "INHOUSE",
+                                    "test_target": "S",
+                                    "test_kit": "INHOUSE",
+                                    "ct_value": 20,
+                                },
+                                2: {
+                                    "test_platform": "INHOUSE",
+                                    "test_target": "E",
+                                    "test_kit": "INHOUSE",
+                                    "ct_value": 21,
+                                },
+                            }
+                        }
+                    },
+                },
+            ],
+        }
+        bs = self._add_biosample(new_payload)
+
+        update_payload = copy.deepcopy(payload)
+        update_payload["biosamples"][0]["metadata"] = new_payload["biosamples"][0]["metadata"]
+        update_payload["biosamples"][0]["metrics"] = new_payload["biosamples"][0]["metrics"]
+        self._test_biosample(bs, update_payload)
+
     def test_biosample_full_add_partial_update(self):
         # Add a full biosample and update a few additional fields that were placeholded
-        pass
+        payload = copy.deepcopy(self.default_payload)
+        bs = self._add_biosample(payload)
+        self._test_biosample(bs, payload)
+
+        payload["biosamples"][0]["is_surveillance"] = True
+        payload["biosamples"][0]["collection_pillar"] = 2
+        payload["partial"] = True
+        bs = self._add_biosample(payload)
+        self._test_biosample(bs, payload)
+
     def test_biosample_minimal_add_partial_update(self):
         # Add a minimal biosample and update a few additional fields
         payload = {
@@ -462,7 +536,6 @@ class BiosampleArtifactTest(BasicAPITest):
         }
         bs = self._add_biosample(payload)
         self._test_biosample(bs, payload)
-
 
         new_payload = copy.deepcopy(payload)
         del new_payload["biosamples"][0]["adm1"]
