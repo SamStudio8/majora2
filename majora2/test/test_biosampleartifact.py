@@ -114,11 +114,16 @@ class BiosampleArtifactTest(BasicAPITest):
         self._test_biosample(bs, payload)
 
     def _test_biosample(self, bs, payload):
+
+        # Fixed values
         self.assertEqual("United Kingdom", bs.created.collection_location_country)
+        self.assertEqual("2697049", bs.taxonomy_identifier)
+
+
         self.assertEqual(payload["biosamples"][0].get("adm1"), bs.created.collection_location_adm1)
         self.assertEqual(payload["biosamples"][0]["central_sample_id"], bs.dice_name)
-
         self.assertEqual(datetime.datetime.strptime(payload["biosamples"][0]["collection_date"], "%Y-%m-%d").date(), bs.created.collection_date)
+
         if hasattr(bs.created, "coguk_supp"):
             self.assertEqual(payload["biosamples"][0].get("is_surveillance"), bs.created.coguk_supp.is_surveillance)
             self.assertEqual(payload["biosamples"][0].get("collection_pillar"), bs.created.coguk_supp.collection_pillar)

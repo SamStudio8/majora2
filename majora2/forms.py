@@ -495,9 +495,9 @@ class MajoraPossiblePartialModelForm(forms.ModelForm):
         # Fix the error struct such that the hacked field names match those the
         # user expects to know about
         for k, v in self.Meta.field_map.items():
-            if k in self._errors:
-                self._errors[v] = self._errors[k]
-                del self._errors[k]
+            if v in self._errors:
+                self._errors[k] = self._errors[v]
+                del self._errors[v]
 
     def modify_preform(self, data):
         for field in getattr(self.Meta, "LOWERCASE_FIELDS", []):
@@ -531,10 +531,9 @@ class MajoraPossiblePartialModelForm(forms.ModelForm):
 
 class BiosampleArtifactModelForm(MajoraPossiblePartialModelForm):
 
-    source_taxon = forms.CharField(
+    taxonomy_identifier = forms.CharField(
             max_length=24,
             disabled=True,
-            required=False,
     )
     sample_type_collected = forms.ChoiceField(
         choices= [
