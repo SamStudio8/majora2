@@ -52,6 +52,9 @@ class TatlVerb(models.Model):
 
     request = models.ForeignKey('TatlRequest', on_delete=models.PROTECT, related_name="verbs", blank=True, null=True)
 
+    def __str__(self):
+        return "%s: %s" % (self.verb, str(self.content_object))
+
 class TatlPermFlex(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="actions")
     substitute_user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="su_actions")

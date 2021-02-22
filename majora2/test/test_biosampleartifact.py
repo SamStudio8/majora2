@@ -9,6 +9,8 @@ from django.urls import reverse
 from majora2 import models
 from majora2.test.test_basic_api import BasicAPITest
 
+from tatl import models as tmodels
+
 import sys
 import json
 
@@ -635,6 +637,9 @@ class BiosampleArtifactTest(BasicAPITest):
             check_payload["biosamples"][0][k] = v
             self._test_biosample(bs, check_payload) # compare object to payload
 
+            # Check tatl
+            self._test_update_biosample_tatl(j["request"], [k])
+
 
     def test_reject_partial_new_biosampleartifact(self):
         payload = {
@@ -658,6 +663,51 @@ class BiosampleArtifactTest(BasicAPITest):
         bs, j = self._add_biosample(payload, expected_errors=1)
         self.assertIsNone(bs)
         self.assertIn("Cannot use `partial` on new BiosampleArtifact %s" % self.default_central_sample_id, j["messages"])
+
+
+    def test_add_biosample_tatl(self):
+        payload = copy.deepcopy(self.default_payload)
+        bs, j = self._add_biosample(payload)
+
+        tatl = tmodels.TatlRequest.objects.filter(response_uuid=j["request"]).first()
+        self.assertIsNotNone(tatl)
+
+        self.assertEqual(tatl.verbs.count(), 2)
+
+        expected_verbs = [
+            ("CREATE", models.BiosampleArtifact.objects.get(dice_name=self.default_central_sample_id)),
+            ("CREATE", models.BiosampleSource.objects.get(dice_name="ABC12345")),
+        ]
+
+        for verb in tatl.verbs.all():
+            self.assertIn( (verb.verb, verb.content_object), expected_verbs )
+
+    def _test_update_biosample_tatl(self, request_id, changed_fields):
+        tatl = tmodels.TatlRequest.objects.filter(response_uuid=request_id).first()
+        self.assertIsNotNone(tatl)
+
+        self.assertEqual(tatl.verbs.count(), 1)
+
+        expected_verbs = [
+            ("UPDATE", models.BiosampleArtifact.objects.get(dice_name=self.default_central_sample_id)),
+        ]
+        expected_context = {
+            "changed_fields": changed_fields,
+        }
+
+        verb = tatl.verbs.all()[0]
+        extra_j = json.loads(verb.extra_context)
+
+        self.assertIn("changed_fields", extra_j)
+
+        self.assertEqual(len(extra_j["changed_fields"]), len(changed_fields))
+
+        # These will fail because we don't always present model form fields to
+        # the user with the same name as they really are on the model
+        # TODO Add class method to majora modelform to conduct the mapping and use it here
+        #for f in changed_fields:
+        #    self.assertIn(f, extra_j["changed_fields"])
+
 
     # Test nuke metadata (with new None)
     # Test nuke ct (currently only nuked on new)
