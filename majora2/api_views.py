@@ -994,9 +994,11 @@ def add_biosample(request):
                         api_o["new"].append(_format_tuple(sample))
                         TatlVerb(request=request.treq, verb="CREATE", content_object=sample).save()
                 else:
+                    changed_fields = coguk_supp_form.changed_data + sample_process_form.changed_data + sample_form.changed_data
+                    extra_j = json.dumps({"changed_fields": changed_fields})
                     if api_o:
                         api_o["updated"].append(_format_tuple(sample))
-                        TatlVerb(request=request.treq, verb="UPDATE", content_object=sample).save()
+                        TatlVerb(request=request.treq, verb="UPDATE", content_object=sample, extra_context=extra_j).save()
                 if source_created:
                     if api_o:
                         api_o["new"].append(_format_tuple(source))
