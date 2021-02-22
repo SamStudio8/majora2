@@ -10,6 +10,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.fields import GenericRelation
 
 from polymorphic.models import PolymorphicModel
 from .submodels import *
@@ -32,6 +33,8 @@ class MajoraArtifact(PolymorphicModel):
     created = models.ForeignKey("MajoraArtifactProcess", blank=True, null=True, on_delete=models.PROTECT, related_name="artifacts_created")
 
     is_pagged = models.BooleanField(default=False)
+
+    history = GenericRelation("tatl.TatlVerb")
 
     @property
     def artifact_kind(self):
@@ -277,6 +280,10 @@ class MajoraArtifact(PolymorphicModel):
         from . import serializers
         return serializers.ArtifactSerializer
 
+    @property
+    def tatl_history(self):
+        return self.history.filter(~Q(verb="RETRIEVE")).order_by('-request__timestamp')
+
 class MajoraArtifactGroupLink(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
     link_name = models.CharField(max_length=128, unique=True)
@@ -302,6 +309,7 @@ class MajoraArtifactGroup(PolymorphicModel):
     physical = models.BooleanField(default=False)
 
     #links = models.ManyToManyField('MajoraArtifactGroupLink', related_name="from_groups", blank=True)
+    history = GenericRelation("tatl.TatlVerb")
 
     def __str__(self):
         return "%s (%s)" % (self.name, self.id)
