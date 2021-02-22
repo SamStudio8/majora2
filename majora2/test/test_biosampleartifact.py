@@ -88,22 +88,27 @@ class BiosampleArtifactTest(BasicAPITest):
             "client_version": 1,
         }
 
-    def _add_biosample(self, payload):
+    def _add_biosample(self, payload, expected_errors=0):
         response = self.c.post(reverse('api.artifact.biosample.add'), payload, secure=True, content_type="application/json")
         self.assertEqual(200, response.status_code)
 
         j = response.json()
-        if j["errors"] != 0:
+        if j["errors"] != expected_errors:
             sys.stderr.write(json.dumps(j, indent=4, sort_keys=True) + '\n')
-        self.assertEqual(0, j["errors"])
-        bs = models.BiosampleArtifact.objects.get(central_sample_id=self.default_central_sample_id)
-        return bs
+        self.assertEqual(expected_errors, j["errors"])
+
+        bs = None
+        try:
+            bs = models.BiosampleArtifact.objects.get(central_sample_id=self.default_central_sample_id)
+        except models.BiosampleArtifact.DoesNotExist:
+            pass
+        return bs, j
 
     def test_add_biosample(self):
         payload = copy.deepcopy(self.default_payload)
 
         n_biosamples = models.BiosampleArtifact.objects.count()
-        bs = self._add_biosample(payload)
+        bs, j = self._add_biosample(payload)
         self.assertEqual(models.BiosampleArtifact.objects.count(), n_biosamples+1)
 
         self._test_biosample(bs, payload)
@@ -323,7 +328,7 @@ class BiosampleArtifactTest(BasicAPITest):
             "client_name": "pytest",
             "client_version": 1,
         }
-        bs = self._add_biosample(update_payload)
+        bs, j = self._add_biosample(update_payload)
 
         with self.assertRaises(AssertionError):
             # Check that the biosample has changed from the initial
@@ -336,12 +341,12 @@ class BiosampleArtifactTest(BasicAPITest):
     def test_biosample_add_overwrite_metadata(self):
         # create a biosample
         payload = copy.deepcopy(self.default_payload)
-        bs = self._add_biosample(payload)
+        bs, j = self._add_biosample(payload)
 
         update_payload = copy.deepcopy(self.default_payload)
         update_payload["biosamples"][0]["metadata"]["test"]["hooting"] = True
         update_payload["biosamples"][0]["metadata"]["majora"]["mask"] = "cute"
-        bs = self._add_biosample(update_payload)
+        bs, j = self._add_biosample(update_payload)
 
         with self.assertRaises(AssertionError):
             # Check that the biosample has changed from the initial
@@ -351,11 +356,11 @@ class BiosampleArtifactTest(BasicAPITest):
     def test_biosample_add_overwrite_metrics(self):
         # create a biosample
         payload = copy.deepcopy(self.default_payload)
-        bs = self._add_biosample(payload)
+        bs, j = self._add_biosample(payload)
 
         update_payload = copy.deepcopy(self.default_payload)
         update_payload["biosamples"][0]["metrics"]["ct"]["records"][2]["ct_value"] = 30
-        bs = self._add_biosample(update_payload)
+        bs, j = self._add_biosample(update_payload)
 
         with self.assertRaises(AssertionError):
             # Check that the biosample has changed from the initial
@@ -365,12 +370,12 @@ class BiosampleArtifactTest(BasicAPITest):
     def test_biosample_add_update_nostomp(self):
         # create a biosample
         payload = copy.deepcopy(self.default_payload)
-        bs = self._add_biosample(payload)
+        bs, j = self._add_biosample(payload)
 
         payload = copy.deepcopy(self.default_payload)
         payload["biosamples"][0]["collection_pillar"] = 2
 
-        bs = self._add_biosample(payload)
+        bs, j = self._add_biosample(payload)
         self._test_biosample(bs, payload) # compare object to payload
 
     def test_biosample_add_update_nuke_stomp(self):
@@ -379,7 +384,7 @@ class BiosampleArtifactTest(BasicAPITest):
 
         # create a biosample
         payload = copy.deepcopy(self.default_payload)
-        bs = self._add_biosample(payload)
+        bs, j = self._add_biosample(payload)
 
         stomp_payload = {
             "username": self.user.username,
@@ -424,7 +429,7 @@ class BiosampleArtifactTest(BasicAPITest):
             "client_name": "pytest",
             "client_version": 1,
         }
-        bs = self._add_biosample(stomp_payload)
+        bs, j = self._add_biosample(stomp_payload)
 
         # Add the metadata and metrics back to show that blanking them does nothing
         stomp_payload["biosamples"][0]["metadata"] = payload["biosamples"][0]["metadata"]
@@ -454,7 +459,7 @@ class BiosampleArtifactTest(BasicAPITest):
             "client_name": "pytest",
             "client_version": 1,
         }
-        bs = self._add_biosample(payload)
+        bs, j = self._add_biosample(payload)
         self._test_biosample(bs, payload)
 
         new_payload = {
@@ -496,7 +501,7 @@ class BiosampleArtifactTest(BasicAPITest):
                 },
             ],
         }
-        bs = self._add_biosample(new_payload)
+        bs, j = self._add_biosample(new_payload)
 
         update_payload = copy.deepcopy(payload)
         update_payload["biosamples"][0]["metadata"] = new_payload["biosamples"][0]["metadata"]
@@ -506,13 +511,13 @@ class BiosampleArtifactTest(BasicAPITest):
     def test_biosample_full_add_partial_update(self):
         # Add a full biosample and update a few additional fields that were placeholded
         payload = copy.deepcopy(self.default_payload)
-        bs = self._add_biosample(payload)
+        bs, j = self._add_biosample(payload)
         self._test_biosample(bs, payload)
 
         payload["biosamples"][0]["is_surveillance"] = True
         payload["biosamples"][0]["collection_pillar"] = 2
         payload["partial"] = True
-        bs = self._add_biosample(payload)
+        bs, j = self._add_biosample(payload)
         self._test_biosample(bs, payload)
 
     def test_biosample_minimal_add_partial_update(self):
@@ -534,7 +539,7 @@ class BiosampleArtifactTest(BasicAPITest):
             "client_name": "pytest",
             "client_version": 1,
         }
-        bs = self._add_biosample(payload)
+        bs, j = self._add_biosample(payload)
         self._test_biosample(bs, payload)
 
         new_payload = copy.deepcopy(payload)
@@ -553,14 +558,14 @@ class BiosampleArtifactTest(BasicAPITest):
             # Check that the biosample has changed from the last
             self._test_biosample(bs, payload)
 
-        bs = self._add_biosample(new_payload)
+        bs, j = self._add_biosample(new_payload)
         self._test_biosample(bs, payload)
 
 
     def test_biosample_full_add_single_update(self):
         # create a biosample
         payload = copy.deepcopy(self.default_payload)
-        bs = self._add_biosample(payload)
+        bs, j = self._add_biosample(payload)
 
         del payload["biosamples"][0]["is_hcw"]
         del payload["biosamples"][0]["is_hospital_patient"]
@@ -616,7 +621,7 @@ class BiosampleArtifactTest(BasicAPITest):
             update_payload = copy.deepcopy(payload)
             update_payload["biosamples"][0][k] = v
 
-            bs = self._add_biosample(update_payload)
+            bs, j = self._add_biosample(update_payload)
 
             with self.assertRaises(AssertionError):
                 # Check that the biosample has changed from the last
@@ -624,6 +629,30 @@ class BiosampleArtifactTest(BasicAPITest):
 
             check_payload["biosamples"][0][k] = v
             self._test_biosample(bs, check_payload) # compare object to payload
+
+
+    def test_reject_partial_new_biosampleartifact(self):
+        payload = {
+            "username": self.user.username,
+            "token": self.key.key,
+            "biosamples": [
+                {
+                    "adm1": "UK-ENG",
+                    "central_sample_id": self.default_central_sample_id,
+                    "collection_date": datetime.date.today().strftime("%Y-%m-%d"),
+                    "is_surveillance": False,
+                    "is_hcw": True,
+                    "metadata": {},
+                    "metrics": {},
+                },
+            ],
+            "client_name": "pytest",
+            "client_version": 1,
+            "partial": True,
+        }
+        bs, j = self._add_biosample(payload, expected_errors=1)
+        self.assertIsNone(bs)
+        self.assertIn("Cannot use `partial` on new BiosampleArtifact %s" % self.default_central_sample_id, j["messages"])
 
     # Test nuke metadata (with new None)
     # Test nuke ct (currently only nuked on new)

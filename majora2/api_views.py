@@ -890,6 +890,12 @@ def add_biosample(request):
                         sample_p = bs.created
                     if hasattr(bs.created, "coguk_supp"):
                         supp = bs.created.coguk_supp
+                else:
+                    if partial_mode:
+                        api_o["errors"] += 1
+                        api_o["ignored"].append(sample_id)
+                        api_o["messages"].append("Cannot use `partial` on new BiosampleArtifact %s" % sample_id)
+                        continue
 
                 # Pre screen the cog uk supplementary form
                 coguk_supp_form = forms.COGUK_BiosourceSamplingProcessSupplement_ModelForm(biosample, initial=initial, instance=supp, partial=partial_mode)
