@@ -482,8 +482,9 @@ class MajoraPossiblePartialModelForm(forms.ModelForm):
     # Shim function that allows form interfaces to present a different name for
     # a field from the one it represents in the model. This will return the payload
     # dict with keys renamed to the one on the model as appropriate for validation
-    def map_request_fields(self, data):
-        for k, v in self.Meta.field_map.items():
+    @classmethod
+    def map_request_fields(cls, data):
+        for k, v in cls.Meta.field_map.items():
             if k in data:
                 data[v] = data[k]
                 del data[k]

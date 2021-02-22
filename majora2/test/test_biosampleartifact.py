@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 
 from majora2 import models
+from majora2 import forms
 from majora2.test.test_basic_api import BasicAPITest
 
 from tatl import models as tmodels
@@ -702,11 +703,16 @@ class BiosampleArtifactTest(BasicAPITest):
 
         self.assertEqual(len(extra_j["changed_fields"]), len(changed_fields))
 
-        # These will fail because we don't always present model form fields to
-        # the user with the same name as they really are on the model
-        # TODO Add class method to majora modelform to conduct the mapping and use it here
-        #for f in changed_fields:
-        #    self.assertIn(f, extra_j["changed_fields"])
+        # Use modelform classmethod to resolve the correct mapping
+        # Cheat and convert the list to a dict so it works as a payload
+        changed_fields_d = {}
+        for k in changed_fields:
+            changed_fields_d[k] = None
+
+        t_f = forms.BiosampleArtifactModelForm.map_request_fields(changed_fields_d)
+        t_f = forms.BiosourceSamplingProcessModelForm.map_request_fields(t_f) # pass through each form used by the interface
+        for f in t_f:
+            self.assertIn(f, extra_j["changed_fields"])
 
 
     # Test nuke metadata (with new None)
