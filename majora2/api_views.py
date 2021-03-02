@@ -821,12 +821,14 @@ def addempty_biosample(request):
 
 
 class MajoraEndpointView(View):
-    partial = False
 
     #TODO Abstract basic empty key checking to MEV
     #TODO Abstract wrap_api_v2 here
+    #TODO Abstract tatl messages out of f to class
 
     def update(self, request, *args, **kwargs):
+        #TODO Get objects to update to pass to f
+        #TODO Set self.partial
         pass
 
     def create(self, request, *args, **kwargs):
@@ -841,7 +843,6 @@ class MajoraEndpointView(View):
             return self.create(request, *args, **kwargs)
         elif api_tail == "update":
             return self.update(request, *args, **kwargs)
-            #return self.update(request, *args, **kwargs)
 
 
 class BiosampleArtifactEndpointView(MajoraEndpointView):
