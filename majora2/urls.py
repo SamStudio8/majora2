@@ -65,8 +65,8 @@ urlpatterns = [
 
     # NEW API
     path('api/v2/artifact/biosample/addempty/', csrf_exempt(api_views.addempty_biosample), name="api.artifact.biosample.addempty"),
-    path('api/v2/artifact/biosample/add/', csrf_exempt(api_views.add_biosample), name="api.artifact.biosample.add"),
-    path('api/v2/artifact/biosample/update/', csrf_exempt(api_views.update_biosample), name="api.artifact.biosample.update"),
+    path('api/v2/artifact/biosample/add/', csrf_exempt(api_views.BiosampleArtifactEndpointView.as_view()), name="api.artifact.biosample.add"),
+    path('api/v2/artifact/biosample/update/', csrf_exempt(api_views.BiosampleArtifactEndpointView.as_view()), name="api.artifact.biosample.update"),
     path('api/v2/artifact/biosample/get/', csrf_exempt(api_views.get_biosample), name="api.artifact.biosample.get"),
     path('api/v2/artifact/library/add/', csrf_exempt(api_views.add_library), name="api.artifact.library.add"),
     path('api/v2/artifact/file/add/', csrf_exempt(api_views.add_digitalresource), name="api.artifact.file.add"),

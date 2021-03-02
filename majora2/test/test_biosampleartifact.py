@@ -91,8 +91,11 @@ class BiosampleArtifactTest(BasicAPITest):
             "client_version": 1,
         }
 
-    def _add_biosample(self, payload, expected_errors=0):
-        response = self.c.post(reverse('api.artifact.biosample.add'), payload, secure=True, content_type="application/json")
+    def _add_biosample(self, payload, expected_errors=0, update=False):
+        endpoint = "api.artifact.biosample.add"
+        if update:
+            endpoint = "api.artifact.biosample.update"
+        response = self.c.post(reverse(endpoint), payload, secure=True, content_type="application/json")
         self.assertEqual(200, response.status_code)
 
         j = response.json()
@@ -243,18 +246,12 @@ class BiosampleArtifactTest(BasicAPITest):
                 {
                     "central_sample_id": "HOOT-00001",
                     "root_biosample_source_id": "HOOTER-1",
-                    "source_age": 31,
-                    "source_sex": "F",
                 },
             ],
             "client_name": "pytest",
             "client_version": 1,
         }
-        n_biosamples = models.BiosampleArtifact.objects.count()
-        response = self.c.post(reverse('api.artifact.biosample.update'), update_payload, secure=True, content_type="application/json")
-        self.assertEqual(200, response.status_code)
-
-        self.assertEqual(n_biosamples, models.BiosampleArtifact.objects.count())
+        self._add_biosample(update_payload, update=True)
 
         bs = models.BiosampleArtifact.objects.get(central_sample_id=self.default_central_sample_id)
         self.assertEqual(update_payload["biosamples"][0]["root_biosample_source_id"], bs.root_biosample_source_id)
@@ -473,7 +470,6 @@ class BiosampleArtifactTest(BasicAPITest):
         new_payload = {
             "username": self.user.username,
             "token": self.key.key,
-            "partial": True,
             "biosamples": [
                 {
                     "central_sample_id": self.default_central_sample_id,
@@ -509,7 +505,7 @@ class BiosampleArtifactTest(BasicAPITest):
                 },
             ],
         }
-        bs, j = self._add_biosample(new_payload)
+        bs, j = self._add_biosample(new_payload, update=True)
 
         update_payload = copy.deepcopy(payload)
         update_payload["biosamples"][0]["metadata"] = new_payload["biosamples"][0]["metadata"]
@@ -524,8 +520,7 @@ class BiosampleArtifactTest(BasicAPITest):
 
         payload["biosamples"][0]["is_surveillance"] = True
         payload["biosamples"][0]["collection_pillar"] = 2
-        payload["partial"] = True
-        bs, j = self._add_biosample(payload)
+        bs, j = self._add_biosample(payload, update=True)
         self._test_biosample(bs, payload)
 
     def test_biosample_minimal_add_partial_update(self):
@@ -560,13 +555,11 @@ class BiosampleArtifactTest(BasicAPITest):
         new_payload["biosamples"][0]["collection_pillar"] = 2
         payload["biosamples"][0]["collection_pillar"] = 2
 
-        new_payload["partial"] = True
-
         with self.assertRaises(AssertionError):
             # Check that the biosample has changed from the last
             self._test_biosample(bs, payload)
 
-        bs, j = self._add_biosample(new_payload)
+        bs, j = self._add_biosample(new_payload, update=True)
         self._test_biosample(bs, payload)
 
 
@@ -597,9 +590,6 @@ class BiosampleArtifactTest(BasicAPITest):
         del payload["biosamples"][0]["adm2_private"]
         del payload["biosamples"][0]["collecting_org"]
 
-        # Activate partial
-        payload["partial"] = True
-
         yesterday = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
         partial_fields = {
             "collection_date": yesterday,
@@ -629,7 +619,7 @@ class BiosampleArtifactTest(BasicAPITest):
             update_payload = copy.deepcopy(payload)
             update_payload["biosamples"][0][k] = v
 
-            bs, j = self._add_biosample(update_payload)
+            bs, j = self._add_biosample(update_payload, update=True)
 
             with self.assertRaises(AssertionError):
                 # Check that the biosample has changed from the last
@@ -659,9 +649,8 @@ class BiosampleArtifactTest(BasicAPITest):
             ],
             "client_name": "pytest",
             "client_version": 1,
-            "partial": True,
         }
-        bs, j = self._add_biosample(payload, expected_errors=1)
+        bs, j = self._add_biosample(payload, expected_errors=1, update=True)
         self.assertIsNone(bs)
         self.assertIn("Cannot use `partial` on new BiosampleArtifact %s" % self.default_central_sample_id, j["messages"])
 

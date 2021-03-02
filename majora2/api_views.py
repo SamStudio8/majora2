@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.views import View
 
 
 from django.contrib.auth.models import User
@@ -27,7 +28,7 @@ from tatl.models import TatlVerb
 MINIMUM_CLIENT_VERSION = "0.24.0"
 
 @csrf_exempt
-def wrap_api_v2(request, f, permission=None, oauth_permission=None):
+def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=False):
     from tatl.models import TatlRequest, TatlPermFlex
 
     start_ts = timezone.now()
@@ -155,7 +156,7 @@ def wrap_api_v2(request, f, permission=None, oauth_permission=None):
 
     # Call the wrapped function
     if not bad and profile:
-        f(request, api_o, json_data, user=user)
+        f(request, api_o, json_data, user=user, partial=partial)
 
     api_o["success"] = api_o["errors"] == 0
 
@@ -818,64 +819,45 @@ def addempty_biosample(request):
 
     return wrap_api_v2(request, f, permission="majora2.force_add_biosampleartifact", oauth_permission="majora2.force_add_biosampleartifact majora2.add_biosampleartifact majora2.change_biosampleartifact majora2.add_biosourcesamplingprocess majora2.change_biosourcesamplingprocess")
 
-def update_biosample(request):
-    def f(request, api_o, json_data, user=None):
-        biosamples = json_data.get("biosamples", [])
-        if not biosamples:
-            api_o["messages"].append("'biosamples' key missing or empty")
-            api_o["errors"] += 1
-            return
 
-        for biosample_i, biosample_d in enumerate(biosamples):
-            try:
-                sample_id = biosample_d.get("central_sample_id")
-                if not sample_id:
-                    api_o["messages"].append("'central_sample_id' key missing or empty for biosample %d" % biosample_i)
-                    api_o["errors"] += 1
-                    continue
+class MajoraEndpointView(View):
+    partial = False
 
-                biosample = models.BiosampleArtifact.objects.filter(
-                                central_sample_id=sample_id,
-                                dice_name=sample_id
-                        ).first()
-                if not biosample:
-                    api_o["messages"].append("Biosample %s (#%d) does not exist in Majora" % (sample_id, biosample_i))
-                    api_o["errors"] += 1
-                    continue
+    #TODO Abstract basic empty key checking to MEV
+    #TODO Abstract wrap_api_v2 here
 
-                allow_fields = [
-                    "root_biosample_source_id",
-                ]
+    def update(self, request, *args, **kwargs):
+        pass
 
-                changed = False
-                for field in allow_fields:
-                    if biosample_d.get(field):
-                        new_v = biosample_d.get(field)
-                        if getattr(biosample, field, None) != new_v:
-                            setattr(biosample, field, new_v)
-                            if not changed:
-                                changed = True
+    def create(self, request, *args, **kwargs):
+        pass
 
-                if changed:
-                    api_o["updated"].append(_format_tuple(biosample))
-                    TatlVerb(request=request.treq, verb="UPDATE", content_object=biosample).save()
-                    biosample.save()
+    def retrieve(self, request, *args, **kwargs):
+        pass
 
-            except Exception as e:
-                api_o["errors"] += 1
-                api_o["messages"].append("Error encountered on Biosample %s (%d): %s" % (biosample_d.get("central_sample_id"), biosample_i, str(e)))
-
-    return wrap_api_v2(request, f, oauth_permission="majora2.change_biosampleartifact majora2.change_biosamplesource majora2.change_biosourcesamplingprocess")
+    def post(self, request, *args, **kwargs):
+        api_tail = request.resolver_match.view_name.split('.')[-1]
+        if api_tail == "add":
+            return self.create(request, *args, **kwargs)
+        elif api_tail == "update":
+            return self.update(request, *args, **kwargs)
+            #return self.update(request, *args, **kwargs)
 
 
-def add_biosample(request):
-    def f(request, api_o, json_data, user=None):
+class BiosampleArtifactEndpointView(MajoraEndpointView):
+
+    def create(self, request, *args, **kwargs):
+        return wrap_api_v2(request, self.f, oauth_permission="majora2.add_biosampleartifact majora2.change_biosampleartifact majora2.add_biosamplesource majora2.change_biosamplesource majora2.add_biosourcesamplingprocess majora2.change_biosourcesamplingprocess")
+
+    def update(self, request, *args, **kwargs):
+        return wrap_api_v2(request, self.f, oauth_permission="majora2.change_biosampleartifact majora2.add_biosamplesource majora2.change_biosamplesource majora2.change_biosourcesamplingprocess", partial=True)
+
+    def f(self, request, api_o, json_data, user=None, partial=False):
         biosamples = json_data.get("biosamples", {})
         if not biosamples:
             api_o["messages"].append("'biosamples' key missing or empty")
             api_o["errors"] += 1
 
-        partial_mode = json_data.get("partial")
         for biosample in biosamples:
             try:
                 sample_id = biosample.get("central_sample_id")
@@ -884,21 +866,24 @@ def add_biosample(request):
                 # Fetch objects for update (if applicable)
                 supp = None
                 sample_p = None
+                source = None
                 bs = models.BiosampleArtifact.objects.filter(central_sample_id=sample_id).first()
                 if bs:
                     if hasattr(bs, "created"):
                         sample_p = bs.created
                     if hasattr(bs.created, "coguk_supp"):
                         supp = bs.created.coguk_supp
+                    if hasattr(bs, "primary_group"):
+                        source = bs.primary_group
                 else:
-                    if partial_mode:
+                    if partial:
                         api_o["errors"] += 1
                         api_o["ignored"].append(sample_id)
                         api_o["messages"].append("Cannot use `partial` on new BiosampleArtifact %s" % sample_id)
                         continue
 
                 # Pre screen the cog uk supplementary form
-                coguk_supp_form = forms.COGUK_BiosourceSamplingProcessSupplement_ModelForm(biosample, initial=initial, instance=supp, partial=partial_mode)
+                coguk_supp_form = forms.COGUK_BiosourceSamplingProcessSupplement_ModelForm(biosample, initial=initial, instance=supp, partial=partial)
                 if not coguk_supp_form.is_valid():
                     api_o["errors"] += 1
                     api_o["ignored"].append(sample_id)
@@ -906,7 +891,7 @@ def add_biosample(request):
                     continue
 
                 # Pre screen the sample collection process form
-                sample_process_form = forms.BiosourceSamplingProcessModelForm(biosample, initial=initial, instance=sample_p, partial=partial_mode)
+                sample_process_form = forms.BiosourceSamplingProcessModelForm(biosample, initial=initial, instance=sample_p, partial=partial)
                 if not sample_process_form.is_valid():
                     api_o["errors"] += 1
                     api_o["ignored"].append(sample_id)
@@ -914,7 +899,7 @@ def add_biosample(request):
                     continue
 
                 # Handle new sample
-                sample_form = forms.BiosampleArtifactModelForm(biosample, initial=initial, instance=bs, partial=partial_mode)
+                sample_form = forms.BiosampleArtifactModelForm(biosample, initial=initial, instance=bs, partial=partial)
                 if not sample_form.is_valid():
                     api_o["errors"] += 1
                     api_o["ignored"].append(sample_id)
@@ -930,7 +915,6 @@ def add_biosample(request):
 
                 # Create (or fetch) the biosample source (host)
                 #TODO There is a form for this but it seems overkill for one field
-                source = None
                 source_created = None
                 biosample_source_id = biosample.get("biosample_source_id")
                 if biosample_source_id:
@@ -1008,7 +992,6 @@ def add_biosample(request):
                 api_o["errors"] += 1
                 api_o["messages"].append(str(e))
 
-    return wrap_api_v2(request, f, oauth_permission="majora2.add_biosampleartifact majora2.change_biosampleartifact majora2.add_biosamplesource majora2.change_biosamplesource majora2.add_biosourcesamplingprocess majora2.change_biosourcesamplingprocess")
 
 def add_library(request):
     def f(request, api_o, json_data, user=None):
