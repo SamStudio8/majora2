@@ -351,11 +351,14 @@ class BiosampleArtifactTest(BasicAPITest):
         update_payload = copy.deepcopy(self.default_payload)
         update_payload["biosamples"][0]["metadata"]["test"]["hooting"] = True
         update_payload["biosamples"][0]["metadata"]["majora"]["mask"] = "cute"
+        update_payload["biosamples"][0]["metrics"] = {}
         bs, j = self._add_biosample(update_payload)
 
         with self.assertRaises(AssertionError):
             # Check that the biosample has changed from the initial
             self._test_biosample(bs, payload)
+
+        update_payload["biosamples"][0]["metrics"] = payload["biosamples"][0]["metrics"] # reinsert to check metrics have stayed
         self._test_biosample(bs, update_payload)
 
         # Check tatl
@@ -363,6 +366,7 @@ class BiosampleArtifactTest(BasicAPITest):
             "changed_fields": [],
             "nulled_fields": [],
             "changed_metadata": ["metadata:test.hooting", "metadata:majora.mask"],
+            "flashed_metrics": [],
         }
         self._test_update_biosample_tatl(j["request"], expected_context)
 
@@ -379,6 +383,15 @@ class BiosampleArtifactTest(BasicAPITest):
             # Check that the biosample has changed from the initial
             self._test_biosample(bs, payload)
         self._test_biosample(bs, update_payload)
+
+        # Check tatl
+        expected_context = {
+            "changed_fields": [],
+            "nulled_fields": [],
+            "changed_metadata": [],
+            "flashed_metrics": ["ct"],
+        }
+        self._test_update_biosample_tatl(j["request"], expected_context)
 
     def test_biosample_add_update_nostomp(self):
         # create a biosample
@@ -574,6 +587,7 @@ class BiosampleArtifactTest(BasicAPITest):
     def test_biosample_full_add_single_update(self):
         # create a biosample
         payload = copy.deepcopy(self.default_payload)
+        payload["biosamples"][0]["metrics"] = {} # ignore metrics
         bs, j = self._add_biosample(payload)
 
         del payload["biosamples"][0]["is_hcw"]
@@ -623,6 +637,7 @@ class BiosampleArtifactTest(BasicAPITest):
             "anonymised_care_home_code": "CC-X00",
         }
         check_payload = copy.deepcopy(self.default_payload)
+        check_payload["biosamples"][0]["metrics"] = {} # ignore metrics
         for k, v in partial_fields.items():
             update_payload = copy.deepcopy(payload)
             update_payload["biosamples"][0][k] = v
@@ -641,6 +656,7 @@ class BiosampleArtifactTest(BasicAPITest):
                 "changed_fields": [],
                 "nulled_fields": [],
                 "changed_metadata": [],
+                "flashed_metrics": [],
             }
             if v is None:
                 expected_context["nulled_fields"].append(k)
@@ -704,10 +720,12 @@ class BiosampleArtifactTest(BasicAPITest):
         self.assertIn("changed_fields", extra_j)
         self.assertIn("nulled_fields", extra_j)
         self.assertIn("changed_metadata", extra_j)
+        self.assertIn("flashed_metrics", extra_j)
 
         self.assertEqual(len(extra_j["changed_fields"]), len(expected_context["changed_fields"]))
         self.assertEqual(len(extra_j["nulled_fields"]), len(expected_context["nulled_fields"]))
         self.assertEqual(len(extra_j["changed_metadata"]), len(expected_context["changed_metadata"]))
+        self.assertEqual(len(extra_j["flashed_metrics"]), len(expected_context["flashed_metrics"]))
 
         # Use modelform classmethod to resolve the correct mapping
         # Cheat and convert the list to a dict so it works as a payload

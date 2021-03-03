@@ -206,6 +206,8 @@ def handle_metadata(metadata, tag_type, tag_to, user, api_o):
 
 #TODO Abstract this away info form handlers per-metric, use modelforms properly
 def handle_metrics(metrics, tag_type, tag_to, user, api_o):
+    updated_metrics = []
+
     ts = timezone.now()
     for metric in metrics:
         metrics[metric]["artifact"] = tag_to.id
@@ -267,7 +269,9 @@ def handle_metrics(metrics, tag_type, tag_to, user, api_o):
                                 if first_valid:
                                     # Destroy existing records
                                     dc = metric_ob.metric_records.all().delete()[0] # bye
-                                    api_o["messages"].append("%d existing Ct value records deleted and replaced with new values" % int(dc/2))
+                                    if dc > 0:
+                                        api_o["messages"].append("%d existing Ct value records deleted and replaced with new values" % int(dc/2))
+                                        updated_metrics = [metric]
                                     first_valid = False
                                 try:
                                     artifact_metric = form.cleaned_data["artifact_metric"]
@@ -320,6 +324,7 @@ def handle_metrics(metrics, tag_type, tag_to, user, api_o):
             api_o["errors"] += 1
             api_o["ignored"].append(metric)
             api_o["messages"].append(form.errors.get_json_data())
+    return updated_metrics
 
 
 
@@ -979,7 +984,7 @@ class BiosampleArtifactEndpointView(MajoraEndpointView):
                             record.save()
 
                 updated_metadata_l = handle_metadata(biosample.get("metadata", {}), 'artifact', sample.dice_name, user, api_o)
-                handle_metrics(biosample.get("metrics", {}), 'artifact', sample, user, api_o) #TODO clean this as it duplicates the add_metric view
+                updated_metrics_l = handle_metrics(biosample.get("metrics", {}), 'artifact', sample, user, api_o) #TODO clean this as it duplicates the add_metric view
 
                 if not bs and sample:
                     # Created
@@ -991,6 +996,7 @@ class BiosampleArtifactEndpointView(MajoraEndpointView):
                             coguk_supp_form, sample_process_form, sample_form
                     )
                     changed_data_d["changed_metadata"] = updated_metadata_l
+                    changed_data_d["flashed_metrics"] = updated_metrics_l
 
                     if api_o:
                         api_o["updated"].append(_format_tuple(sample))
