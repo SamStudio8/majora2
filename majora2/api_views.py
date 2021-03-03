@@ -979,11 +979,12 @@ class BiosampleArtifactEndpointView(MajoraEndpointView):
                         api_o["new"].append(_format_tuple(sample))
                         TatlVerb(request=request.treq, verb="CREATE", content_object=sample).save()
                 else:
-                    changed_fields = coguk_supp_form.changed_data + sample_process_form.changed_data + sample_form.changed_data
-                    extra_j = json.dumps({"changed_fields": changed_fields})
+                    changed_data_d = forms.MajoraPossiblePartialModelForm.merge_changed_data(
+                            coguk_supp_form, sample_process_form, sample_form
+                    )
                     if api_o:
                         api_o["updated"].append(_format_tuple(sample))
-                        TatlVerb(request=request.treq, verb="UPDATE", content_object=sample, extra_context=extra_j).save()
+                        TatlVerb(request=request.treq, verb="UPDATE", content_object=sample, extra_context=changed_data_d).save()
                 if source_created:
                     if api_o:
                         api_o["new"].append(_format_tuple(source))

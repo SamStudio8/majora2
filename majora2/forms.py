@@ -5,6 +5,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.functional import cached_property
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Submit, Row, Column
@@ -528,6 +529,43 @@ class MajoraPossiblePartialModelForm(forms.ModelForm):
             super().add_error(None, error)
         else:
             super().add_error(field, error)
+
+    @staticmethod
+    def merge_changed_data(*args):
+
+        changed_fields = []
+        nulled_fields = []
+
+        for form in args:
+            changed_fields.extend( form.changed_data["changed_fields"] )
+            nulled_fields.extend( form.changed_data["nulled_fields"] )
+
+        return {
+            "changed_fields": changed_fields,
+            "nulled_fields": nulled_fields,
+        }
+
+    # Override changed_data property to divide props into changed and nulled
+    @cached_property
+    def changed_data(self):
+        changed_data = super().changed_data
+
+        changed_fields = []
+        nulled_fields = []
+
+        for f in changed_data:
+            prefixed_name = self.add_prefix(f)
+            data_value = self.fields[f].widget.value_from_datadict(self.data, self.files, prefixed_name)
+            if data_value is None:
+                nulled_fields.append(f)
+            else:
+                changed_fields.append(f)
+
+        return {
+            "changed_fields": changed_fields,
+            "nulled_fields": nulled_fields,
+        }
+
 
 
 class BiosampleArtifactModelForm(MajoraPossiblePartialModelForm):
