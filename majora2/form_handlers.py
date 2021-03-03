@@ -34,6 +34,7 @@ def handle_testmetadata(form, user=None, api_o=None, request=None):
     timestamp = form.cleaned_data.get("timestamp")
 
     restricted = False
+    updated=False
     if hasattr(fixed_data, "RESTRICTED_METADATA"):
         if tag in fixed_data.RESTRICTED_METADATA:
             restricted = True
@@ -46,11 +47,13 @@ def handle_testmetadata(form, user=None, api_o=None, request=None):
             meta_name=name,
             value_type="str",
     )
-    mr.value=value
-    mr.timestamp = timestamp
+    if mr.value != value:
+        updated=True
+        mr.value=value
+        mr.timestamp = timestamp
     mr.restricted=restricted
     mr.save()
-    return mr, created
+    return mr, created, updated
 
 def handle_testsequencing(form, user=None, api_o=None, request=None):
 

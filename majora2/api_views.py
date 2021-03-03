@@ -167,6 +167,10 @@ def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=Fals
 
 
 def handle_metadata(metadata, tag_type, tag_to, user, api_o):
+
+    changed_fields = []
+    #nulled_fields = []
+
     ts = timezone.now()
     for tag_key in metadata:
         for key in metadata[tag_key]:
@@ -179,13 +183,16 @@ def handle_metadata(metadata, tag_type, tag_to, user, api_o):
             t_data["value"] = metadata[tag_key][key]
             form = forms.TestMetadataForm(t_data)
             if form.is_valid():
-                majora_meta, created = form_handlers.handle_testmetadata(form, user=user, api_o=api_o)
+                majora_meta, created, updated = form_handlers.handle_testmetadata(form, user=user, api_o=api_o)
                 if not created:
                     #TODO catch
                     pass
                 if not majora_meta:
                     api_o["warnings"] += 1
                     api_o["ignored"].append("metadata__%s__%s" % (t_data.get("tag"), t_data.get("name")))
+
+                if updated:
+                    changed_fields.append("metadata:%s.%s" % (t_data.get("tag"), t_data.get("name")))
 
                 #if t_data.get("value") is None:
                 #    # Nuke the record if it has been None'd
@@ -195,6 +202,7 @@ def handle_metadata(metadata, tag_type, tag_to, user, api_o):
                 api_o["errors"] += 1
                 api_o["ignored"].append("metadata__%s__%s" % (t_data.get("tag"), t_data.get("name")))
                 api_o["messages"].append(form.errors.get_json_data())
+    return changed_fields
 
 #TODO Abstract this away info form handlers per-metric, use modelforms properly
 def handle_metrics(metrics, tag_type, tag_to, user, api_o):
@@ -970,7 +978,7 @@ class BiosampleArtifactEndpointView(MajoraEndpointView):
                             record.in_group = source
                             record.save()
 
-                handle_metadata(biosample.get("metadata", {}), 'artifact', sample.dice_name, user, api_o)
+                updated_metadata_l = handle_metadata(biosample.get("metadata", {}), 'artifact', sample.dice_name, user, api_o)
                 handle_metrics(biosample.get("metrics", {}), 'artifact', sample, user, api_o) #TODO clean this as it duplicates the add_metric view
 
                 if not bs and sample:
@@ -982,6 +990,8 @@ class BiosampleArtifactEndpointView(MajoraEndpointView):
                     changed_data_d = forms.MajoraPossiblePartialModelForm.merge_changed_data(
                             coguk_supp_form, sample_process_form, sample_form
                     )
+                    changed_data_d["changed_metadata"] = updated_metadata_l
+
                     if api_o:
                         api_o["updated"].append(_format_tuple(sample))
                         TatlVerb(request=request.treq, verb="UPDATE", content_object=sample, extra_context=json.dumps(changed_data_d)).save()

@@ -358,6 +358,14 @@ class BiosampleArtifactTest(BasicAPITest):
             self._test_biosample(bs, payload)
         self._test_biosample(bs, update_payload)
 
+        # Check tatl
+        expected_context = {
+            "changed_fields": [],
+            "nulled_fields": [],
+            "changed_metadata": ["metadata:test.hooting", "metadata:majora.mask"],
+        }
+        self._test_update_biosample_tatl(j["request"], expected_context)
+
     def test_biosample_add_overwrite_metrics(self):
         # create a biosample
         payload = copy.deepcopy(self.default_payload)
@@ -632,6 +640,7 @@ class BiosampleArtifactTest(BasicAPITest):
             expected_context = {
                 "changed_fields": [],
                 "nulled_fields": [],
+                "changed_metadata": [],
             }
             if v is None:
                 expected_context["nulled_fields"].append(k)
@@ -694,9 +703,11 @@ class BiosampleArtifactTest(BasicAPITest):
 
         self.assertIn("changed_fields", extra_j)
         self.assertIn("nulled_fields", extra_j)
+        self.assertIn("changed_metadata", extra_j)
 
         self.assertEqual(len(extra_j["changed_fields"]), len(expected_context["changed_fields"]))
         self.assertEqual(len(extra_j["nulled_fields"]), len(expected_context["nulled_fields"]))
+        self.assertEqual(len(extra_j["changed_metadata"]), len(expected_context["changed_metadata"]))
 
         # Use modelform classmethod to resolve the correct mapping
         # Cheat and convert the list to a dict so it works as a payload
