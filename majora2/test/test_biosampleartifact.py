@@ -629,7 +629,15 @@ class BiosampleArtifactTest(BasicAPITest):
             self._test_biosample(bs, check_payload) # compare object to payload
 
             # Check tatl
-            self._test_update_biosample_tatl(j["request"], [k])
+            expected_context = {
+                "changed_fields": [],
+                "nulled_fields": [],
+            }
+            if v is None:
+                expected_context["nulled_fields"].append(k)
+            else:
+                expected_context["changed_fields"].append(k)
+            self._test_update_biosample_tatl(j["request"], expected_context)
 
 
     def test_reject_partial_new_biosampleartifact(self):
@@ -672,7 +680,7 @@ class BiosampleArtifactTest(BasicAPITest):
         for verb in tatl.verbs.all():
             self.assertIn( (verb.verb, verb.content_object), expected_verbs )
 
-    def _test_update_biosample_tatl(self, request_id, changed_fields):
+    def _test_update_biosample_tatl(self, request_id, expected_context):
         tatl = tmodels.TatlRequest.objects.filter(response_uuid=request_id).first()
         self.assertIsNotNone(tatl)
 
@@ -681,27 +689,27 @@ class BiosampleArtifactTest(BasicAPITest):
         expected_verbs = [
             ("UPDATE", models.BiosampleArtifact.objects.get(dice_name=self.default_central_sample_id)),
         ]
-        expected_context = {
-            "changed_fields": changed_fields,
-        }
-
         verb = tatl.verbs.all()[0]
         extra_j = json.loads(verb.extra_context)
 
         self.assertIn("changed_fields", extra_j)
+        self.assertIn("nulled_fields", extra_j)
 
-        self.assertEqual(len(extra_j["changed_fields"]), len(changed_fields))
+        self.assertEqual(len(extra_j["changed_fields"]), len(expected_context["changed_fields"]))
+        self.assertEqual(len(extra_j["nulled_fields"]), len(expected_context["nulled_fields"]))
 
         # Use modelform classmethod to resolve the correct mapping
         # Cheat and convert the list to a dict so it works as a payload
-        changed_fields_d = {}
-        for k in changed_fields:
-            changed_fields_d[k] = None
+        for cat in expected_context:
+            d = {}
+            for k in expected_context[cat]:
+                d[k] = None
 
-        t_f = forms.BiosampleArtifactModelForm.map_request_fields(changed_fields_d)
-        t_f = forms.BiosourceSamplingProcessModelForm.map_request_fields(t_f) # pass through each form used by the interface
-        for f in t_f:
-            self.assertIn(f, extra_j["changed_fields"])
+            d = forms.BiosampleArtifactModelForm.map_request_fields(d)
+            d = forms.BiosourceSamplingProcessModelForm.map_request_fields(d) # pass through each form used by the interface
+
+            for f in d:
+                self.assertIn(f, extra_j[cat])
 
 
     # Test nuke metadata (with new None)

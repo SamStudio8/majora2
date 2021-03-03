@@ -984,7 +984,7 @@ class BiosampleArtifactEndpointView(MajoraEndpointView):
                     )
                     if api_o:
                         api_o["updated"].append(_format_tuple(sample))
-                        TatlVerb(request=request.treq, verb="UPDATE", content_object=sample, extra_context=changed_data_d).save()
+                        TatlVerb(request=request.treq, verb="UPDATE", content_object=sample, extra_context=json.dumps(changed_data_d)).save()
                 if source_created:
                     if api_o:
                         api_o["new"].append(_format_tuple(source))
