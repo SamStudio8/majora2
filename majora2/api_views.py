@@ -25,7 +25,7 @@ import datetime
 
 from tatl.models import TatlVerb
 
-MINIMUM_CLIENT_VERSION = "0.24.0"
+MINIMUM_CLIENT_VERSION = "0.37.0"
 
 @csrf_exempt
 def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=False):
