@@ -44,6 +44,7 @@ class TatlTask(models.Model):
 class TatlVerb(models.Model):
     verb = models.CharField(max_length=10)
 
+    #TODO Migrate this to non-generic and provide a link for Artifact, Group (Process?) to improve performance
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.CharField(max_length=64, db_index=True) # ffs you really cooked this one (needs to support positive int and uuid)
     content_object = GenericForeignKey('content_type', 'object_id')
