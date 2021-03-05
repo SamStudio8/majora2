@@ -330,7 +330,7 @@ def handle_metrics(metrics, tag_type, tag_to, user, api_o):
 
 
 def biosample_query_validity(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
         biosamples = json_data.get("biosamples", {})
         if not biosamples:
             api_o["messages"].append("'biosamples' key missing or empty")
@@ -363,7 +363,7 @@ def biosample_query_validity(request):
     return wrap_api_v2(request, f)
 
 def get_biosample(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
         sample_id = json_data.get("central_sample_id")
         if not sample_id:
             api_o["messages"].append("'central_sample_id' key missing or empty")
@@ -388,7 +388,7 @@ def get_biosample(request):
     return wrap_api_v2(request, f)
 
 def get_sequencing(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
         run_names = json_data.get("run_name")
         if not run_names:
             api_o["messages"].append("'run_name' key missing or empty")
@@ -429,7 +429,7 @@ def get_sequencing(request):
 
 
 def get_sequencing2(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
         run_names = json_data.get("run_name")
         if not run_names:
             api_o["messages"].append("'run_name' key missing or empty")
@@ -470,7 +470,7 @@ def get_sequencing2(request):
 
 
 def add_qc(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
         pag_name = json_data.get("publish_group")
         test_name = json_data.get("test_name")
         test_version = json_data.get("test_version")
@@ -737,7 +737,7 @@ def add_qc(request):
     return wrap_api_v2(request, f, oauth_permission="majora2.add_pagqualityreport majora2.change_pagqualityreport")
 
 def add_metrics(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
 
         artifact = json_data.get("artifact", "")
         artifact_path = json_data.get("artifact_path", "")
@@ -801,7 +801,7 @@ def add_metrics(request):
 
 
 def addempty_biosample(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
         biosamples = json_data.get("biosamples", {})
         if not biosamples:
             api_o["messages"].append("'biosamples' key missing or empty")
@@ -1012,7 +1012,7 @@ class BiosampleArtifactEndpointView(MajoraEndpointView):
 
 
 def add_library(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
         library_name = json_data.get("library_name")
         if not library_name:
             api_o["messages"].append("'library_name' key missing or empty")
@@ -1113,7 +1113,7 @@ def add_library(request):
     return wrap_api_v2(request, f, oauth_permission="majora2.add_biosampleartifact majora2.change_biosampleartifact majora2.add_libraryartifact majora2.change_libraryartifact majora2.add_librarypoolingprocess majora2.change_librarypoolingprocess")
 
 def add_sequencing(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
         library_name = json_data.get("library_name")
         if not library_name:
             api_o["messages"].append("'library_name' key missing or empty")
@@ -1157,7 +1157,7 @@ def add_sequencing(request):
     return wrap_api_v2(request, f, oauth_permission="majora2.change_libraryartifact majora2.add_dnasequencingprocess majora2.change_dnasequencingprocess")
 
 def add_digitalresource(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
 
         node_name = json_data.get("node_name")
         if not node_name and user and hasattr(user, "profile"):
@@ -1194,7 +1194,7 @@ def add_digitalresource(request):
 
 
 def add_tag(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
 
         if json_data.get("artifact"):
             handle_metadata(json_data.get("metadata", {}), 'artifact', json_data.get("artifact"), user, api_o)
@@ -1206,7 +1206,7 @@ def add_tag(request):
     return wrap_api_v2(request, f)
 
 def add_pag_accession(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
         pag_name = json_data.get("publish_group")
         pag_contains = json_data.get("contains")
         if not pag_name:
@@ -1278,7 +1278,7 @@ def add_pag_accession(request):
     return wrap_api_v2(request, f, oauth_permission="majora2.add_temporaryaccessionrecord majora2.change_temporaryaccessionrecord")
 
 def get_outbound_summary(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
         from django.db.models import Count, F, Q
         from dateutil.rrule import rrule, DAILY, WEEKLY, MO
 
@@ -1373,7 +1373,7 @@ def get_outbound_summary(request):
     return wrap_api_v2(request, f)
 
 def get_dashboard_metrics(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
         from django.db.models import Count, F, Q, ExpressionWrapper, BooleanField, Subquery
 
         gte_date=None
@@ -1424,7 +1424,7 @@ def get_dashboard_metrics(request):
 
 
 def get_pag_by_qc_celery(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
         test_name = json_data.get("test_name")
         dra_current_kind = json_data.get("dra_current_kind")
 
@@ -1462,7 +1462,7 @@ def get_pag_by_qc_celery(request):
     return wrap_api_v2(request, f, permission="majora2.temp_can_read_pags_via_api")
 
 def get_task_result(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
         task_id = json_data.get("task_id")
         if not task_id:
             api_o["messages"].append("'task_id' key missing or empty")
@@ -1489,7 +1489,7 @@ def get_task_result(request):
     return wrap_api_v2(request, f)
 
 def del_task_result(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
         task_id = json_data.get("task_id")
         if not task_id:
             api_o["messages"].append("'task_id' key missing or empty")
@@ -1522,7 +1522,7 @@ def del_task_result(request):
     return wrap_api_v2(request, f)
 
 def get_mag(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
         path = json_data.get("path")
         sep = json_data.get("sep")
 
@@ -1552,7 +1552,7 @@ def get_mag(request):
     return wrap_api_v2(request, f)
 
 def suppress_pag(request):
-    def f(request, api_o, json_data, user=None):
+    def f(request, api_o, json_data, user=None, partial=False):
         pag_names = json_data.get("publish_group")
         reason = json_data.get("reason")
 
