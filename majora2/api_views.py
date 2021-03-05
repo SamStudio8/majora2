@@ -889,11 +889,17 @@ class BiosampleArtifactEndpointView(MajoraEndpointView):
                         supp = bs.created.coguk_supp
                     if hasattr(bs, "primary_group"):
                         source = bs.primary_group
-                else:
-                    if partial:
+
+                if partial:
+                    if not bs:
                         api_o["errors"] += 1
                         api_o["ignored"].append(sample_id)
                         api_o["messages"].append("Cannot use `partial` on new BiosampleArtifact %s" % sample_id)
+                        continue
+                    if not sample_p.submission_user:
+                        api_o["errors"] += 1
+                        api_o["ignored"].append(sample_id)
+                        api_o["messages"].append("Cannot use `partial` on empty BiosampleArtifact %s" % sample_id)
                         continue
 
                 # Pre screen the cog uk supplementary form
