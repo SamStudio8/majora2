@@ -282,7 +282,7 @@
         {% for record in artifact.tatl_history %}
             <tr>
                 <td><b>{{ record.verb }}</b></br><code>{{ record.request.view_name }}</code></td>
-                <td>{{ record.request.timestamp }}</br>{{ record.request.timestamp | naturaltime }}</td>
+                <td>{{ record.request.timestamp|date:'N j Y, H:i' }}</br>{{ record.request.timestamp | naturaltime }}</td>
                 <td>{{ record.request.user }}</br>{{ record.request.user.profile.institute.code }}</td>
                 <td width="50%"><code>{{ record.extra_context }}</code></td>
             </tr>
