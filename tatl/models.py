@@ -45,7 +45,7 @@ class TatlVerb(models.Model):
     verb = models.CharField(max_length=10)
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.CharField(max_length=64) # ffs you really cooked this one (needs to support positive int and uuid)
+    object_id = models.CharField(max_length=64, db_index=True) # ffs you really cooked this one (needs to support positive int and uuid)
     content_object = GenericForeignKey('content_type', 'object_id')
 
     extra_context = models.TextField(blank=True, null=True, default="{}")
