@@ -896,7 +896,7 @@ class BiosampleArtifactEndpointView(MajoraEndpointView):
                         api_o["ignored"].append(sample_id)
                         api_o["messages"].append("Cannot use `partial` on new BiosampleArtifact %s" % sample_id)
                         continue
-                    if not sample_p.submission_user:
+                    if not sample_p or not sample_p.submission_user:
                         api_o["errors"] += 1
                         api_o["ignored"].append(sample_id)
                         api_o["messages"].append("Cannot use `partial` on empty BiosampleArtifact %s" % sample_id)
