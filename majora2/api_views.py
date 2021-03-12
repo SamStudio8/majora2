@@ -957,6 +957,7 @@ class BiosampleArtifactEndpointView(MajoraEndpointView):
                     sample_p.when = sample_p.collection_date if sample_p.collection_date else sample_p.received_date
                     sample_p.submitted_by = submitted_by
                     sample_p.submission_user = user
+                    sample_p.submission_org = user.profile.institute if hasattr(user, "profile") and not user.profile.institute.code.startswith("?") else None
                 sample_p.save()
 
                 # Update remaining sample fields

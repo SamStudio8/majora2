@@ -714,7 +714,6 @@ class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
             ("Other", "Other"),
         ], required=False, help_text="Reported sex"
     )
-    submission_org = forms.ModelChoiceField(queryset=models.Institute.objects.exclude(code__startswith="?").order_by("name"), disabled=True, required=False) # required to be defined for correct injection of FIXED data
 
     class Meta:
         model = models.BiosourceSamplingProcess
@@ -727,12 +726,12 @@ class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
             "collection_location_adm1",
             "collection_location_adm2",
             "private_collection_location_adm2",
-            "submission_org", # this is handled automatically by Majora but it still injected into the form data after being received so needs validation
             "collection_location_country", # injected as initial
         ]
         exclude = [ # It is redundant to list these as they are excluded by virtue of being missing from fields, but nice to explain why
             "submitted_by", # submission fields are set by Majora, not the user
             "submission_user",
+            "submission_org",
             "collection_org", # field is no longer used
             "who",
             "when", # majora fields
