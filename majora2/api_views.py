@@ -949,15 +949,13 @@ class BiosampleArtifactEndpointView(MajoraEndpointView):
                 # Create and save the sample collection process
                 sample_p = sample_process_form.save(commit=False)
                 if not sample_p.who:
-                    try:
-                        submitted_by = sample_process_form.cleaned_data.get("submission_org").name
-                    except:
-                        submitted_by = None
+                    submission_org = user.profile.institute if hasattr(user, "profile") and not user.profile.institute.code.startswith("?") else None
+                    if submission_org:
+                        sample_p.submitted_by = submission_org.name
+                        sample_p.submission_org = submission_org
                     sample_p.who = user
                     sample_p.when = sample_p.collection_date if sample_p.collection_date else sample_p.received_date
-                    sample_p.submitted_by = submitted_by
                     sample_p.submission_user = user
-                    sample_p.submission_org = user.profile.institute if hasattr(user, "profile") and not user.profile.institute.code.startswith("?") else None
                 sample_p.save()
 
                 # Update remaining sample fields
