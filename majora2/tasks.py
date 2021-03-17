@@ -388,6 +388,7 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
                 'current_hash',
                 'current_size',
                 num_bases=F('metrics__temporarymajoraartifactmetric_sequence__num_bases'),
+                longest_ungap=F('metrics__temporarymajoraartifactmetric_sequence__longest_ungap'),
                 pc_acgt=F('metrics__temporarymajoraartifactmetric_sequence__pc_acgt'),
                 pc_masked=F('metrics__temporarymajoraartifactmetric_sequence__pc_masked'),
                 mean_cov=F('metrics__temporarymajoraartifactmetric_mapping__mean_cov'),
