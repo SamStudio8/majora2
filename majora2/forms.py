@@ -281,6 +281,7 @@ class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a mode
                 ("QIASTAT", "QIASTAT"),
                 ("ALINITY", "ALINITY"),
                 ("AMPLIDIAG", "AMPLIDIAG"),
+                ("TAQPATH_HT", "TAQPATH_HT"),
             ],
             required=False,
     )
@@ -305,6 +306,7 @@ class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a mode
                 ("QIAGEN_ROTORGENE", "QIAGEN_ROTORGENE"),
                 ("BD_MAX", "BD_MAX"),
                 ("AMPLIDIAG_EASY", "AMPLIDIAG_EASY"),
+                ("THERMO_AMPLITUDE", "THERMO_AMPLITUDE"),
             ],
             required=False,
     )
