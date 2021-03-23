@@ -22,7 +22,7 @@ django-rest-polymorphic
 djangorestframework-csv
 django-markdownify
 rest_condition
-django-oauth-toolkit
+django-oauth-toolkit==1.4.1
 django-cors-headers
 requests
 boto3
