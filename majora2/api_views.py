@@ -156,15 +156,15 @@ def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=Fals
 
     # Call the wrapped function
     if not bad and profile:
-        f(request, api_o, json_data, user=user, partial=partial)
+        possible_fstream = f(request, api_o, json_data, user=user, partial=partial)
 
     api_o["success"] = api_o["errors"] == 0
 
     end_ts = timezone.now()
     request.treq.save()
 
-    if stream:
-        return StreamingHttpResponse(json.dumps(api_o), content_type="application/json")
+    if stream and possible_fstream:
+        return possible_fstream
     else:
         return HttpResponse(json.dumps(api_o), content_type="application/json")
 
@@ -1471,6 +1471,10 @@ def get_pag_by_qc_celery(request):
 
 def stream_task_result(request):
     def f(request, api_o, json_data, user=None, partial=False):
+
+        import requests, boto3
+        from botocore.exceptions import ClientError
+
         task_id = json_data.get("task_id")
         if not task_id:
             api_o["messages"].append("'task_id' key missing or empty")
@@ -1481,8 +1485,25 @@ def stream_task_result(request):
         res = app.AsyncResult(task_id)
         if res.state == "SUCCESS":
             try:
-                api_o.update(res.get())
-            except Exception as e:
+                s3 = boto3.client('s3',
+                        aws_access_key_id=settings.CELERY_S3_ACCESS_KEY_ID,
+                        aws_secret_access_key=settings.CELERY_S3_SECRET_ACCESS_KEY,
+                        endpoint_url=settings.CELERY_S3_ENDPOINT_URL,
+                        region_name=None,
+                )
+
+                purl = s3.generate_presigned_url('get_object',
+                        Params={
+                            'Bucket': settings.CELERY_S3_BUCKET,
+                            'Key': app.backend.get_key_for_task(res.id).decode("utf-8"),
+                        },
+                        ExpiresIn=10,
+                )
+
+                r = requests.get(url=purl, stream=True)
+                return StreamingHttpResponse(r.raw, content_type="application/json")
+
+            except ClientError as e:
                 api_o["errors"] += 1
                 api_o["messages"].append(str(e))
         else:
