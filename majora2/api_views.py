@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect, reverse
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, StreamingHttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.contrib.auth.decorators import login_required
@@ -28,7 +28,7 @@ from tatl.models import TatlVerb
 MINIMUM_CLIENT_VERSION = "0.37.0"
 
 @csrf_exempt
-def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=False):
+def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=False, stream=False):
     from tatl.models import TatlRequest, TatlPermFlex
 
     start_ts = timezone.now()
@@ -163,7 +163,10 @@ def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=Fals
     end_ts = timezone.now()
     request.treq.save()
 
-    return HttpResponse(json.dumps(api_o), content_type="application/json")
+    if stream:
+        return StreamingHttpResponse(json.dumps(api_o), content_type="application/json")
+    else:
+        return HttpResponse(json.dumps(api_o), content_type="application/json")
 
 
 def handle_metadata(metadata, tag_type, tag_to, user, api_o):
@@ -1465,6 +1468,33 @@ def get_pag_by_qc_celery(request):
             api_o["messages"].append("Could not add requested task to Celery...")
 
     return wrap_api_v2(request, f, permission="majora2.temp_can_read_pags_via_api")
+
+def stream_task_result(request):
+    def f(request, api_o, json_data, user=None, partial=False):
+        task_id = json_data.get("task_id")
+        if not task_id:
+            api_o["messages"].append("'task_id' key missing or empty")
+            api_o["errors"] += 1
+            return
+
+        from mylims.celery import app
+        res = app.AsyncResult(task_id)
+        if res.state == "SUCCESS":
+            try:
+                api_o.update(res.get())
+            except Exception as e:
+                api_o["errors"] += 1
+                api_o["messages"].append(str(e))
+        else:
+            api_o["warnings"] += 1
+            api_o["messages"].append("Task is not (yet) SUCCESS...")
+
+        api_o["task"] = {
+            "id": task_id,
+            "state": res.state,
+        }
+
+    return wrap_api_v2(request, f, stream=True)
 
 def get_task_result(request):
     def f(request, api_o, json_data, user=None, partial=False):
