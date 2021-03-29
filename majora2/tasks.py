@@ -267,6 +267,7 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
         run_to_pag[run_name].append(pag)
         pag_ids.append(pags[pag]["published_uuid"])
         pags[pag]["artifacts"] = {}
+        pags[pag]["published_date"] = pags[pag]["published_date"].strftime("%Y-%m-%d")
 
     # get accessions and match to pag
     accessions = models.TemporaryAccessionRecord.objects.filter(pag__id__in=pag_ids, is_public=True).values(
