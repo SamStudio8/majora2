@@ -266,8 +266,20 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
             run_to_pag[run_name] = []
         run_to_pag[run_name].append(pag)
         pag_ids.append(pags[pag]["published_uuid"])
+
+        # Finish the PAG structs
+        pags[pag]["qc_reports"] = {}
         pags[pag]["artifacts"] = {}
         pags[pag]["published_date"] = pags[pag]["published_date"].strftime("%Y-%m-%d")
+
+    # pag quality groups
+    qc_tests = models.PAGQualityReportEquivalenceGroup.objects.filter(pag_id__in=pag_ids).values('pag__published_name', 'test_group__slug', 'is_pass')
+    for test_result in qc_tests:
+        pag_name = test_result["pag__published_name"]
+        if pag_name not in pags:
+            continue # ignore tests for pags we aren't targeting
+
+        pags[pag_name]["qc_reports"][ test_result["test_group__slug"].replace('-', '_') ] = "PASS" if test_result["is_pass"] else "FAIL"
 
     # get accessions and match to pag
     accessions = models.TemporaryAccessionRecord.objects.filter(pag__id__in=pag_ids, is_public=True).values(
