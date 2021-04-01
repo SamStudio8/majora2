@@ -306,12 +306,16 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
             'run_name',
             'instrument_make',
             'instrument_model',
+            sequencing_org_run_date=F('when'),
     )
 
     run_to_library_lookup = {}
     for run in sequencing_procs:
         # determine the run
         run_name = run["run_name"]
+        if run["sequencing_org_run_date"]:
+            run["sequencing_org_run_date"] = run["sequencing_org_run_date"].strftime("%Y-%m-%d")
+
         for pag in run_to_pag[run_name]:
             pags[pag]["artifacts"]["sequencing"] = [run] # cheat to make this fit the old ocarina api format
 
@@ -331,6 +335,10 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
                     seq_protocol=F('out_artifact__libraryartifact__seq_protocol'),
                     library_adaptor_barcode=F("barcode"),
         )}
+        for pool in biosample_pooling:
+            sord = biosample_pooling[pool].get("sequencing_org_received_date")
+            if sord:
+                biosample_pooling[pool]["sequencing_org_received_date"] = sord.strftime("%Y-%m-%d")                
         if run_name not in run_to_library_lookup:
             run_to_library_lookup[run_name] = {}
         run_to_library_lookup[run_name].update(biosample_pooling)
@@ -380,8 +388,6 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
         bs["adm1_trans"] = countries.get(bs["adm1"], "")
 
         # str dates
-        #if bs["sequencing_org_received_date"]:
-        #    bs["sequencing_org_received_date"] = bs["sequencing_org_received_date"].strftime("%Y-%m-%d") 
         if bs["collection_date"]:
             bs["collection_date"] = bs["collection_date"].strftime("%Y-%m-%d") 
         if bs["received_date"]:
