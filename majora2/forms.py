@@ -653,6 +653,15 @@ class BiosampleArtifactModelForm(MajoraPossiblePartialModelForm):
     def clean(self):
         cleaned_data = super().clean()
 
+        # Validate sample name for bar characters
+        central_sample_id = cleaned_data.get("central_sample_id")
+        if central_sample_id:
+            reserved_ch = [".", "/", "\\"]
+            for ch in reserved_ch:
+                if ch in central_sample_id:
+                    self.add_error("central_sample_id", "central_sample_id cannot contain a reserved character: %s" % str(reserved_ch))
+                    break
+
         # Validate swab site
         swab_site = cleaned_data.get("sample_site")
         sample_type = cleaned_data.get("sample_type_collected")
