@@ -419,6 +419,7 @@ class TestSequencingForm(forms.Form):
                 ("ILLUMINA", "Illumina"),
                 ("OXFORD_NANOPORE", "Oxford Nanopore"),
                 ("PACIFIC_BIOSCIENCES", "Pacific Biosciences"),
+                ("ION_TORRENT", "Ion Torrent"),
             ],
     )
     instrument_model = forms.CharField(
