@@ -800,6 +800,7 @@ class COGUK_BiosourceSamplingProcessSupplement_ModelForm(MajoraPossiblePartialMo
             (None, None),
             ("1", 1),
             ("2", 2),
+            ("103", 103),
             ("34613", 34613),
         ], coerce=int, empty_value=None, required=False)
 
