@@ -687,6 +687,7 @@ def add_qc(request):
                 return
 
         if all_skipped:
+            # See https://github.com/COG-UK/dipi-group/issues/55 for why we default to using at least one QC test
             api_o["messages"].append("Cowardly refusing to create QC report as no tests were performed...")
             api_o["errors"] += 1
             return
