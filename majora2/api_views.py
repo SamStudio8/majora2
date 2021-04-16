@@ -534,6 +534,7 @@ def add_qc(request):
 
         n_fails = 0
         test_data = {}
+        all_skipped = True # flag to determine at least one QC test was run
         for test in t_group.tests.all():
             # Get the latest test version
             tv = test.versions.order_by('-version_number').first()
@@ -569,6 +570,7 @@ def add_qc(request):
                 test_data[tv]["is_pass"] = False
                 continue # to next test
             else:
+                all_skipped = False
                 test_data[tv]["is_skip"] = False
 
 
@@ -683,6 +685,11 @@ def add_qc(request):
                 api_o["messages"].append("Refusing to create QC report as not all target metrics could be assessed...")
                 api_o["errors"] += 1
                 return
+
+        if all_skipped:
+            api_o["messages"].append("Cowardly refusing to create QC report as no tests were performed...")
+            api_o["errors"] += 1
+            return
 
         # Looks good?
         tz_now_dt = timezone.now()
