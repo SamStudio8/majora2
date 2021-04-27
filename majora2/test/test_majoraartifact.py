@@ -12,6 +12,7 @@ class BiosampleArtifactInfoTest(OAuthAPIClientBase):
         self.token = self.tokens["majora2.view_majoraartifact_info"]
 
         # Generate some artifacts
+        self.artifacts = []
         app_models = apps.get_app_config('majora2').get_models()
         for model in app_models:
             if model.__name__ == "MajoraArtifact":
@@ -25,6 +26,7 @@ class BiosampleArtifactInfoTest(OAuthAPIClientBase):
                 continue
 
             obj.save()
+            self.artifacts.append(obj)
 
     def test_get_majoraartifact_info_notoken(self):
         # Access should be rejected without a Bearer
@@ -85,3 +87,19 @@ class BiosampleArtifactInfoTest(OAuthAPIClientBase):
         self.assertEqual(j["errors"], 1)
         self.assertIn("No artifact for query.", j["messages"])
 
+    def test_get_majoraartifact_info_ok_artifacts(self):
+        tests = 0
+        for artifact in self.artifacts:
+            tests += 1
+            payload = {
+                'q': artifact.dice_name,
+            }
+            response = self.c.get(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+            self.assertEqual(200, response.status_code)
+            j = response.json()
+            self.assertEqual(j["errors"], 0)
+            self.assertEqual(j["info"]["name"], artifact.name)
+            self.assertEqual(j["info"]["kind"], artifact.kind)
+            self.assertEqual(j["info"]["path"], artifact.path)
+        self.assertTrue(tests > 0)
+        self.assertEqual(tests, len(self.artifacts))
