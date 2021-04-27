@@ -28,7 +28,7 @@ from tatl.models import TatlVerb
 MINIMUM_CLIENT_VERSION = "0.37.0"
 
 @csrf_exempt
-def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=False, stream=False):
+def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=False, stream=False, get=False):
     from tatl.models import TatlRequest, TatlPermFlex
 
     start_ts = timezone.now()
@@ -43,21 +43,23 @@ def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=Fals
         "updated": [],
         "ignored": [],
     }
-
-    try:
-        json_data = json.loads(request.body)
-    except:
-        return HttpResponseBadRequest()
-
     api_o["request"] = str(request.treq.response_uuid)
 
-    # Bounce non-POST
-    if request.method != "POST":
-        return HttpResponseBadRequest()
+    if not get:
+        try:
+            json_data = json.loads(request.body)
+        except:
+            return HttpResponseBadRequest()
 
-    # Bounce badly formatted requests
-    if not json_data.get('token', None) or not json_data.get('username', None):
-        return HttpResponseBadRequest()
+        # Bounce badly formatted requests
+        if not json_data.get('token', None) or not json_data.get('username', None):
+            return HttpResponseBadRequest()
+
+        # Bounce non-POST if not get
+        if request.method != "POST":
+            return HttpResponseBadRequest()
+    else:
+        json_data = request.GET
 
     profile = None
 
@@ -1666,3 +1668,52 @@ def suppress_pag(request):
             TatlVerb(request=request.treq, verb="SUPPRESS", content_object=pag).save()
 
     return wrap_api_v2(request, f) # TODO Needs OAuth will fallback to Owner
+
+
+def v0_get_artifact_info(request):
+    def f(request, api_o, json_data, user=None, partial=False):
+        query = None
+        artifact = None
+        query = request.GET.get("q", '')
+
+        if not query or len(query) == 0:
+            api_o["messages"].append("'q' GET param missing or empty")
+            api_o["errors"] += 1
+            return
+
+        api_o["info"] = {}
+        try:
+            artifact = models.MajoraArtifact.objects.get(id=query)
+        except Exception:
+            pass
+
+        if not artifact:
+            try:
+                artifact = models.MajoraArtifact.objects.get(dice_name=query)
+            except Exception:
+                pass
+
+        # TODO Unify Artifact interface
+        if not artifact:
+            try:
+                node_name, path = query.split("://")
+                path = "/%s" % path # ???
+                mag = util.get_mag(node_name, path, artifact=True, by_hard_path=False, prefetch=False) # not using hard path yet
+                if mag:
+                    artifact = models.DigitalResourceArtifact.objects.get(primary_group=mag, current_path=path)
+            except Exception:
+                pass
+
+        if not artifact:
+            api_o["errors"] += 1
+            api_o["messages"].append("No artifact for query.")
+            return
+
+        try:
+            api_o["info"] = artifact.info
+        except Exception as e:
+            api_o["errors"] += 1
+            api_o["messages"].append(str(e))
+
+    return wrap_api_v2(request, f, oauth_permission="majora2.view_majoraartifact_info", get=True)
+#TODO False permission to disable v2

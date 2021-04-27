@@ -100,6 +100,10 @@ urlpatterns = [
     path('api/datatable/pag/', public_views.OrderListJson.as_view(), name='api.datatable.pag.get'),
     path('api/datatable/biosample/', login_required(tables.BiosampleOrderListJson.as_view()), name='api.datatable.biosample.get'),
 
+
+    # Experimental
+    path('api/v0/artifact/info/', csrf_exempt(api_views.v0_get_artifact_info), name="api.artifact.info"),
+
     # Home
     path('', views.home, name='home'),
 

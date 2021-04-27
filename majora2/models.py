@@ -36,6 +36,11 @@ class MajoraArtifact(PolymorphicModel):
 
     history = GenericRelation("tatl.TatlVerb")
 
+    class Meta:
+        permissions = [
+            ("view_majoraartifact_info", "Can view basic information of any artifact"),
+        ]
+
     @property
     def artifact_kind(self):
         return 'Artifact'
@@ -283,6 +288,18 @@ class MajoraArtifact(PolymorphicModel):
     @property
     def tatl_history(self):
         return self.history.filter(~Q(verb="RETRIEVE")).order_by('-request__timestamp')
+
+    @property
+    def info(self):
+        info = {
+            "id": str(self.id),
+            "kind": self.kind,
+            "name": self.name,
+            "path": self.path,
+            "metadata": self.get_metadata_as_struct(flat=True),
+        }
+
+        return info
 
 class MajoraArtifactGroupLink(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
