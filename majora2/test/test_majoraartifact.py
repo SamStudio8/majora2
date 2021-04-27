@@ -1,4 +1,5 @@
 from django.urls import reverse
+from django.apps import apps
 
 from majora2.test.test_basic_api import OAuthAPIClientBase
 
@@ -9,6 +10,21 @@ class BiosampleArtifactInfoTest(OAuthAPIClientBase):
         self.endpoint = reverse("api.artifact.info")
         self.scope = "majora2.view_majoraartifact_info"
         self.token = self.tokens["majora2.view_majoraartifact_info"]
+
+        # Generate some artifacts
+        app_models = apps.get_app_config('majora2').get_models()
+        for model in app_models:
+            if model.__name__ == "MajoraArtifact":
+                # Base model throws NotImplementedError
+                continue
+
+            try:
+                obj = model.construct_test_object()
+            except AttributeError:
+                # Not children of MajoraArtifact
+                continue
+
+            obj.save()
 
     def test_get_majoraartifact_info_notoken(self):
         # Access should be rejected without a Bearer

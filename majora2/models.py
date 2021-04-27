@@ -41,6 +41,10 @@ class MajoraArtifact(PolymorphicModel):
             ("view_majoraartifact_info", "Can view basic information of any artifact"),
         ]
 
+    @classmethod
+    def construct_test_object(cls):
+        raise NotImplementedError(cls.__name__)
+
     @property
     def artifact_kind(self):
         return 'Artifact'
@@ -899,6 +903,18 @@ class DigitalResourceArtifact(MajoraArtifact):
     current_extension = models.CharField(max_length=48, default="")
     current_kind = models.CharField(max_length=48, default="File")
 
+    @classmethod
+    def construct_test_object(cls):
+        file_id = str(uuid.uuid4())
+        return cls(
+            id = file_id,
+            dice_name = file_id,
+            current_path = "/path/to/file/hoot.txt",
+            current_name = "hoot.txt",
+            current_hash = "d41d8cd98f00b204e9800998ecf8427e",
+            current_size = 0,
+        )
+
     def get_serializer(self):
         from . import serializers
         return serializers.DigitalResourceArtifactSerializer
@@ -1053,6 +1069,17 @@ class TubeArtifact(MajoraArtifact):
     lid_label = models.CharField(max_length=24, blank=True, null=True)
     # dicewareversion / labelersion
 
+    @classmethod
+    def construct_test_object(cls):
+        tube_id = str(uuid.uuid4())
+        return cls(
+            id = tube_id,
+            dice_name = "majora-test-tube",
+            container_x = 0,
+            container_y = 0,
+            storage_medium = "",
+        )
+
     @property
     def artifact_kind(self):
         return 'Sample Tube'
@@ -1133,6 +1160,15 @@ class BiosampleArtifact(MajoraArtifact):
         permissions = [
             ("force_add_biosampleartifact", "Can forcibly add a biosample artifact to Majora"),
         ]
+
+    @classmethod
+    def construct_test_object(cls):
+        sample_id = str(uuid.uuid4())
+        return cls(
+            id = sample_id,
+            central_sample_id = "ZEAL-HOOT-12345",
+            dice_name = "ZEAL-HOOT-12345",
+        )
 
     @property
     def artifact_kind(self):
@@ -1804,6 +1840,12 @@ class LibraryArtifact(MajoraArtifact):
 
     seq_kit = models.CharField(max_length=48, blank=True, null=True)
     seq_protocol = models.CharField(max_length=48, blank=True, null=True)
+
+    @classmethod
+    def construct_test_object(cls):
+        return cls(
+            dice_name = "HOOT-LIB-12345",
+        )
 
     @property
     def artifact_kind(self):
