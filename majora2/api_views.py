@@ -46,7 +46,7 @@ def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=Fals
     api_o["request"] = str(request.treq.response_uuid)
 
     if not get:
-        # Bounce non-POST if not get
+        # Bounce non-POST for post (not get) interfaces
         if request.method != "POST":
             return HttpResponseBadRequest()
 
@@ -60,6 +60,10 @@ def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=Fals
             return HttpResponseBadRequest()
 
     else:
+        # Bounce non-GET if get flag is set
+        if request.method != "GET":
+            return HttpResponseBadRequest()
+
         # Set json_data to GET params, skipping check for token/username
         json_data = request.GET
 

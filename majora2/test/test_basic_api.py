@@ -9,8 +9,16 @@ from django_otp import DEVICE_ID_SESSION_KEY
 from django_otp.plugins.otp_static.models import StaticDevice
 
 from majora2 import models
+from django.utils import timezone
 
-class BasicAPITest(TransactionTestCase):
+from oauth2_provider.models import (
+    get_access_token_model,
+    get_application_model,
+    get_grant_model,
+    get_refresh_token_model,
+)
+
+class BasicAPIBase(TransactionTestCase):
     def setUp(self):
         self.c = Client()
 
@@ -49,6 +57,8 @@ class BasicAPITest(TransactionTestCase):
         session.save()
         response = self.c.post(reverse('api_keys_activate'), {'key_name': self.kd.key_name}, secure=True)
         self.key = self.user.profile.get_generated_api_keys()[0]
+
+class BasicAPITest(BasicAPIBase):
 
     def test_biosample_bad_json_content_type(self):
         payload = {
@@ -129,4 +139,41 @@ class BasicAPITest(TransactionTestCase):
         self.key.validity_end = v
         self.key.save()
 
+
+class OAuthAPIClientBase(BasicAPIBase):
+    # Based on https://github.com/jazzband/django-oauth-toolkit/blob/master/tests/test_authorization_code.py
+    def setUp(self):
+        super().setUp()
+
+        self.c.logout() # Remove any session state from APIBase
+
+        Application = get_application_model()
+        AccessToken = get_access_token_model()
+
+        self.application = Application.objects.create(
+            name="Test Application",
+            redirect_uris=(
+                "https://localhost https://example.com"
+            ),
+            user=self.user,
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
+
+        self.tokens = {}
+        self.scope_strs = [
+            "bad_scope",
+            "majora2.view_majoraartifact_info",
+        ]
+
+        for scope_group in self.scope_strs:
+            token = AccessToken.objects.create(
+                user=self.user,
+                token=str(uuid.uuid4()),
+                application=self.application,
+                expires=timezone.now() + datetime.timedelta(days=1),
+                scope=scope_group,
+            )
+            token.save()
+            self.tokens[scope_group] = token
 

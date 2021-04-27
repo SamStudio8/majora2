@@ -8,14 +8,14 @@ from django.urls import reverse
 
 from majora2 import models
 from majora2 import forms
-from majora2.test.test_basic_api import BasicAPITest
+from majora2.test.test_basic_api import BasicAPIBase
 
 from tatl import models as tmodels
 
 import sys
 import json
 
-class BiosampleArtifactTest(BasicAPITest):
+class BiosampleArtifactTest(BasicAPIBase):
     def setUp(self):
         super().setUp()
         self.default_central_sample_id = "HOOT-00001"
