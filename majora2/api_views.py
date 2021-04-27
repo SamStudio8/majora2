@@ -46,6 +46,10 @@ def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=Fals
     api_o["request"] = str(request.treq.response_uuid)
 
     if not get:
+        # Bounce non-POST if not get
+        if request.method != "POST":
+            return HttpResponseBadRequest()
+
         try:
             json_data = json.loads(request.body)
         except:
@@ -55,10 +59,8 @@ def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=Fals
         if not json_data.get('token', None) or not json_data.get('username', None):
             return HttpResponseBadRequest()
 
-        # Bounce non-POST if not get
-        if request.method != "POST":
-            return HttpResponseBadRequest()
     else:
+        # Set json_data to GET params, skipping check for token/username
         json_data = request.GET
 
     profile = None
@@ -83,6 +85,10 @@ def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=Fals
             bad = True
             return HttpResponse(json.dumps(api_o), content_type="application/json")
     else:
+        if get:
+            # GET API endpoints are OAuth only
+            return HttpResponseBadRequest()
+
         try:
             # Check new key validity
             key = models.ProfileAPIKey.objects.get(key=json_data["token"], profile__user__username=json_data["username"], was_revoked=False, validity_start__lt=timezone.now(), validity_end__gt=timezone.now())
@@ -106,7 +112,7 @@ def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=Fals
                 return HttpResponseBadRequest()
 
     # If in doubt
-    if not user.is_active or user.profile.is_revoked:
+    if not profile or not user.is_active or user.profile.is_revoked:
         return HttpResponseBadRequest()
 
     request.treq.is_api = True
@@ -142,7 +148,7 @@ def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=Fals
 
 
     bad = False
-    # Bounce out of data clients
+    # Bounce out of date clients
     if json_data.get("client_name") == "ocarina":
         try:
             server_version = tuple(map(int, (MINIMUM_CLIENT_VERSION.split("."))))
