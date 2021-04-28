@@ -87,7 +87,24 @@ class BiosampleArtifactInfoTest(OAuthAPIClientBase):
         self.assertEqual(j["errors"], 1)
         self.assertIn("No artifact for query.", j["messages"])
 
-    def test_get_majoraartifact_info_ok_artifacts(self):
+    def test_get_majoraartifact_info_ok_artifacts_by_id(self):
+        tests = 0
+        for artifact in self.artifacts:
+            tests += 1
+            payload = {
+                'q': artifact.id,
+            }
+            response = self.c.get(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+            self.assertEqual(200, response.status_code)
+            j = response.json()
+            self.assertEqual(j["errors"], 0)
+            self.assertEqual(j["info"]["name"], artifact.name)
+            self.assertEqual(j["info"]["kind"], artifact.kind)
+            self.assertEqual(j["info"]["path"], artifact.path)
+        self.assertTrue(tests > 0)
+        self.assertEqual(tests, len(self.artifacts))
+
+    def test_get_majoraartifact_info_ok_artifacts_by_dice(self):
         tests = 0
         for artifact in self.artifacts:
             tests += 1
@@ -103,3 +120,4 @@ class BiosampleArtifactInfoTest(OAuthAPIClientBase):
             self.assertEqual(j["info"]["path"], artifact.path)
         self.assertTrue(tests > 0)
         self.assertEqual(tests, len(self.artifacts))
+
