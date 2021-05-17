@@ -83,6 +83,8 @@ class InstituteForm(forms.Form):
     gisaid_lab_addr = forms.CharField(max_length=512, required=False, label="Originating lab address(es)", help_text="Use the broadest address that encompasses all the originating labs")
     gisaid_list = forms.CharField(max_length=2048, required=False, widget=forms.Textarea(attrs={"rows": 5}), label="Author list")
 
+    ena_assembly_opted = forms.BooleanField(required=False, label="ENA assembly Opt-in", help_text="Check this box to opt-in to COG-UK automated submissions of consensus sequences to ENA and INSDC")
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -94,10 +96,16 @@ class InstituteForm(forms.Form):
                     Column('name', css_class="form-group col-md-10 mb-0"),
                     css_class="form-row",
                 ),
+            ),
+            Fieldset("Outbound Opt-ins",
                 Row(
                     Column('gisaid_opted', css_class="form-group col-md-6 mb-0"),
                     css_class="form-row",
-                )
+                ),
+                Row(
+                    Column('ena_assembly_opted', css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                ),
             ),
             Fieldset("GISAID: User",
                 Row(
@@ -106,14 +114,14 @@ class InstituteForm(forms.Form):
                     css_class="form-row",
                 )
             ),
-            Fieldset("GISAID: Originating Lab",
+            Fieldset("GISAID and ENA: Originating Lab",
                 Row(
                     Column('gisaid_lab_name', css_class="form-group col-md-6 mb-0"),
                     Column('gisaid_lab_addr', css_class="form-group col-md-6 mb-0"),
                     css_class="form-row",
                 )
             ),
-            Fieldset("GISAID: Authors",
+            Fieldset("GISAID and ENA: Authors",
                 'gisaid_list'
             ),
             FormActions(
@@ -128,6 +136,11 @@ class InstituteForm(forms.Form):
             for field in ["gisaid_user", "gisaid_mail", "gisaid_lab_name", "gisaid_lab_addr", "gisaid_list"]:
                 if not cleaned_data.get(field):
                     self.add_error(field, "Required if opting-in to GISAID submissions")
+
+        if cleaned_data.get("ena_assembly_opted", False):
+            for field in ["gisaid_lab_name", "gisaid_lab_addr", "gisaid_list"]:
+                if not cleaned_data.get(field):
+                    self.add_error(field, "Required if opting-in to ENA consensus submissions")
 
 class AccountForm(forms.Form):
     username = forms.CharField(max_length=150, disabled=True, required=False, help_text="You cannot change your username")
