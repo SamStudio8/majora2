@@ -39,7 +39,7 @@ def generate_username(cleaned_data):
     return proposed_username
 
 
-@sensitive_post_parameters('password', 'password2')
+@sensitive_post_parameters('password1', 'password2')
 def form_register(request):
     if request.method == "POST":
         form = forms.RegistrationForm(request.POST)
