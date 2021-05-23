@@ -1715,6 +1715,16 @@ def v0_get_artifact_info(request):
                 pass
 
         if not artifact:
+            try:
+                artifact = models.MajoraArtifact.objects.filter(dice_name__contains=query)
+            except Exception:
+                pass
+
+            if artifact.count() == 1:
+                artifact = artifact[0]
+
+
+        if not artifact:
             api_o["errors"] += 1
             api_o["messages"].append("No artifact for query.")
             return
