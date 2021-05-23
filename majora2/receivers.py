@@ -79,8 +79,8 @@ def recv_new_registration(sender, username, first_name, last_name, organisation,
     send_mail(
         '[majora@climb] A user has requested access to Majora for your organisation',
         '''You're receiving this email because %s %s has requested a %s account and you are responsible for approving accounts for your organisation.
-        Please verify the user and if the request is valid, approve the request from Majora: %s
-        ''' % (first_name, last_name, settings.INSTANCE_NAME, reverse('list_site_profiles')),
+        Please verify the user and if the request is valid, approve the request from Majora: %s/%s
+        ''' % (first_name, last_name, settings.INSTANCE_NAME, settings.SITE_URL if hasattr(settings, "SITE_URL") else "", reverse('list_site_profiles')),
         None,
         [p.user.email for p in site_admins],
         fail_silently=True,

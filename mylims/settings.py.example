@@ -35,6 +35,7 @@ SESSION_COOKIE_AGE = 259200 # Lower session length to 72 hours from 2 week defau
 DEBUG = True
 
 ALLOWED_HOSTS = []
+SITE_URL = "https://majora.site"
 
 ADMINS = [('Sam', 'sam@example.org')]
 

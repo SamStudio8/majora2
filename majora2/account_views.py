@@ -39,7 +39,7 @@ def generate_username(cleaned_data):
     return proposed_username
 
 
-@sensitive_post_parameters('password', 'password2')
+@sensitive_post_parameters('password1', 'password2')
 def form_register(request):
     if request.method == "POST":
         form = forms.RegistrationForm(request.POST)
@@ -180,6 +180,7 @@ def form_institute(request):
             org.gisaid_lab_name = form.cleaned_data.get("gisaid_lab_name")
             org.gisaid_lab_addr = form.cleaned_data.get("gisaid_lab_addr")
             org.gisaid_list = form.cleaned_data.get("gisaid_list")
+            org.ena_assembly_opted = form.cleaned_data.get("ena_assembly_opted")
             if org.gisaid_list:
                 org.gisaid_list = org.gisaid_list.replace('\t', ' ').replace('\r', '').replace('\n', ',').replace(",,", ',').replace(' ,', ',') # sigh
             org.save()
