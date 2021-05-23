@@ -1716,12 +1716,12 @@ def v0_get_artifact_info(request):
 
         if not artifact:
             try:
-                artifact = models.MajoraArtifact.objects.filter(dice_name__contains=query)
+                artifact_fuzz = models.MajoraArtifact.objects.filter(dice_name__contains=query)
             except Exception:
                 pass
 
-            if artifact.count() == 1:
-                artifact = artifact[0]
+            if artifact_fuzz.count() == 1:
+                artifact = artifact_fuzz[0]
 
 
         if not artifact:
