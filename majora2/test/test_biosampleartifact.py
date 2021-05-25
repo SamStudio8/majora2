@@ -953,6 +953,22 @@ class OAuthEmptyBiosampleArtifactTest(OAuthAPIClientBase):
         assert bs.sender_sample_id != "SECRET-0001"
         assert bs.sender_sample_id == "DIFFERENT-SECRET"
 
+        # Check the validity endpoint
+        payload = {
+            "username": "hoot",
+            "token": "oauth",
+            "biosamples": [
+                default_central_sample_id,
+            ],
+        }
+        response = self.c.post(reverse("api.artifact.biosample.query.validity"), payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+
+        assert j["result"][default_central_sample_id]["exists"] == True
+        assert j["result"][default_central_sample_id]["has_sender_id"] == True
+        assert j["result"][default_central_sample_id]["has_metadata"] == True
+
     def test_put_empty_biosampleartifact_partial_bad(self):
         payload = {
             "username": self.user.username,
