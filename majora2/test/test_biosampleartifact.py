@@ -847,6 +847,30 @@ class OAuthEmptyBiosampleArtifactTest(OAuthAPIClientBase):
         for biosample in payload["biosamples"]:
             assert models.BiosampleArtifact.objects.filter(central_sample_id=biosample).count() == 1
 
+        # Ensure double submit gets ignored
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(len(j["ignored"]), 1)
+        self.assertIn("FORCE-0001", j["ignored"][0][2]) # unpack tuple
+
+        # Ensure double submit gets ignored, even if you try to add a sender_sample_id
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                {"central_sample_id": "FORCE-0001", "sender_sample_id": "SECRET-0001"},
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(len(j["ignored"]), 1)
+        self.assertIn("FORCE-0001", j["ignored"][0][2]) # unpack tuple
+
+        bs = models.BiosampleArtifact.objects.get(central_sample_id="FORCE-0001")
+        assert bs.sender_sample_id is None
+
     def test_put_empty_biosampleartifact_stomp_ok(self):
         payload = {
             "username": self.user.username,
@@ -897,6 +921,53 @@ class OAuthEmptyBiosampleArtifactTest(OAuthAPIClientBase):
         assert bs.sender_sample_id != "SECRET-0001"
         assert bs.sender_sample_id == "DIFFERENT-SECRET"
 
+    def test_put_empty_biosampleartifact_partial_bad(self):
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                default_central_sample_id,
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        # Hackily stomp a new record over the empty one
+        payload = copy.deepcopy(default_payload)
+        payload["username"] = "oauth"
+        payload["token"] = "oauth"
+        response = self.c.post(self.endpoint.replace("addempty", "update"), payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.full_token)
+        self.assertEqual(200, response.status_code)
+
+        j = response.json()
+        self.assertEqual(j["errors"], 1)
+        self.assertIn("Cannot use `partial` on empty BiosampleArtifact", "".join(j["messages"]))
+
+    def test_put_empty_biosampleartifact_sid_partial_bad(self):
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                {"central_sample_id": default_central_sample_id, "sender_sample_id": "SECRET-0001"},
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        # Hackily stomp a new record over the empty one
+        payload = copy.deepcopy(default_payload)
+        payload["username"] = "oauth"
+        payload["token"] = "oauth"
+        response = self.c.post(self.endpoint.replace("addempty", "update"), payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.full_token)
+        self.assertEqual(200, response.status_code)
+
+        j = response.json()
+        self.assertEqual(j["errors"], 1)
+        self.assertIn("Cannot use `partial` on empty BiosampleArtifact", "".join(j["messages"]))
+
+        assert models.BiosampleArtifact.objects.filter(central_sample_id=default_central_sample_id).count() == 1
+        bs = models.BiosampleArtifact.objects.get(central_sample_id=default_central_sample_id)
+        assert bs.sender_sample_id == "SECRET-0001" # check unchanged
 
     def test_put_empty_biosampleartifact_list_single_bad_scope_bad(self):
         payload = {
