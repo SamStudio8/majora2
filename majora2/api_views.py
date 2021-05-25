@@ -823,6 +823,16 @@ def add_metrics(request):
     return wrap_api_v2(request, f)
 
 
+# NOTE samstudio8 2021-05-25
+# This endpoint was initially a workaround to support biosamples without metadata
+# and allow downstream processes depending on them to be submitted without error,
+# with the metadata to be filled in later. Today we extend this idea to optionally
+# allow for a sender_sample_id to be pushed in to provide linkage to the four nations.
+# This is a bit of a hack and with a little more time and energy I might've come up
+# with a solution wherein the MajoraArtifact model itself has the ability to flag
+# itself as a complete record or not. Nevertheless, we are not in the business to
+# sit around and come up with elegant things and it just has to work instead.
+# See https://github.com/COG-UK/dipi-group/issues/78
 def addempty_biosample(request):
     def f(request, api_o, json_data, user=None, partial=False):
         biosamples = json_data.get("biosamples", {})
@@ -839,6 +849,10 @@ def addempty_biosample(request):
             if created:
                 TatlVerb(request=request.treq, verb="CREATE", content_object=biosample).save()
                 api_o["new"].append(_format_tuple(biosample))
+                if hasattr(biosamples[sample_id], "sender_sample_id"):
+                    # Add the optional sender_sample_id ONLY if this sample was created,
+                    # no sneaky --partials possible here!
+                    biosample.sender_sample_id = biosamples[sample_id]["sender_sample_id"]
             else:
                 api_o["ignored"].append(_format_tuple(biosample))
                 api_o["warnings"] += 1
