@@ -842,10 +842,12 @@ def addempty_biosample(request):
         if not biosamples:
             api_o["messages"].append("'biosamples' key missing or empty")
             api_o["errors"] += 1
+            return
 
         if not isinstance(biosamples, list):
             api_o["errors"] += 1
             api_o["messages"].append("'biosamples' appears malformed")
+            return
 
         for sample_id in biosamples:
             try:
