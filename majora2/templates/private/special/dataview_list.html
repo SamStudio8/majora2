@@ -31,7 +31,7 @@
             </ul></td>
             <td><ul>
                 {% for field in dv.filters.all %}
-                <li>{{ field.filter_field_nice }} <code>{{ field.filter_op }}</code> {{ field.filter_value }}</li>
+                <li><span class="badge badge-info">{{ field.id }}</span>{{ field.filter_field_nice }} <code>{{ field.filter_op }}</code> {{ field.filter_value }}</li>
                 {% endfor %}
             </ul></td>
             <td><ul>

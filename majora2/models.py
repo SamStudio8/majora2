@@ -1991,10 +1991,18 @@ class MajoraDataview(models.Model):
         return "MDV %s" % (self.code_name)
 
     def get_filters(self):
-        filters = {}
+        super_q = Q()
         for f in self.filters.all():
-            filters[ f.filter_field + '__' + f.filter_op ] = f.get_filter_value()
-        return filters
+            filter_v = f.get_filter_value()
+            curr_fop = f.filter_field + '__' + f.filter_op
+            curr_q = Q(**{curr_fop:filter_v})
+
+            if f.filter_op == "in" and f.filter_type == "list" and None in filter_v:
+                curr_fop = f.filter_field + '__isnull'
+                curr_q = (curr_q | Q(**{curr_fop:True}))
+
+            super_q = super_q & curr_q
+        return super_q
 
 #TODO This looks a lot like the API key, which is also tied to a profile
 # but I think it makes sense to keep them separate for now?
@@ -2034,6 +2042,7 @@ class MajoraDataviewFilterField(models.Model):
         ("int", "int"),
         ("float", "float"),
         ("bool", "bool"),
+        ("list", "list"), # user must provide list of comma delmited strings of type:val,type:val...
     ])
     filter_value = models.CharField(max_length=128)
     filter_op = models.CharField(max_length=10, default="exact") #TODO implement proper choices lookup based on Field lookups
@@ -2042,14 +2051,31 @@ class MajoraDataviewFilterField(models.Model):
     def filter_field_nice(self):
         return self.filter_field.replace('__', ' > ')
 
+    # :thinking: ...
     def get_filter_value(self):
-        type_ = getattr(builtins, self.filter_type)
+        if self.filter_type == "list":
+            l = []
+            for entry in self.filter_value.split(','):
+                if len(entry) == 0:
+                    continue
+                entry_type, entry_val = entry.split(':')
 
-        # Catch pesky bool case, thanks https://stackoverflow.com/questions/2678770/how-do-i-store-values-of-arbitrary-type-in-a-single-django-model
-        if self.filter_type == "bool":
-            return type_(int(self.filter_value))
+                type_ = getattr(builtins, entry_type)
+                if entry_type == "bool":
+                    l.append( type_(int(entry_val)) )
+                elif entry_type.lower() == "none":
+                    l.append(None)
+                else:
+                    l.append( type_(entry_val) )
+            return l
         else:
-            return type_(self.filter_value)
+            type_ = getattr(builtins, self.filter_type)
+
+            # Catch pesky bool case, thanks https://stackoverflow.com/questions/2678770/how-do-i-store-values-of-arbitrary-type-in-a-single-django-model
+            if self.filter_type == "bool":
+                return type_(int(self.filter_value))
+            else:
+                return type_(self.filter_value)
 
 
 from . import receivers

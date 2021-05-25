@@ -167,7 +167,7 @@ class RestyDataview(
         mdv = models.MajoraDataview.objects.get(code_name=mdv_code)
         queryset = apps.get_model("majora2", mdv.entry_point).objects.all()
 
-        return queryset.filter(** mdv.get_filters() )
+        return queryset.filter( mdv.get_filters() )
 
 #TODO We'll start with PAG as the default entry point for Dataviews but in future
 # we can probably move to specifying the entry point serializer and work from there
