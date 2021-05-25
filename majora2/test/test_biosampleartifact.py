@@ -830,6 +830,8 @@ class OAuthEmptyBiosampleArtifactTest(OAuthAPIClientBase):
         self.user.user_permissions.add(fp)
         self.user.save()
 
+        self.full_scope = "majora2.add_biosampleartifact majora2.change_biosampleartifact majora2.add_biosamplesource majora2.change_biosamplesource majora2.add_biosourcesamplingprocess majora2.change_biosourcesamplingprocess"
+        self.full_token = self._get_token(self.full_scope)
 
     def test_put_empty_biosampleartifact_list_single_ok(self):
         payload = {
@@ -844,6 +846,57 @@ class OAuthEmptyBiosampleArtifactTest(OAuthAPIClientBase):
 
         for biosample in payload["biosamples"]:
             assert models.BiosampleArtifact.objects.filter(central_sample_id=biosample).count() == 1
+
+    def test_put_empty_biosampleartifact_stomp_ok(self):
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                default_central_sample_id,
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        # Hackily stomp a new record over the empty one
+        payload = copy.deepcopy(default_payload)
+        payload["username"] = "oauth"
+        payload["token"] = "oauth"
+        response = self.c.post(self.endpoint.replace("addempty", "add"), payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.full_token)
+        self.assertEqual(200, response.status_code)
+
+        assert models.BiosampleArtifact.objects.filter(central_sample_id=default_central_sample_id).count() == 1
+        bs = models.BiosampleArtifact.objects.get(central_sample_id=default_central_sample_id)
+        _test_biosample(self, bs, payload)
+
+
+    def test_put_empty_biosampleartifact_with_sid_full_stomp_ok(self):
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                {"central_sample_id": default_central_sample_id, "sender_sample_id": "SECRET-0001"},
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        # Hackily stomp a new record over the empty one
+        payload = copy.deepcopy(default_payload)
+        payload["biosamples"][0]["sender_sample_id"] = "DIFFERENT-SECRET"
+        payload["username"] = "oauth"
+        payload["token"] = "oauth"
+        response = self.c.post(self.endpoint.replace("addempty", "add"), payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.full_token)
+        self.assertEqual(200, response.status_code)
+
+        assert models.BiosampleArtifact.objects.filter(central_sample_id=default_central_sample_id).count() == 1
+        bs = models.BiosampleArtifact.objects.get(central_sample_id=default_central_sample_id)
+        _test_biosample(self, bs, payload)
+
+        # Assert it again anyway
+        assert bs.sender_sample_id != "SECRET-0001"
+        assert bs.sender_sample_id == "DIFFERENT-SECRET"
+
 
     def test_put_empty_biosampleartifact_list_single_bad_scope_bad(self):
         payload = {
