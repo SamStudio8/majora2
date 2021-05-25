@@ -148,7 +148,6 @@ class OAuthAPIClientBase(BasicAPIBase):
         self.c.logout() # Remove any session state from APIBase
 
         Application = get_application_model()
-        AccessToken = get_access_token_model()
 
         self.application = Application.objects.create(
             name="Test Application",
@@ -161,19 +160,23 @@ class OAuthAPIClientBase(BasicAPIBase):
         )
 
         self.tokens = {}
-        self.scope_strs = [
-            "bad_scope",
-            "majora2.view_majoraartifact_info",
-        ]
+        self.scope_strs = {
+                "bad_scope": "bad_scope",
+                "majora2.view_majoraartifact_info": "majora2.view_majoraartifact_info",
+        }
 
-        for scope_group in self.scope_strs:
-            token = AccessToken.objects.create(
-                user=self.user,
-                token=str(uuid.uuid4()),
-                application=self.application,
-                expires=timezone.now() + datetime.timedelta(days=1),
-                scope=scope_group,
-            )
-            token.save()
-            self.tokens[scope_group] = token
+        for scope_group, scope_str in self.scope_strs.items():
+            self.tokens[scope_group] = self._get_token(scope_str)
+
+    def _get_token(self, scope_str):
+        AccessToken = get_access_token_model()
+        token = AccessToken.objects.create(
+            user=self.user,
+            token=str(uuid.uuid4()),
+            application=self.application,
+            expires=timezone.now() + datetime.timedelta(days=1),
+            scope=scope_str,
+        )
+        token.save()
+        return token
 

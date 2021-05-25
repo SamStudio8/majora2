@@ -28,7 +28,7 @@ from tatl.models import TatlVerb
 MINIMUM_CLIENT_VERSION = "0.37.0"
 
 @csrf_exempt
-def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=False, stream=False, get=False):
+def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=False, stream=False, get=False, oauth_only=False):
     from tatl.models import TatlRequest, TatlPermFlex
 
     start_ts = timezone.now()
@@ -88,6 +88,8 @@ def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=Fals
             api_o["errors"] += 1
             bad = True
             return HttpResponse(json.dumps(api_o), content_type="application/json")
+    elif oauth_only:
+        return HttpResponseBadRequest()
     else:
         if get:
             # GET API endpoints are OAuth only
@@ -835,24 +837,43 @@ def add_metrics(request):
 # See https://github.com/COG-UK/dipi-group/issues/78
 def addempty_biosample(request):
     def f(request, api_o, json_data, user=None, partial=False):
-        biosamples = json_data.get("biosamples", {})
+        biosamples = json_data.get("biosamples", [])
         if not biosamples:
             api_o["messages"].append("'biosamples' key missing or empty")
             api_o["errors"] += 1
 
+        if not isinstance(biosamples, list):
+            api_o["errors"] += 1
+            api_o["messages"].append("'biosamples' appears malformed")
+
         for sample_id in biosamples:
+            try:
+                sender_sample_id = None
+                if isinstance(sample_id, dict):
+                    central_sample_id = sample_id["central_sample_id"]
+                    sender_sample_id = sample_id.get("sender_sample_id")
+                elif isinstance(sample_id, str):
+                    central_sample_id = sample_id
+                else:
+                    raise Exception()
+            except:
+                api_o["warnings"] += 1
+                api_o["messages"].append("'biosamples' appears malformed")
+                continue
+
             # Make dummy sample
             biosample, created = models.BiosampleArtifact.objects.get_or_create(
-                    central_sample_id=sample_id,
-                    dice_name=sample_id
+                    central_sample_id=central_sample_id,
+                    dice_name=central_sample_id,
             )
             if created:
                 TatlVerb(request=request.treq, verb="CREATE", content_object=biosample).save()
                 api_o["new"].append(_format_tuple(biosample))
-                if hasattr(biosamples[sample_id], "sender_sample_id"):
-                    # Add the optional sender_sample_id ONLY if this sample was created,
-                    # no sneaky --partials possible here!
-                    biosample.sender_sample_id = biosamples[sample_id]["sender_sample_id"]
+
+                # Add the optional sender_sample_id ONLY if this sample was created,
+                # no sneaky --partials possible here!
+                if sender_sample_id:
+                    biosample.sender_sample_id = sender_sample_id
             else:
                 api_o["ignored"].append(_format_tuple(biosample))
                 api_o["warnings"] += 1
@@ -867,7 +888,7 @@ def addempty_biosample(request):
                 biosample.created = sample_p # Set the sample collection process
                 biosample.save()
 
-    return wrap_api_v2(request, f, permission="majora2.force_add_biosampleartifact", oauth_permission="majora2.force_add_biosampleartifact majora2.add_biosampleartifact majora2.change_biosampleartifact majora2.add_biosourcesamplingprocess majora2.change_biosourcesamplingprocess")
+    return wrap_api_v2(request, f, permission="majora2.force_add_biosampleartifact", oauth_permission="majora2.force_add_biosampleartifact majora2.add_biosampleartifact majora2.change_biosampleartifact majora2.add_biosourcesamplingprocess majora2.change_biosourcesamplingprocess", oauth_only=True)
 
 
 class MajoraEndpointView(View):

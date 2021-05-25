@@ -3,12 +3,12 @@ import uuid
 import copy
 
 from django.test import Client, TestCase
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from django.urls import reverse
 
 from majora2 import models
 from majora2 import forms
-from majora2.test.test_basic_api import BasicAPIBase
+from majora2.test.test_basic_api import BasicAPIBase, OAuthAPIClientBase
 
 from tatl import models as tmodels
 
@@ -91,17 +91,22 @@ class BiosampleArtifactTest(BasicAPIBase):
             "client_version": 1,
         }
 
-    def _add_biosample(self, payload, expected_errors=0, update=False):
+    def _add_biosample(self, payload, expected_errors=0, update=False, empty=False, expected_http=200):
         endpoint = "api.artifact.biosample.add"
         if update:
             endpoint = "api.artifact.biosample.update"
-        response = self.c.post(reverse(endpoint), payload, secure=True, content_type="application/json")
-        self.assertEqual(200, response.status_code)
+        elif empty:
+            endpoint = "api.artifact.biosample.addempty"
 
-        j = response.json()
-        if j["errors"] != expected_errors:
-            sys.stderr.write(json.dumps(j, indent=4, sort_keys=True) + '\n')
-        self.assertEqual(expected_errors, j["errors"])
+        response = self.c.post(reverse(endpoint), payload, secure=True, content_type="application/json")
+        self.assertEqual(expected_http, response.status_code)
+
+        j = None
+        if expected_http == 200:
+            j = response.json()
+            if j["errors"] != expected_errors:
+                sys.stderr.write(json.dumps(j, indent=4, sort_keys=True) + '\n')
+            self.assertEqual(expected_errors, j["errors"])
 
         bs = None
         try:
@@ -741,7 +746,248 @@ class BiosampleArtifactTest(BasicAPIBase):
                 self.assertIn(f, extra_j[cat])
 
 
+    def test_empty_biosample_noscope(self):
+        payload = {
+            "biosamples": [
+                self.default_central_sample_id,
+            ]
+        }
+        # By default users do not have scope to force samples
+        self._add_biosample(payload, empty=True, expected_http=400)
+
+    def test_empty_biosample_okscope_nooauth(self):
+        fp = Permission.objects.get(codename="force_add_biosampleartifact")
+        self.user.user_permissions.add(fp)
+        self.user.save()
+        payload = {
+            "username": self.user.username,
+            "token": self.key.key,
+            "biosamples": [
+                self.default_central_sample_id,
+            ],
+            "client_name": "pytest",
+            "client_version": 1,
+        }
+        self._add_biosample(payload, empty=True, expected_http=400)
+        self.user.user_permissions.remove(fp) # urgh better hope we dont run parallel tests eh
+        self.user.save()
+
     # Test nuke metadata (with new None)
     # Test nuke ct (currently only nuked on new)
     # Test mod preform
     # Test initial data is stompy
+
+class EmptyBiosampleArtifactTest(OAuthAPIClientBase):
+    def setUp(self):
+        super().setUp()
+
+        self.endpoint = reverse("api.artifact.biosample.addempty")
+
+        self.scope = "majora2.force_add_biosampleartifact majora2.add_biosampleartifact majora2.change_biosampleartifact majora2.add_biosourcesamplingprocess majora2.change_biosourcesamplingprocess"
+        self.token = self._get_token(self.scope)
+
+        fp = Permission.objects.get(codename="force_add_biosampleartifact")
+        self.user.user_permissions.add(fp)
+        self.user.save()
+
+
+    def test_put_empty_biosampleartifact_list_single_ok(self):
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                "FORCE-0001",
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        for biosample in payload["biosamples"]:
+            assert models.BiosampleArtifact.objects.filter(central_sample_id=biosample).count() == 1
+
+    def test_put_empty_biosampleartifact_list_multi_ok(self):
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                "FORCE-0001",
+                "FORCE-0002",
+                "FORCE-0003",
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        for biosample in payload["biosamples"]:
+            assert models.BiosampleArtifact.objects.filter(central_sample_id=biosample).count() == 1
+
+    def test_put_empty_biosampleartifact_dict_single_ok(self):
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                {"central_sample_id": "FORCE-0001", "sender_sample_id": "SECRET-0001"},
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        for biosample in payload["biosamples"]:
+            assert models.BiosampleArtifact.objects.filter(central_sample_id=biosample["central_sample_id"]).count() == 1
+            sample = models.BiosampleArtifact.objects.get(central_sample_id=biosample["central_sample_id"])
+            assert sample.sender_sample_id == biosample["sender_sample_id"]
+
+    def test_put_empty_biosampleartifact_dict_multi_ok(self):
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                {"central_sample_id": "FORCE-0001", "sender_sample_id": "SECRET-0001"},
+                {"central_sample_id": "FORCE-0002", "sender_sample_id": "SECRET-0002"},
+                {"central_sample_id": "FORCE-0003", "sender_sample_id": "SECRET-0003"},
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        for biosample in payload["biosamples"]:
+            assert models.BiosampleArtifact.objects.filter(central_sample_id=biosample["central_sample_id"]).count() == 1
+            sample = models.BiosampleArtifact.objects.get(central_sample_id=biosample["central_sample_id"])
+            assert sample.sender_sample_id == biosample["sender_sample_id"]
+
+    def test_put_empty_biosampleartifact_wrong_dict_bad1(self):
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                {"FORCE-0001": {"sender_sample_id": "SECRET-0001"}},
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        j = response.json()
+        for biosample in payload["biosamples"]:
+            assert models.BiosampleArtifact.objects.filter(central_sample_id="FORCE-0001").count() == 0
+        self.assertEqual(j["warnings"], 1)
+        self.assertIn("'biosamples' appears malformed", "".join(j["messages"]))
+
+    def test_put_empty_biosampleartifact_wrong_dict_bad2(self):
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                {"FORCE-0001": "SECRET-0001"},
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        j = response.json()
+        for biosample in payload["biosamples"]:
+            assert models.BiosampleArtifact.objects.filter(central_sample_id="FORCE-0001").count() == 0
+        self.assertEqual(j["warnings"], 1)
+        self.assertIn("'biosamples' appears malformed", "".join(j["messages"]))
+
+    def test_put_empty_biosampleartifact_wrong_type_bad1(self):
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                1.0,
+                2,
+                [],
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        j = response.json()
+        self.assertEqual(j["warnings"], 3)
+        self.assertIn("'biosamples' appears malformed", "".join(j["messages"]))
+
+    def test_put_empty_biosampleartifact_wrong_type_bad2(self):
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": "HOOT",
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        j = response.json()
+        self.assertEqual(j["errors"], 1)
+        self.assertIn("'biosamples' appears malformed", "".join(j["messages"]))
+
+    def test_put_empty_biosampleartifact_ignore_ok(self):
+        obj = models.BiosampleArtifact.construct_test_object()
+        obj.save()
+
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                obj.central_sample_id,
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        j = response.json()
+        for biosample in payload["biosamples"]:
+            assert models.BiosampleArtifact.objects.filter(central_sample_id=obj.central_sample_id).count() == 1
+
+        self.assertEqual(len(j["ignored"]), 1)
+        self.assertIn(obj.central_sample_id, j["ignored"][0][2]) # unpack tuple
+
+        obj.delete()
+        obj.save()
+
+    def test_put_empty_biosampleartifact_ignore_sid_ok(self):
+        obj = models.BiosampleArtifact.construct_test_object()
+        obj.save()
+
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                { "central_sample_id": obj.central_sample_id, "sender_sample_id": "SECRET" },
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        j = response.json()
+        for biosample in payload["biosamples"]:
+            assert models.BiosampleArtifact.objects.filter(central_sample_id=obj.central_sample_id).count() == 1
+            sample = models.BiosampleArtifact.objects.get(central_sample_id=obj.central_sample_id)
+            assert sample.sender_sample_id != "SECRET"
+
+        self.assertEqual(len(j["ignored"]), 1)
+        self.assertIn(obj.central_sample_id, j["ignored"][0][2]) # unpack tuple
+
+        obj.delete()
+        obj.save()
+
+    def test_addempty_biosample_tatl(self):
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                "FORCE-0001",
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        j = response.json()
+
+        tatl = tmodels.TatlRequest.objects.filter(response_uuid=j["request"]).first()
+        self.assertIsNotNone(tatl)
+
+        self.assertEqual(tatl.verbs.count(), 1)
+
+        expected_verbs = [
+            ("CREATE", models.BiosampleArtifact.objects.get(dice_name="FORCE-0001")),
+        ]
+        for verb in tatl.verbs.all():
+            self.assertIn( (verb.verb, verb.content_object), expected_verbs )
+
