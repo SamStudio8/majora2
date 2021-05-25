@@ -806,6 +806,22 @@ class OAuthBiosampleArtifactTest(OAuthAPIClientBase):
         bs = models.BiosampleArtifact.objects.get(central_sample_id=self.default_central_sample_id)
         _test_biosample(self, bs, payload)
 
+        # Check the validity endpoint
+        payload = {
+            "username": "hoot",
+            "token": "oauth",
+            "biosamples": [
+                self.default_central_sample_id,
+            ],
+        }
+        response = self.c.post(reverse("api.artifact.biosample.query.validity"), payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+
+        assert j["result"][self.default_central_sample_id]["exists"] == True
+        assert j["result"][self.default_central_sample_id]["has_sender_id"] == True
+        assert j["result"][self.default_central_sample_id]["has_metadata"] == True
+
     def test_add_biosample_bad_scope_bad(self):
         n_biosamples = models.BiosampleArtifact.objects.count()
 
@@ -870,6 +886,22 @@ class OAuthEmptyBiosampleArtifactTest(OAuthAPIClientBase):
 
         bs = models.BiosampleArtifact.objects.get(central_sample_id="FORCE-0001")
         assert bs.sender_sample_id is None
+
+        # Check the validity endpoint
+        payload = {
+            "username": "hoot",
+            "token": "oauth",
+            "biosamples": [
+                "FORCE-0001",
+            ],
+        }
+        response = self.c.post(reverse("api.artifact.biosample.query.validity"), payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+
+        assert j["result"]["FORCE-0001"]["exists"] == True
+        assert j["result"]["FORCE-0001"]["has_sender_id"] == False
+        assert j["result"]["FORCE-0001"]["has_metadata"] == False
 
     def test_put_empty_biosampleartifact_stomp_ok(self):
         payload = {
@@ -1014,6 +1046,22 @@ class OAuthEmptyBiosampleArtifactTest(OAuthAPIClientBase):
             assert models.BiosampleArtifact.objects.filter(central_sample_id=biosample["central_sample_id"]).count() == 1
             sample = models.BiosampleArtifact.objects.get(central_sample_id=biosample["central_sample_id"])
             assert sample.sender_sample_id == biosample["sender_sample_id"]
+
+        # Check the validity endpoint
+        payload = {
+            "username": "hoot",
+            "token": "oauth",
+            "biosamples": [
+                "FORCE-0001",
+            ],
+        }
+        response = self.c.post(reverse("api.artifact.biosample.query.validity"), payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+
+        assert j["result"]["FORCE-0001"]["exists"] == True
+        assert j["result"]["FORCE-0001"]["has_sender_id"] == True
+        assert j["result"]["FORCE-0001"]["has_metadata"] == False
 
     def test_put_empty_biosampleartifact_dict_multi_ok(self):
         payload = {
