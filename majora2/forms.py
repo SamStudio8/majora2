@@ -780,17 +780,22 @@ class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
             if not self.partial:
                self.add_error("received_date", "You must provide a received date for samples without a collection date")
 
-        # Check sample date is not in the future
+        # Check sample date is not too old, if it is a NEW sample
+        if self.instance._state.adding: # apparently this is better than checking instance.pk https://stackoverflow.com/a/907703/2576437
+            if cleaned_data.get("collection_date"):
+                if cleaned_data["collection_date"] < (timezone.now().date() - datetime.timedelta(days=365)):
+                    self.add_error("collection_date", "Sample cannot be collected more than a year ago...")
+            if cleaned_data.get("received_date"):
+                if cleaned_data["received_date"] < (timezone.now().date() - datetime.timedelta(days=365)):
+                    self.add_error("received_date", "Sample cannot be received more than a year ago...")
+
+        # Check sample date is not in the future, always
         if cleaned_data.get("collection_date"):
             if cleaned_data["collection_date"] > timezone.now().date():
                 self.add_error("collection_date", "Sample cannot be collected in the future")
-            elif cleaned_data["collection_date"] < (timezone.now().date() - datetime.timedelta(days=365)):
-                self.add_error("collection_date", "Sample cannot be collected more than a year ago...")
         if cleaned_data.get("received_date"):
             if cleaned_data["received_date"] > timezone.now().date():
                 self.add_error("received_date", "Sample cannot be received in the future")
-            elif cleaned_data["received_date"] < (timezone.now().date() - datetime.timedelta(days=365)):
-                self.add_error("received_date", "Sample cannot be received more than a year ago...")
 
         # Check if the adm2 looks like a postcode
         adm2 = cleaned_data.get("collection_location_adm2", "")

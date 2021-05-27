@@ -832,6 +832,62 @@ class OAuthBiosampleArtifactTest(OAuthAPIClientBase):
         self.assertEqual(j["errors"], 1)
         self.assertIn("Your token is valid but does not have all of the scopes to perform this action.", "".join(j["messages"]))
 
+    def test_add_biosample_oldsampledate_bad(self):
+        payload = copy.deepcopy(self.default_payload)
+        payload["biosamples"][0]["collection_date"] = (datetime.datetime.now() - datetime.timedelta(days=366)).strftime("%Y-%m-%d")
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(j["errors"], 1)
+        self.assertIn("Sample cannot be collected more than a year ago", "".join(j["messages"][0]["collection_date"][0]["message"]))
+
+        payload = copy.deepcopy(self.default_payload)
+        payload["biosamples"][0]["received_date"] = (datetime.datetime.now() - datetime.timedelta(days=366)).strftime("%Y-%m-%d")
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(j["errors"], 1)
+        self.assertIn("Sample cannot be received more than a year ago", "".join(j["messages"][0]["received_date"][0]["message"]))
+
+    def test_add_biosample_oldsampledate_update_ok(self):
+        payload = copy.deepcopy(self.default_payload)
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        assert models.BiosampleArtifact.objects.filter(central_sample_id=self.default_central_sample_id).count() == 1
+        bs = models.BiosampleArtifact.objects.get(central_sample_id=self.default_central_sample_id)
+
+        # Force the sample to be old
+        old_date = (datetime.datetime.now() - datetime.timedelta(days=366))
+        bs.created.collection_date = old_date
+        bs.created.save()
+
+        # Update the biosample
+        payload["biosamples"][0]["collection_date"] = old_date.strftime("%Y-%m-%d")
+        payload["biosamples"][0]["adm2"] = "Hootington"
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        j = response.json()
+        self.assertEqual(j["errors"], 0)
+
+        assert models.BiosampleArtifact.objects.filter(central_sample_id=self.default_central_sample_id).count() == 1
+        bs = models.BiosampleArtifact.objects.get(central_sample_id=self.default_central_sample_id)
+        _test_biosample(self, bs, payload)
+
+    def test_add_biosample_futuresampledate_bad(self):
+        payload = copy.deepcopy(self.default_payload)
+        payload["biosamples"][0]["collection_date"] = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(j["errors"], 1)
+        self.assertIn("Sample cannot be collected in the future", "".join(j["messages"][0]["collection_date"][0]["message"]))
+
+        payload = copy.deepcopy(self.default_payload)
+        payload["biosamples"][0]["received_date"] = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(j["errors"], 1)
+        self.assertIn("Sample cannot be received in the future", "".join(j["messages"][0]["received_date"][0]["message"]))
+
 
 class OAuthEmptyBiosampleArtifactTest(OAuthAPIClientBase):
     def setUp(self):
