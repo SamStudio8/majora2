@@ -872,14 +872,12 @@ def addempty_biosample(request):
             if created:
                 TatlVerb(request=request.treq, verb="CREATE", content_object=biosample).save()
                 api_o["new"].append(_format_tuple(biosample))
-
-                # Add the optional sender_sample_id ONLY if this sample was created,
-                # no sneaky --partials possible here!
-                if sender_sample_id:
-                    biosample.sender_sample_id = sender_sample_id
             else:
+                # TODO Ignored doesn't really mean ignored if you go and update sender_sample_id
+                # but at least users will know their force push did not create a new sample, or whatever
                 api_o["ignored"].append(_format_tuple(biosample))
                 api_o["warnings"] += 1
+
             if not biosample.created:
                 sample_p = models.BiosourceSamplingProcess()
                 sample_p.save()
@@ -890,6 +888,23 @@ def addempty_biosample(request):
                 sampling_rec.save()
                 biosample.created = sample_p # Set the sample collection process
                 biosample.save()
+
+            # Add the optional sender_sample_id regardless of whether this sample was just created,
+            # this is a sneaky --partial to help WSI out of a tight spot, that ONLY works on blanked samples (adm1 null)
+            # https://github.com/COG-UK/dipi-group/issues/78#issuecomment-856743169
+            if sender_sample_id and not biosample.created.collection_location_adm1:
+                if biosample.sender_sample_id != sender_sample_id:
+                    biosample.sender_sample_id = sender_sample_id
+                    biosample.save()
+
+                    if not created:
+                        changed_data_d = {
+                            "changed_fields": ["sender_sample_id"],
+                            "nulled_fields": [],
+                        }
+                        api_o["updated"].append(_format_tuple(biosample))
+                        TatlVerb(request=request.treq, verb="UPDATE", content_object=biosample, extra_context=json.dumps(changed_data_d)).save()
+
 
     return wrap_api_v2(request, f, permission="majora2.force_add_biosampleartifact", oauth_permission="majora2.force_add_biosampleartifact majora2.add_biosampleartifact majora2.change_biosampleartifact majora2.add_biosourcesamplingprocess majora2.change_biosourcesamplingprocess", oauth_only=True)
 

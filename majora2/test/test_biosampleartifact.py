@@ -926,23 +926,6 @@ class OAuthEmptyBiosampleArtifactTest(OAuthAPIClientBase):
         self.assertEqual(len(j["ignored"]), 1)
         self.assertIn("FORCE-0001", j["ignored"][0][2]) # unpack tuple
 
-        # Ensure double submit gets ignored, even if you try to add a sender_sample_id
-        payload = {
-            "username": self.user.username,
-            "token": "oauth",
-            "biosamples": [
-                {"central_sample_id": "FORCE-0001", "sender_sample_id": "SECRET-0001"},
-            ],
-        }
-        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
-        self.assertEqual(200, response.status_code)
-        j = response.json()
-        self.assertEqual(len(j["ignored"]), 1)
-        self.assertIn("FORCE-0001", j["ignored"][0][2]) # unpack tuple
-
-        bs = models.BiosampleArtifact.objects.get(central_sample_id="FORCE-0001")
-        assert bs.sender_sample_id is None
-
         # Check the validity endpoint
         payload = {
             "username": "hoot",
@@ -957,6 +940,39 @@ class OAuthEmptyBiosampleArtifactTest(OAuthAPIClientBase):
 
         assert j["result"]["FORCE-0001"]["exists"] == True
         assert j["result"]["FORCE-0001"]["has_sender_id"] == False
+        assert j["result"]["FORCE-0001"]["has_metadata"] == False
+
+        # Ensure double submit gets accepted if you try to add a sender_sample_id
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                {"central_sample_id": "FORCE-0001", "sender_sample_id": "SECRET-0001"},
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(len(j["ignored"]), 1)
+        self.assertIn("FORCE-0001", j["ignored"][0][2]) # unpack tuple
+
+        bs = models.BiosampleArtifact.objects.get(central_sample_id="FORCE-0001")
+        assert bs.sender_sample_id == "SECRET-0001"
+
+        # Check the validity endpoint
+        payload = {
+            "username": "hoot",
+            "token": "oauth",
+            "biosamples": [
+                "FORCE-0001",
+            ],
+        }
+        response = self.c.post(reverse("api.artifact.biosample.query.validity"), payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+
+        assert j["result"]["FORCE-0001"]["exists"] == True
+        assert j["result"]["FORCE-0001"]["has_sender_id"] == True
         assert j["result"]["FORCE-0001"]["has_metadata"] == False
 
     def test_put_empty_biosampleartifact_stomp_ok(self):
@@ -1241,31 +1257,124 @@ class OAuthEmptyBiosampleArtifactTest(OAuthAPIClientBase):
         obj.delete()
         obj.save()
 
-    def test_put_empty_biosampleartifact_ignore_sid_ok(self):
-        obj = models.BiosampleArtifact.construct_test_object()
-        obj.save()
+    def test_put_empty_biosampleartifact_stomp_sid_on_notblank_bad(self):
 
+        # push full sample
+        payload = copy.deepcopy(default_payload)
+        payload["username"] = "oauth"
+        payload["token"] = "oauth"
+        response = self.c.post(self.endpoint.replace("addempty", "add"), payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.full_token)
+        self.assertEqual(200, response.status_code)
+
+        # stomp it with addempty
         payload = {
             "username": self.user.username,
             "token": "oauth",
             "biosamples": [
-                { "central_sample_id": obj.central_sample_id, "sender_sample_id": "SECRET" },
+                { "central_sample_id": default_central_sample_id, "sender_sample_id": "NEW-SECRET" },
             ],
         }
         response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
         self.assertEqual(200, response.status_code)
 
+        # check the addempty stomp has no effect on existing sample
         j = response.json()
         for biosample in payload["biosamples"]:
-            assert models.BiosampleArtifact.objects.filter(central_sample_id=obj.central_sample_id).count() == 1
-            sample = models.BiosampleArtifact.objects.get(central_sample_id=obj.central_sample_id)
-            assert sample.sender_sample_id != "SECRET"
+            assert models.BiosampleArtifact.objects.filter(central_sample_id=default_central_sample_id).count() == 1
+            sample = models.BiosampleArtifact.objects.get(central_sample_id=default_central_sample_id)
+            assert sample.sender_sample_id != "NEW-SECRET"
 
-        self.assertEqual(len(j["ignored"]), 1)
-        self.assertIn(obj.central_sample_id, j["ignored"][0][2]) # unpack tuple
+        self.assertEqual(len(j["ignored"]), 1) # ignored because the force fails
+        self.assertEqual(len(j["updated"]), 0) # not updated
 
-        obj.delete()
-        obj.save()
+        tatl = tmodels.TatlRequest.objects.filter(response_uuid=j["request"]).first()
+        self.assertIsNotNone(tatl)
+        self.assertEqual(tatl.verbs.count(), 0)
+
+
+    def test_put_empty_biosampleartifact_stomp_sid_ok(self):
+
+        # Push a blank
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                { "central_sample_id": default_central_sample_id },
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        # Stomp with a secret
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                { "central_sample_id": default_central_sample_id, "sender_sample_id": "SECRET" },
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        # Check the secret exists
+        j = response.json()
+        for biosample in payload["biosamples"]:
+            assert models.BiosampleArtifact.objects.filter(central_sample_id=default_central_sample_id).count() == 1
+            sample = models.BiosampleArtifact.objects.get(central_sample_id=default_central_sample_id)
+            assert sample.sender_sample_id == "SECRET"
+
+        self.assertEqual(len(j["ignored"]), 1) # still ignored because the force fails
+        self.assertEqual(len(j["updated"]), 1)
+        self.assertIn(default_central_sample_id, j["updated"][0][2]) # unpack tuple
+
+        tatl = tmodels.TatlRequest.objects.filter(response_uuid=j["request"]).first()
+        self.assertIsNotNone(tatl)
+
+        self.assertEqual(tatl.verbs.count(), 1)
+        expected_verbs = [
+            ("UPDATE", models.BiosampleArtifact.objects.get(dice_name=default_central_sample_id)),
+        ]
+        for verb in tatl.verbs.all():
+            self.assertIn( (verb.verb, verb.content_object), expected_verbs )
+
+
+    def test_put_empty_biosampleartifact_stomp_sid_blank_ignored(self):
+        # Push a blank with a sender_sample_id
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                { "central_sample_id": default_central_sample_id, "sender_sample_id": "SECRET" },
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        # Stomp the blank without a sender_sample_id
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                { "central_sample_id": default_central_sample_id },
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        # Check the secret was not stomped over
+        j = response.json()
+        for biosample in payload["biosamples"]:
+            assert models.BiosampleArtifact.objects.filter(central_sample_id=default_central_sample_id).count() == 1
+            sample = models.BiosampleArtifact.objects.get(central_sample_id=default_central_sample_id)
+            assert sample.sender_sample_id == "SECRET"
+
+        self.assertEqual(len(j["ignored"]), 1) # still ignored because the force fails
+        self.assertEqual(len(j["updated"]), 0)
+
+        tatl = tmodels.TatlRequest.objects.filter(response_uuid=j["request"]).first()
+        self.assertIsNotNone(tatl)
+        self.assertEqual(tatl.verbs.count(), 0)
+
 
     def test_addempty_biosample_tatl(self):
         payload = {
