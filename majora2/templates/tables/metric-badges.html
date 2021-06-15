@@ -5,7 +5,7 @@
 {% if metric == "records" %}
         {% for item in value %}
         {% for k,v in item.items %}
-<span style="font-size: 1.2em"><span class="badge badge-left badge-dark">{{ metric_set.kind }}</span><span class="badge badge-center badge-info">{{ forloop.parentloop.counter }}</span><span class="badge badge-center badge-secondary">{{ k }}</span><span class="badge badge-right badge-primary">{{ v }}</span></span>
+<span style="font-size: 1.2em"><span class="badge badge-left badge-dark">{{ metric_set.kind }}</span><span class="badge badge-center badge-info">{{ forloop.parentloop.counter }}</span><span class="badge badge-center badge-secondary">{{ k }}</span><span class="badge badge-right badge-primary">{% if v %}{{ v }}{% else %}null{% endif %}</span></span>
         {% endfor %}
         {% endfor %}
 {% else %}
