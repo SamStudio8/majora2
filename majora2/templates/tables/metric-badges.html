@@ -1,7 +1,17 @@
 {% load humanize %}
 {% for metric_set in thing.metrics.all %}
 {% for metric, value in metric_set.as_struct.items %}
+
+{% if metric == "records" %}
+        {% for item in value %}
+        {% for k,v in item.items %}
+<span style="font-size: 1.2em"><span class="badge badge-left badge-dark">{{ metric_set.kind }}</span><span class="badge badge-center badge-info">{{ forloop.parentloop.counter }}</span><span class="badge badge-center badge-secondary">{{ k }}</span><span class="badge badge-right badge-primary">{{ v }}</span></span>
+        {% endfor %}
+        {% endfor %}
+{% else %}
 <span style="font-size: 1.2em"><span class="badge badge-left badge-dark">{{ metric_set.kind }}</span><span class="badge badge-center badge-secondary">{{ metric }}</span><span class="badge badge-right badge-primary">{{ value }}</span></span>
+{% endif %}
+
 {% endfor %}
 {% endfor %}
 
