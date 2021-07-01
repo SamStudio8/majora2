@@ -16,6 +16,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('dataview')
         parser.add_argument('user')
+        parser.add_argument('--date', required=False)
 
     def handle(self, *args, **options):
         su = User.objects.get(is_superuser=True)
@@ -31,12 +32,33 @@ class Command(BaseCommand):
             print("No user with that username.")
             sys.exit(1)
 
-        p = models.MajoraDataviewUserPermission(
+
+        start = timezone.now()
+        if options["date"]:
+            end = datetime.datetime.strptime(options["date"], "%Y-%m-%d")
+        else:
+            end = start + datetime.timedelta(days=30)
+
+        # Already has perm?
+        p = models.MajoraDataviewUserPermission.objects.filter(
                 profile = user.profile,
                 dataview = mdv,
-                validity_start = timezone.now(),
-                validity_end = timezone.now() + datetime.timedelta(days=30)
-        )
+                validity_start__lt=start,
+                validity_end__gt=start,
+        ).first()
+
+        if p:
+            action = "extend"
+            p.validity_end = end
+        else:
+            action = "grant"
+            p = models.MajoraDataviewUserPermission(
+                profile = user.profile,
+                dataview = mdv,
+                validity_start = start,
+                validity_end = end
+            )
+
         p.save()
         treq = tmodels.TatlPermFlex(
             user = su,
@@ -47,6 +69,7 @@ class Command(BaseCommand):
             extra_context = json.dumps({
                 "dataview": mdv.code_name,
                 "dataview_permission": p.id,
+                "dataview_action": action,
                 "validity_end": p.validity_end.strftime("%Y-%m-%d %H:%M:%S"),
             }),
         )
