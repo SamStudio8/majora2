@@ -797,6 +797,15 @@ class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
             if cleaned_data["received_date"] > timezone.now().date():
                 self.add_error("received_date", "Sample cannot be received in the future")
 
+        # Check sample date is not from before 2020, always
+        # thanks for ruining my bbq time MATT
+        if cleaned_data.get("collection_date"):
+            if cleaned_data["collection_date"].year < 2020:
+                self.add_error("collection_date", "Sample cannot be collected before 2020")
+        if cleaned_data.get("received_date"):
+            if cleaned_data["received_date"].year < 2020:
+                self.add_error("received_date", "Sample cannot be received before 2020")
+
         # Check if the adm2 looks like a postcode
         adm2 = cleaned_data.get("collection_location_adm2", "")
         if adm2:
