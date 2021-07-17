@@ -871,6 +871,68 @@ class OAuthBiosampleArtifactTest(OAuthAPIClientBase):
         bs = models.BiosampleArtifact.objects.get(central_sample_id=self.default_central_sample_id)
         _test_biosample(self, bs, payload)
 
+    def test_add_biosample_pastsampledate_nearlybad(self):
+        payload = copy.deepcopy(self.default_payload)
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        assert models.BiosampleArtifact.objects.filter(central_sample_id=self.default_central_sample_id).count() == 1
+
+        payload["biosamples"][0]["collection_date"] = "2019-12-31"
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(j["errors"], 1)
+        self.assertIn("Sample cannot be collected before 2020", "".join(j["messages"][0]["collection_date"][0]["message"]))
+
+        payload = copy.deepcopy(self.default_payload)
+        payload["biosamples"][0]["received_date"] = "2019-12-31"
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(j["errors"], 1)
+        self.assertIn("Sample cannot be received before 2020", "".join(j["messages"][0]["received_date"][0]["message"]))
+
+    def test_add_biosample_pastsampledate_verybad(self):
+        payload = copy.deepcopy(self.default_payload)
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        assert models.BiosampleArtifact.objects.filter(central_sample_id=self.default_central_sample_id).count() == 1
+
+        payload["biosamples"][0]["collection_date"] = "1899-12-30"
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(j["errors"], 1)
+        self.assertIn("Sample cannot be collected before 2020", "".join(j["messages"][0]["collection_date"][0]["message"]))
+
+        payload = copy.deepcopy(self.default_payload)
+        payload["biosamples"][0]["received_date"] = "1899-12-30"
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(j["errors"], 1)
+        self.assertIn("Sample cannot be received before 2020", "".join(j["messages"][0]["received_date"][0]["message"]))
+
+    def test_add_biosample_pastsampledate_notbad(self):
+        payload = copy.deepcopy(self.default_payload)
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        assert models.BiosampleArtifact.objects.filter(central_sample_id=self.default_central_sample_id).count() == 1
+
+        payload["biosamples"][0]["collection_date"] = "2020-01-01"
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(j["errors"], 0)
+        bs = models.BiosampleArtifact.objects.get(central_sample_id=self.default_central_sample_id)
+        assert bs.created.collection_date == datetime.datetime.strptime("2020-01-01", "%Y-%m-%d").date()
+
+        payload = copy.deepcopy(self.default_payload)
+        payload["biosamples"][0]["received_date"] = "2020-01-01"
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(j["errors"], 0)
+        bs = models.BiosampleArtifact.objects.get(central_sample_id=self.default_central_sample_id)
+        assert bs.created.received_date == datetime.datetime.strptime("2020-01-01", "%Y-%m-%d").date()
+
     def test_add_biosample_futuresampledate_bad(self):
         payload = copy.deepcopy(self.default_payload)
         payload["biosamples"][0]["collection_date"] = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
