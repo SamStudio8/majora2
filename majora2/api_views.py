@@ -1601,6 +1601,7 @@ def get_task_result(request):
         from mylims.celery import app
         res = app.AsyncResult(task_id)
         state = res.state
+        cleaned = False
         if state == "SUCCESS":
             try:
                 api_o.update(res.get())
@@ -1608,7 +1609,6 @@ def get_task_result(request):
                 api_o["errors"] += 1
                 api_o["messages"].append(str(e))
 
-            cleaned = False
             try:
                 # Delete task result from backend
                 res.forget()
