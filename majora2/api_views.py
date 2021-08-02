@@ -1600,11 +1600,21 @@ def get_task_result(request):
 
         from mylims.celery import app
         res = app.AsyncResult(task_id)
-        if res.state == "SUCCESS":
+        state = res.state
+        if state == "SUCCESS":
             try:
                 api_o.update(res.get())
             except Exception as e:
                 api_o["errors"] += 1
+                api_o["messages"].append(str(e))
+
+            cleaned = False
+            try:
+                # Delete task result from backend
+                res.forget()
+                cleaned = True
+            except Exception as e:
+                api_o["warnings"] += 1
                 api_o["messages"].append(str(e))
         else:
             api_o["warnings"] += 1
@@ -1612,7 +1622,8 @@ def get_task_result(request):
 
         api_o["task"] = {
             "id": task_id,
-            "state": res.state,
+            "state": state,
+            "cleaned": cleaned,
         }
 
     return wrap_api_v2(request, f)
