@@ -354,7 +354,7 @@ def handle_testdigitalresource(form, user=None, api_o=None, request=None):
                 is_latest=True,
                 owner=res.created.who,
         )
-        if pag_created:
+        if not pag.published_date:
             pag.published_date = timezone.now().date()
         res.groups.add(pag)
         pag.save()
