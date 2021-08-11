@@ -1728,7 +1728,7 @@ def suppress_pag(request):
                 api_o["messages"].append("%s already suppressed" % pag_name)
                 continue
 
-            if pag.owner.profile.institute != user.profile.institute and not user.has_perm('majora2.can_suppress_pags_via_api'):
+            if pag.owner.profile.institute != user.profile.institute:
                 api_o["ignored"].append(pag_name)
                 api_o["errors"] += 1
                 api_o["messages"].append("Your organisation (%s) does not own %s (%s)" % (user.profile.institute.code, pag_name, pag.owner.profile.institute.code))
@@ -1741,7 +1741,7 @@ def suppress_pag(request):
             api_o["updated"].append(_format_tuple(pag))
             TatlVerb(request=request.treq, verb="SUPPRESS", content_object=pag).save()
 
-    return wrap_api_v2(request, f) # TODO Needs OAuth will fallback to Owner
+    return wrap_api_v2(request, f, permission="majora2.can_suppress_pags_via_api", oauth_permission="majora2.can_suppress_pags_via_api")
 
 
 def v0_get_artifact_info(request):

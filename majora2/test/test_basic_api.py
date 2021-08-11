@@ -26,6 +26,9 @@ class BasicAPIBase(TransactionTestCase):
         hoot = models.Institute(code="HOOT", name="Hypothetical University of Hooting")
         hoot.save()
 
+        not_hoot = models.Institute(code="HOOO", name="Hooting Office of Ornithology")
+        not_hoot.save()
+
         # Create a fully approved profile user
         user = User.objects.create(username='api_user', email='api@example.org')
         user.set_password('password')
@@ -34,7 +37,15 @@ class BasicAPIBase(TransactionTestCase):
         profile = models.Profile(user=user, institute=hoot, is_site_approved=True)
         profile.save()
 
+        not_user = User.objects.create(username='another_api_user', email='api@example.org')
+        not_user.set_password('password')
+        not_user.is_active = True # sysadmins mark this field
+        not_user.save()
+        profile = models.Profile(user=not_user, institute=not_hoot, is_site_approved=True)
+        profile.save()
+
         self.user = user
+        self.not_user = not_user
 
         # Create an API key def
         kd = models.ProfileAPIKeyDefinition(
