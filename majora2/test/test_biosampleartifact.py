@@ -849,6 +849,16 @@ class OAuthBiosampleArtifactTest(OAuthAPIClientBase):
         self.assertEqual(j["errors"], 1)
         self.assertIn("Sample cannot be received more than a year ago", "".join(j["messages"][0]["received_date"][0]["message"]))
 
+    def test_add_biosample_receivedbeforecollection_bad(self):
+        payload = copy.deepcopy(self.default_payload)
+        payload["biosamples"][0]["collection_date"] = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+        payload["biosamples"][0]["received_date"] = (datetime.datetime.now() - datetime.timedelta(days=2)).strftime("%Y-%m-%d")
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(j["errors"], 1)
+        self.assertIn("Sample cannot be collected after it was received", "".join(j["messages"][0]["collection_date"][0]["message"]))
+
     def test_add_biosample_oldsampledate_update_ok(self):
         payload = copy.deepcopy(self.default_payload)
         response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
@@ -897,6 +907,7 @@ class OAuthBiosampleArtifactTest(OAuthAPIClientBase):
         assert models.BiosampleArtifact.objects.filter(central_sample_id=self.default_central_sample_id).count() == 1
 
         payload["biosamples"][0]["collection_date"] = "1899-12-30"
+        payload["biosamples"][0]["received_date"] = None
         response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
         self.assertEqual(200, response.status_code)
         j = response.json()
@@ -904,6 +915,7 @@ class OAuthBiosampleArtifactTest(OAuthAPIClientBase):
         self.assertIn("Sample cannot be collected before 2020", "".join(j["messages"][0]["collection_date"][0]["message"]))
 
         payload = copy.deepcopy(self.default_payload)
+        payload["biosamples"][0]["collection_date"] = None
         payload["biosamples"][0]["received_date"] = "1899-12-30"
         response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
         self.assertEqual(200, response.status_code)
@@ -917,6 +929,7 @@ class OAuthBiosampleArtifactTest(OAuthAPIClientBase):
         assert models.BiosampleArtifact.objects.filter(central_sample_id=self.default_central_sample_id).count() == 1
 
         payload["biosamples"][0]["collection_date"] = "2020-01-01"
+        payload["biosamples"][0]["received_date"] = None
         response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
         self.assertEqual(200, response.status_code)
         j = response.json()
@@ -925,6 +938,7 @@ class OAuthBiosampleArtifactTest(OAuthAPIClientBase):
         assert bs.created.collection_date == datetime.datetime.strptime("2020-01-01", "%Y-%m-%d").date()
 
         payload = copy.deepcopy(self.default_payload)
+        payload["biosamples"][0]["collection_date"] = None
         payload["biosamples"][0]["received_date"] = "2020-01-01"
         response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
         self.assertEqual(200, response.status_code)
@@ -936,6 +950,7 @@ class OAuthBiosampleArtifactTest(OAuthAPIClientBase):
     def test_add_biosample_futuresampledate_bad(self):
         payload = copy.deepcopy(self.default_payload)
         payload["biosamples"][0]["collection_date"] = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+        payload["biosamples"][0]["received_date"] = None
         response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
         self.assertEqual(200, response.status_code)
         j = response.json()
@@ -943,6 +958,7 @@ class OAuthBiosampleArtifactTest(OAuthAPIClientBase):
         self.assertIn("Sample cannot be collected in the future", "".join(j["messages"][0]["collection_date"][0]["message"]))
 
         payload = copy.deepcopy(self.default_payload)
+        payload["biosamples"][0]["collection_date"] = None
         payload["biosamples"][0]["received_date"] = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
         response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
         self.assertEqual(200, response.status_code)

@@ -789,6 +789,11 @@ class BiosourceSamplingProcessModelForm(MajoraPossiblePartialModelForm):
                 if cleaned_data["received_date"] < (timezone.now().date() - datetime.timedelta(days=365)):
                     self.add_error("received_date", "Sample cannot be received more than a year ago...")
 
+        # Check received is not before collection
+        if cleaned_data.get("collection_date") and cleaned_data.get("received_date"):
+            if cleaned_data.get("received_date") < cleaned_data.get("collection_date"):
+                self.add_error("collection_date", "Sample cannot be collected after it was received. Perhaps they have been swapped?")
+
         # Check sample date is not in the future, always
         if cleaned_data.get("collection_date"):
             if cleaned_data["collection_date"] > timezone.now().date():
