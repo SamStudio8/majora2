@@ -1099,10 +1099,14 @@ def add_library(request):
             api_o["messages"].append("'library_name' key missing or empty")
             api_o["errors"] += 1
             return
-        biosamples = json_data.get("biosamples", {})
+        biosamples = json_data.get("biosamples", [])
         if not biosamples:
             api_o["messages"].append("'biosamples' key missing or empty")
             api_o["errors"] += 1
+            return
+        if not isinstance(biosamples, list):
+            api_o["errors"] += 1
+            api_o["messages"].append("'biosamples' appears malformed")
             return
 
         library = None
@@ -1136,6 +1140,7 @@ def add_library(request):
         sample_missing = False
         sample_forced = False
         for biosample in biosamples:
+
             sample_id = biosample.get("central_sample_id")
             if json_data.get("force_biosamples"):
                 # Make dummy sample
