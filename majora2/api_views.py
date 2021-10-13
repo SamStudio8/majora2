@@ -145,7 +145,7 @@ def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=Fals
                 request.treq.substitute_user = user
                 request.treq.save()
 
-                if permission:
+                if permission and not oauth:
                     tflex.substitute_user = user
                     tflex.save()
             except:
