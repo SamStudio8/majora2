@@ -283,7 +283,12 @@
             <tr>
                 <td><b>{{ record.verb }}</b></br><code>{{ record.request.view_name }}</code></td>
                 <td>{{ record.request.timestamp|date:'N j Y, H:i' }}</br>{{ record.request.timestamp | naturaltime }}</td>
-                <td>{{ record.request.user }}</br>{{ record.request.user.profile.institute.code }}</td>
+                <td>
+                    {% if record.request.substitute_user %}
+                        {{ record.request.substitute_user }}</br>(via {{ record.request.user }}) {{ record.request.substitute_user.profile.institute.code }}</td>
+                    {% else %}
+                        {{ record.request.user }}</br>{{ record.request.user.profile.institute.code }}</td>
+                    {% endif %}
                 <td width="50%"><code>{{ record.extra_context }}</code></td>
             </tr>
         {% endfor %}
