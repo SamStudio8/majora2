@@ -295,6 +295,7 @@ class M2MetricRecord_ThresholdCycleForm(forms.Form): # should probably be a mode
                 ("ALINITY", "ALINITY"),
                 ("AMPLIDIAG", "AMPLIDIAG"),
                 ("TAQPATH_HT", "TAQPATH_HT"),
+                ("INVITROGEN", "INVITROGEN"),
             ],
             required=False,
     )
