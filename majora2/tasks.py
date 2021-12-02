@@ -464,6 +464,16 @@ def _get_pags_by_qc_options(request, api_o, json_data):
             api_o["errors"] += 1
             api_o["messages"].append(str(e))
 
+    if json_data.get("published_before"):
+        try:
+            lt_date = datetime.datetime.strptime(json_data["published_before"], "%Y-%m-%d")
+            base_q = base_q & Q(
+                published_date__lt=lt_date
+            )
+        except Exception as e:
+            api_o["errors"] += 1
+            api_o["messages"].append(str(e))
+
     if json_data.get("suppressed_after"):
         try:
             gt_date = datetime.datetime.strptime(json_data["suppressed_after"], "%Y-%m-%d")
