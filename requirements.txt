@@ -26,3 +26,4 @@ django-oauth-toolkit==1.4.1 # Broken by missing algorithm field on model in 1.5.
 django-cors-headers==3.5.0
 requests==2.23.0
 boto3==1.13.1
+markdown==3.3.4 # Newer version breaks build by requiring a version of importlib that is too new
