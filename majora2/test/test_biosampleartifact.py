@@ -1476,3 +1476,22 @@ class OAuthEmptyBiosampleArtifactTest(OAuthAPIClientBase):
         for verb in tatl.verbs.all():
             self.assertIn( (verb.verb, verb.content_object), expected_verbs )
 
+
+    def test_put_empty_biosampleartifact_metadata_ok(self):
+        payload = {
+            "username": self.user.username,
+            "token": "oauth",
+            "biosamples": [
+                {"central_sample_id": "FORCE-0001", "sender_sample_id": "SECRET-0001", "metadata": {"mytag": {"mykey": "myval"}}},
+                {"central_sample_id": "FORCE-0002", "sender_sample_id": "SECRET-0002", "metadata": {}},
+                {"central_sample_id": "FORCE-0003"},
+            ],
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        for biosample in payload["biosamples"]:
+            assert models.BiosampleArtifact.objects.filter(central_sample_id=biosample["central_sample_id"]).count() == 1
+            sample = models.BiosampleArtifact.objects.get(central_sample_id=biosample["central_sample_id"])
+            assert sample.get_metadata_as_struct() == biosample.get("metadata", {})
+            assert len(sample.get_metadata_as_struct()) == len(biosample.get("metadata", {}))

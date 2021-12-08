@@ -836,6 +836,13 @@ def add_metrics(request):
 # itself as a complete record or not. Nevertheless, we are not in the business to
 # sit around and come up with elegant things and it just has to work instead.
 # See https://github.com/COG-UK/dipi-group/issues/78
+# NOTE samstudio8 2021-12-08
+# Unsurprisingly the addempty endpoint has been subject to some feature creep and
+# is now the magic mechanism through which samples will be injected via the new
+# Foel ingest platform. We've now added the ability to tag empty biosamples with
+# key value metadata as a means to keep track of arbitrary information such as how
+# the sample reached the sequencing org, and which org Foel injected metadata on
+# behalf of. Empty biosamples not looking so empty these days.
 def addempty_biosample(request):
     def f(request, api_o, json_data, user=None, partial=False):
         biosamples = json_data.get("biosamples", [])
@@ -855,8 +862,10 @@ def addempty_biosample(request):
                 if isinstance(sample_id, dict):
                     central_sample_id = sample_id["central_sample_id"]
                     sender_sample_id = sample_id.get("sender_sample_id")
+                    sample_metadata = sample_id.get("metadata", {})
                 elif isinstance(sample_id, str):
                     central_sample_id = sample_id
+                    sample_metadata = {}
                 else:
                     raise Exception()
             except:
@@ -877,6 +886,12 @@ def addempty_biosample(request):
                 # but at least users will know their force push did not create a new sample, or whatever
                 api_o["ignored"].append(_format_tuple(biosample))
                 api_o["warnings"] += 1
+
+            # Handle new metadata iff this sample is new (do not allow updates)
+            # NOTE samstudio8 2021-12-08: Added to handle empty Foel samples that
+            #   need k:v metadata to specify the foel_producer and sample_route
+            if created:
+                handle_metadata(sample_metadata, 'artifact', biosample.dice_name, user, api_o)
 
             if not biosample.created:
                 sample_p = models.BiosourceSamplingProcess()
