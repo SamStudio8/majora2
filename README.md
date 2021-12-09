@@ -26,7 +26,7 @@ Although many LIMS' exist, Majora is quite good because:
 
 Although not used for COG, Majora has some other notable features:
 
-* Majora pushes the idea of using a `diceware` based sample naming strategy; to reduce transcribing and picking errors
+* Majora pushes the idea of using a `diceware` based sample and container naming strategy; to reduce transcribing and picking errors
 * It has support for `datamatrix` barcodes which are far superior to garbage QR codes
 
 ## How can I use it?
