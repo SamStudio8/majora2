@@ -9,8 +9,8 @@
 Majora is a Django-based wet-and-dry information management system.
 Majora comprises of the database models for storing metadata on samples, files and the processes that create and link them; a web interface for users to manage their accounts and retrieve limited metadata; and a set of APIs to add, update and retrieve metadata from the database.
 
-Majora is being rapidly developed and has been deployed as part of the COVID-19 Genomics UK Consortium (COG-UK) response to the outbreak of SARS-CoV-2.
-For more information on how Majora and friends have been used to underpin the analysis of over a million genomes by COG-UK, [see our article published in Genome Biology](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02395-y).
+Majora was initially designed for a small-scale clinical metagenomics laboratory, but in March 2020 was commandeered to act as the central metadata repository for the COVID-19 Genomics UK Consortium (COG-UK) in response to the outbreak of SARS-CoV-2.
+Majora has been rapidly developed and successfully scaled through several orders of sample magnitude. For more information on how Majora (and friends) has been used to underpin the analysis of well over a million SARS-CoV-2 genomes by COG-UK, [see our article published in Genome Biology](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02395-y).
 
 ## What makes it useful?
 
