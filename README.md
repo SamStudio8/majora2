@@ -16,12 +16,13 @@ Majora has been rapidly developed and successfully scaled through several orders
 
 Although many LIMS' exist, Majora is quite good because:
 
-* It models data for both sites of the bench, meaning both samples and digital files can be stored together
-* It considers artifacts as an adventure of different processes, meaning you can reconstruct the journey a sample has taken from a tube check-in at the lab, to an upload of data to a public database
+* It models data from both sides of the bench, meaning samples and downstream digital files such as reads and assemblies can be indexed together
+* It considers the journey of an artifact as an adventure of different processes, meaning you can reconstruct the steps a sample has taken from a tube check-in at the lab, to an upload of data to a public database
 * Majora provides a polymorphic 'Artifact' model that can be expanded into any custom models you like
-* You can define quality control thresholds and have Majora apply them to your dataset and publish the result
-* Majora is flexible and can store almost any metadata about any artifact
+* Majora can be customised with quality control thresholds and have Majora apply them using any arbitrary metrics in your dataset and keep track of the QC decision
+* Majora is flexible and can store almost any metadata about any artifact through its use of polymorphic models and a generic "key-value" tag namespace
 * Majora has [a command client that works](https://github.com/SamStudio8/ocarina/)
+* Majora even has [a limited amount of pretty cool looking documentation](https://samstudio8.github.io/majora-docs/#introduction)
 
 Although not used for COG, Majora has some other notable features:
 
