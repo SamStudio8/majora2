@@ -1,5 +1,10 @@
-# majora
-*Malleable All-seeing Journal Of Research Artifacts*
+<div align="center">
+<p align="center">
+   <img src="/images/inbound-ops-patch.png" alt="Inbound Data Operations Badge" width="250"> 
+</p>
+<h1 align="center">Majora</h1>
+<h3 align="center">The Malleable All-seeing Journal Of Research Artifacts</h3>
+</div>
 
 Majora is a Django-based wet-and-dry information management system.
 Majora comprises of the database models for storing metadata on samples, files and the processes that create and link them; a web interface for users to manage their accounts and retrieve limited metadata; and a set of APIs to add, update and retrieve metadata from the database.
