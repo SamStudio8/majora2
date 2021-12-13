@@ -1838,8 +1838,8 @@ class LibraryArtifact(MajoraArtifact):
     layout_read_length = models.PositiveIntegerField(blank=True, null=True)
     layout_insert_length = models.PositiveIntegerField(blank=True, null=True)
 
-    seq_kit = models.CharField(max_length=48, blank=True, null=True)
-    seq_protocol = models.CharField(max_length=48, blank=True, null=True)
+    seq_kit = models.CharField(max_length=96, blank=True, null=True)
+    seq_protocol = models.CharField(max_length=96, blank=True, null=True)
 
     @classmethod
     def construct_test_object(cls):
