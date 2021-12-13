@@ -372,8 +372,8 @@ class TestLibraryForm(forms.Form):
     library_layout_read_length = forms.IntegerField(min_value=0, required=False)
     library_layout_insert_length = forms.IntegerField(min_value=0, required=False)
 
-    library_seq_kit = forms.CharField(max_length=48)
-    library_seq_protocol = forms.CharField(max_length=48)
+    library_seq_kit = forms.CharField(max_length=96)
+    library_seq_protocol = forms.CharField(max_length=96)
 
 
 class TestLibraryBiosampleForm(forms.Form):
