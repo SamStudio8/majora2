@@ -1204,6 +1204,7 @@ def add_library(request):
                     if not record:
                         api_o["ignored"].append(sample_id)
                         api_o["errors"] += 1
+                        api_o["messages"].append("Failed to create a LibraryPoolingProcessRecord. Possible race condition detected.")
                 else:
                     api_o["errors"] += 1
                     api_o["ignored"].append(initial)
