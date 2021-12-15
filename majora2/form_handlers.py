@@ -192,11 +192,6 @@ def handle_testlibrary(form, user=None, api_o=None, request=None):
     library_name = form.cleaned_data["library_name"]
     library, library_created = models.LibraryArtifact.objects.get_or_create(
                 dice_name=library_name)
-    library.layout_config = form.cleaned_data.get("library_layout_config")
-    library.layout_read_length = form.cleaned_data.get("library_layout_read_length")
-    library.layout_insert_length = form.cleaned_data.get("library_layout_insert_length")
-    library.seq_kit = form.cleaned_data.get("library_seq_kit")
-    library.seq_protocol = form.cleaned_data.get("library_seq_protocol")
 
     if library_created:
         if api_o:
@@ -213,11 +208,29 @@ def handle_testlibrary(form, user=None, api_o=None, request=None):
         )
         pool_p.save()
         library.created = pool_p
-    else:
-        if api_o:
+
+    # Note that deep=False prevents fetching the biosamples, meaning we'll only
+    # compare the attributes of the library (and any k:v metadata)
+    library_as_struct = library.as_struct(deep=False)
+
+    library.layout_config = form.cleaned_data.get("library_layout_config")
+    library.layout_read_length = form.cleaned_data.get("library_layout_read_length")
+    library.layout_insert_length = form.cleaned_data.get("library_layout_insert_length")
+    library.seq_kit = form.cleaned_data.get("library_seq_kit")
+    library.seq_protocol = form.cleaned_data.get("library_seq_protocol")
+
+    updated_library_as_struct = library.as_struct(deep=False)
+
+    # Crudely check if the library has changed before saving, largely avoiding
+    # the race condition of two requests attempting to create the same library object
+    if library_as_struct != updated_library_as_struct or library_created:
+        library.save()
+
+        if api_o and not library_created:
+            # Add the Updated verb if the library was updated and wasn't created
             api_o["updated"].append(_format_tuple(library))
             TatlVerb(request=request.treq, verb="UPDATE", content_object=library).save()
-    library.save()
+
     return library, library_created
 
 def handle_testlibraryrecord(form, user=None, api_o=None, request=None):
