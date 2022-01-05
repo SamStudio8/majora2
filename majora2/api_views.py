@@ -1750,7 +1750,8 @@ def suppress_pag(request):
                 api_o["messages"].append("%s already suppressed" % pag_name)
                 continue
 
-            if pag.owner.profile.institute != user.profile.institute:
+            # User cannot suppress this PAG if they do not own it without the special "can_suppress_any" permission
+            if pag.owner.profile.institute != user.profile.institute and not user.has_perm("majora2.can_suppress_any_pags_via_api"):
                 api_o["ignored"].append(pag_name)
                 api_o["errors"] += 1
                 api_o["messages"].append("Your organisation (%s) does not own %s (%s)" % (user.profile.institute.code, pag_name, pag.owner.profile.institute.code))

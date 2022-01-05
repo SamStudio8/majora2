@@ -26,6 +26,10 @@ class OAuthSuppressPAGTest(OAuthAPIClientBase):
         self.user.user_permissions.add(fp)
         self.user.save()
 
+        fp = Permission.objects.get(codename="can_suppress_any_pags_via_api")
+        self.staff_user.user_permissions.add(fp)
+        self.staff_user.save()
+
     def test_suppress_ok(self):
         payload = {
             "username": self.user.username,
@@ -129,3 +133,33 @@ class OAuthSuppressPAGTest(OAuthAPIClientBase):
         j = response.json()
         self.assertEqual(j["errors"], 1)
         self.assertIn("does not own", "".join(j["messages"]))
+
+    def test_suppress_else_pag_as_admin(self):
+        staff_token = self._get_token(self.scope, user=self.staff_user)
+
+        pag = models.PublishedArtifactGroup(
+            published_name="HOOO/HOOO-BESAM5/HOOO:HOOHOO",
+            published_version=1,
+            is_latest=True,
+            owner=self.user,
+        )
+        pag.save()
+
+        payload = {
+            "username": self.staff_user.username,
+            "token": "oauth",
+            "publish_group": "HOOO/HOOO-BESAM5/HOOO:HOOHOO",
+            "reason": "WRONG_SEQUENCE",
+        }
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % staff_token)
+        self.assertEqual(200, response.status_code)
+
+        j = response.json()
+        self.assertEqual(j["errors"], 0)
+
+        pag = models.PublishedArtifactGroup.objects.get(published_name="HOOO/HOOO-BESAM5/HOOO:HOOHOO")
+        assert pag is not None
+        assert pag.is_suppressed is True
+        assert pag.suppressed_reason == "WRONG_SEQUENCE"
+        assert pag.suppressed_date.date() == datetime.date.today()
+

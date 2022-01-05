@@ -29,6 +29,9 @@ class BasicAPIBase(TransactionTestCase):
         not_hoot = models.Institute(code="HOOO", name="Hooting Office of Ornithology")
         not_hoot.save()
 
+        staff_hoot = models.Institute(code="HOOS", name="Hooting Office of Statistics")
+        staff_hoot.save()
+
         # Create a fully approved profile user
         user = User.objects.create(username='api_user', email='api@example.org')
         user.set_password('password')
@@ -44,8 +47,17 @@ class BasicAPIBase(TransactionTestCase):
         profile = models.Profile(user=not_user, institute=not_hoot, is_site_approved=True)
         profile.save()
 
+        staff_user = User.objects.create(username='staff_api_user', email='api@example.org')
+        staff_user.set_password('password')
+        staff_user.is_active = True # sysadmins mark this field
+        staff_user.is_staff = True
+        staff_user.save()
+        profile = models.Profile(user=staff_user, institute=staff_hoot, is_site_approved=True)
+        profile.save()
+
         self.user = user
         self.not_user = not_user
+        self.staff_user = staff_user
 
         # Create an API key def
         kd = models.ProfileAPIKeyDefinition(
@@ -179,10 +191,13 @@ class OAuthAPIClientBase(BasicAPIBase):
         for scope_group, scope_str in self.scope_strs.items():
             self.tokens[scope_group] = self._get_token(scope_str)
 
-    def _get_token(self, scope_str):
+    def _get_token(self, scope_str, user=None):
+        if user is None:
+            user = self.user
+
         AccessToken = get_access_token_model()
         token = AccessToken.objects.create(
-            user=self.user,
+            user=user,
             token=str(uuid.uuid4()),
             application=self.application,
             expires=timezone.now() + datetime.timedelta(days=1),
