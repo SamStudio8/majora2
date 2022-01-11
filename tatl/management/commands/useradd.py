@@ -81,7 +81,7 @@ class Command(BaseCommand):
             if form.is_valid():
                 request = HttpRequest()
                 request.META['SERVER_PORT'] = '443'
-                request.META['SERVER_NAME'] = settings.ALLOWED_HOSTS[-1]
+                request.META['SERVER_NAME'] = settings.ALLOWED_HOSTS[1] # this should index the canonical sitename
                 try:
                     form.save(request=request, use_https=True)
                 except:
