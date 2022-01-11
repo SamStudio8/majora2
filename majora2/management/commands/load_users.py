@@ -7,7 +7,7 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.conf import settings
 
 class Command(BaseCommand):
-    help = "Load a list of users"
+    help = "Load a tab-delimited table of users (username, firstname, lastname, email, org_code). New users will be sent a password reset request."
     def add_arguments(self, parser):
         parser.add_argument('filename')
 
@@ -19,7 +19,7 @@ class Command(BaseCommand):
             firstname = fields[1]
             lastname = fields[2]
             email = fields[3]
-            code = fields[4]            
+            code = fields[4]
 
             try:
                 institute = models.Institute.objects.get(code=code)
@@ -38,7 +38,6 @@ class Command(BaseCommand):
             p.institute = institute
             p.save()
 
-            
             form = PasswordResetForm({'email': email})
             if form.is_valid():
                 request = HttpRequest()
