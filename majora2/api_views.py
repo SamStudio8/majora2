@@ -139,7 +139,7 @@ def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=Fals
 
     # Bounce non-admin escalations to other users
     if json_data.get("sudo_as"):
-        if user.is_staff:
+        if user.has_perm("can_sudo_as_other_user"):
             try:
                 user = models.Profile.objects.get(user__username=json_data["sudo_as"]).user
                 request.treq.substitute_user = user
