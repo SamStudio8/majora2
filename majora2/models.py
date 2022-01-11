@@ -1641,6 +1641,7 @@ class Profile(models.Model):
             ("can_grant_profile_permissions", "Can grant other users permissions that change the Profile system"),
             #("can_get_sshkey_via_token", "Can get SSH keys for users via the token system"),
             #("can_get_profiles_via_token", "Can get basic Profile information via the token system"),
+            ("can_wildcard_sequencing_runs", "Can use the wildcard character to unroll all sequencing runs in Majora"), # do not assign this to any non-elan users
         ]
 
     def __str__(self):
