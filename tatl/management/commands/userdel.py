@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
-from majora2 import models
 from django.contrib.auth.models import User, Permission, Group
 
 from tatl import models

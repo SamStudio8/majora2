@@ -1,8 +1,12 @@
 import sys
+import json
 
 from django.core.management.base import BaseCommand, CommandError
+from django.utils import timezone
 
 from majora2 import models
+from tatl import models as tmodels
+
 from django.contrib.auth.models import User
 from django.http.request import HttpRequest
 from django.contrib.auth.forms import PasswordResetForm
@@ -46,7 +50,9 @@ class Command(BaseCommand):
                 sys.exit(1)
             self.useradd(username, firstname, lastname, email, code)
 
+
     def useradd(self, username, firstname, lastname, email, code):
+            su = User.objects.get(is_superuser=True)
 
             try:
                 institute = models.Institute.objects.get(code=code)
@@ -81,5 +87,23 @@ class Command(BaseCommand):
                 except:
                     print("[WARN] Could not send password reset to %s for user %s" % (email, username))
 
-                print("[GOOD] %s added successfully" % username)
 
+            # Flex perm
+            treq = tmodels.TatlPermFlex(
+                user = su,
+                substitute_user = None,
+                used_permission = "tatl.management.commands.useradd",
+                timestamp = timezone.now(),
+                content_object = u,
+                extra_context = json.dumps({
+                }),
+            )
+            treq.save()
+
+            # Flex verb
+            tmodels.TatlVerb(request=None, verb="CREATE", content_object=u,
+                extra_context = json.dumps({
+                }),
+            ).save()
+
+            print("[GOOD] %s added to Majora" % username)
