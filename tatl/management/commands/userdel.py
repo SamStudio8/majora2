@@ -11,7 +11,7 @@ import sys
 import json
 
 class Command(BaseCommand):
-    help = "Grant a permission group to a user"
+    help = "Revoke a user account"
     def add_arguments(self, parser):
         parser.add_argument('id')
         parser.add_argument('idtype')
