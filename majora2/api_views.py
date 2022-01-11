@@ -414,7 +414,7 @@ def get_sequencing(request):
             return
 
         if len(run_names) == 1 and run_names[0] == "*":
-            if user.has_permission("majora2.can_wildcard_sequencing_runs"):
+            if user.has_perm("majora2.can_wildcard_sequencing_runs"):
                 from . import tasks
                 celery_task = tasks.task_get_sequencing.delay(None, api_o, json_data, user=user.pk if user else None, response_uuid=api_o["request"])
                 if celery_task:
