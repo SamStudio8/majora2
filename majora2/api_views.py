@@ -139,7 +139,7 @@ def wrap_api_v2(request, f, permission=None, oauth_permission=None, partial=Fals
 
     # Bounce non-admin escalations to other users
     if json_data.get("sudo_as"):
-        if user.is_staff:
+        if user.has_perm("majora2.can_sudo_as_other_user"):
             try:
                 user = models.Profile.objects.get(user__username=json_data["sudo_as"]).user
                 request.treq.substitute_user = user
@@ -414,7 +414,7 @@ def get_sequencing(request):
             return
 
         if len(run_names) == 1 and run_names[0] == "*":
-            if user.is_staff:
+            if user.has_perm("majora2.can_wildcard_sequencing_runs"):
                 from . import tasks
                 celery_task = tasks.task_get_sequencing.delay(None, api_o, json_data, user=user.pk if user else None, response_uuid=api_o["request"])
                 if celery_task:
@@ -455,7 +455,7 @@ def get_sequencing2(request):
             return
 
         if len(run_names) == 1 and run_names[0] == "*":
-            if user.is_staff:
+            if user.has_perm("majora2.can_wildcard_sequencing_runs"):
                 from . import tasks
                 celery_task = tasks.task_get_sequencing_faster.delay(None, api_o, json_data, user=user.pk if user else None, response_uuid=api_o["request"])
                 if celery_task:
@@ -1750,7 +1750,8 @@ def suppress_pag(request):
                 api_o["messages"].append("%s already suppressed" % pag_name)
                 continue
 
-            if pag.owner.profile.institute != user.profile.institute:
+            # User cannot suppress this PAG if they do not own it without the special "can_suppress_any" permission
+            if pag.owner.profile.institute != user.profile.institute and not user.has_perm("majora2.can_suppress_any_pags_via_api"):
                 api_o["ignored"].append(pag_name)
                 api_o["errors"] += 1
                 api_o["messages"].append("Your organisation (%s) does not own %s (%s)" % (user.profile.institute.code, pag_name, pag.owner.profile.institute.code))

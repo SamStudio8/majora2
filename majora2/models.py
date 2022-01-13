@@ -499,7 +499,8 @@ class PublishedArtifactGroup(MajoraArtifactGroup):
         ]
         permissions = [
             ("temp_can_read_pags_via_api", "Can read published artifact groups via the API"),
-            ("can_suppress_pags_via_api", "Can suppress any published artifact group via the API"),
+            ("can_suppress_pags_via_api", "Can suppress their own published artifact group via the API"),
+            ("can_suppress_any_pags_via_api", "Can suppress any published artifact group via the API"),
         ]
     def as_struct(self):
         if self.is_suppressed:
@@ -1640,6 +1641,8 @@ class Profile(models.Model):
             ("can_grant_profile_permissions", "Can grant other users permissions that change the Profile system"),
             #("can_get_sshkey_via_token", "Can get SSH keys for users via the token system"),
             #("can_get_profiles_via_token", "Can get basic Profile information via the token system"),
+            ("can_wildcard_sequencing_runs", "Can use the wildcard character to unroll all sequencing runs in Majora"), # do not assign this to any non-elan users
+            ("can_sudo_as_other_user", "Can elevate permissions to impersonate other users"),
         ]
 
     def __str__(self):

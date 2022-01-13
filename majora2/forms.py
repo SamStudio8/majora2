@@ -361,7 +361,7 @@ class TestMetadataForm(forms.Form):
 
 
 class TestLibraryForm(forms.Form):
-    library_name = forms.CharField(max_length=48, min_length=5)
+    library_name = forms.CharField(max_length=96, min_length=5)
     library_layout_config = forms.ChoiceField(
             choices=[
                 (None, ""),

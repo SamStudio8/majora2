@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
-from majora2 import models
 from django.contrib.auth.models import User, Permission, Group
 
 from tatl import models
@@ -11,25 +10,26 @@ import sys
 import json
 
 class Command(BaseCommand):
-    help = "Grant a permission group to a user"
+    help = "Revoke a user account"
     def add_arguments(self, parser):
-        parser.add_argument('id')
-        parser.add_argument('idtype')
-        parser.add_argument('reason')
+        group = parser.add_mutually_exclusive_group(required=True)
+        group.add_argument('--username')
+        group.add_argument('--email')
+        parser.add_argument('--reason', required=True)
 
     def handle(self, *args, **options):
         su = User.objects.get(is_superuser=True)
 
         try:
-            if options["idtype"] == "email":
-                user = User.objects.get(email=options["id"])
-            elif options["idtype"] =="username":
-                user = User.objects.get(username=options["id"])
+            if options.get("email"):
+                user = User.objects.get(email=options["email"])
+            elif options.get("username"):
+                user = User.objects.get(username=options["username"])
             else:
-                print("idtype must be 'username' or 'email'")
+                print("[WARN] idtype must be '--username' or '--email'")
                 sys.exit(2)
         except:
-            print("No user with that id.")
+            print("[FAIL] No user with that id.")
             sys.exit(1)
 
         ts = timezone.now()
