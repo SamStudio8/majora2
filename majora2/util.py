@@ -129,7 +129,7 @@ def try_date(str_):
                 # Try and avoid absurd dates
                 dt = tdt
                 break # just use the first thing that looks like a date?
-        except ValueError:
+        except (ValueError, TypeError):
             pass
     return dt
 
