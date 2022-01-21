@@ -53,7 +53,7 @@ class BaseRestyProcessSerializer(DynamicDataviewModelSerializer):
         super().__init__(*args, **kwargs)
         self.context["backward"] = True
         #self.fields['records'] = RestyProcessRecordSerializer(many=True, context=self.context)
-     
+
 
 class RestyCOGUK_BiosourceSamplingProcessSupplement(DynamicDataviewModelSerializer):
     class Meta:
@@ -313,4 +313,3 @@ class RestyPublishedArtifactGroupSerializer(DynamicDataviewModelSerializer):
             wide_ids.extend(d.values())
         wide_ids = set(wide_ids)
         return RestyProcessRecordSerializer(models.MajoraArtifactProcessRecord.objects.filter(Q(in_artifact__id__in=wide_ids) | Q(out_artifact__id__in=wide_ids)).distinct().prefetch_related('process'), many=True, context=self.context).data
-

@@ -330,4 +330,3 @@ def form_sampletest(request):
             initial=initial,
         )
     return render(request, 'forms/testsample.html', {'form': form})
-

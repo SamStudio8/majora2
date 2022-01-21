@@ -222,5 +222,3 @@ def recv_activated_registration(sender, username, email, **kwargs):
         [email],
         fail_silently=False,
     )
-
-

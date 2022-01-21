@@ -184,4 +184,3 @@
 </div>
 
 {% include 'footer.html' %}
-

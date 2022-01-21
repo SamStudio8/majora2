@@ -10,4 +10,3 @@ socket=127.0.0.1:8001
 plugin=python36
 home=/var/www/majora/venv
 env="DJANGO_SETTINGS_MODULE=mylims.settings"
-

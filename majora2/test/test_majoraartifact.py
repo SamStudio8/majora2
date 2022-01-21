@@ -120,4 +120,3 @@ class BiosampleArtifactInfoTest(OAuthAPIClientBase):
             self.assertEqual(j["info"]["path"], artifact.path)
         self.assertTrue(tests > 0)
         self.assertEqual(tests, len(self.artifacts))
-

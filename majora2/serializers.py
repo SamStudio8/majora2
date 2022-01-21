@@ -27,7 +27,7 @@ class ArtifactSerializer(serpy.Serializer):
         return metrics
 
 class MetricSerializer(serpy.Serializer):
-    namespace = serpy.StrField() 
+    namespace = serpy.StrField()
 class MetricSerializer_ThresholdCycleRecord(serpy.Serializer):
     ct_value = serpy.FloatField(required=False)
     test_platform = serpy.StrField(required=False)
@@ -122,7 +122,7 @@ class BiosampleArtifactSerializer(ArtifactSerializer):
         if hasattr(biosample.created, "coguk_supp"):
             return COGUK_BiosourceSamplingProcessSupplementSerializer(biosample.created.coguk_supp).data
 
-    
+
 class DigitalResourceArtifactSerializer(ArtifactSerializer):
     current_path = serpy.StrField()
     current_hash = serpy.StrField()

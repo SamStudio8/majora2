@@ -61,4 +61,3 @@ class Command(BaseCommand):
                             filter_value = v,
                     )
                     f.save()
-

@@ -46,4 +46,3 @@ urlpatterns = [
     path('', include(tf_urls)),
     path('account/', include('django.contrib.auth.urls')), # tf login will supercede this
 ]
-

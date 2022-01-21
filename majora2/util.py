@@ -144,7 +144,7 @@ def make_spark(queryset, days=30, many=None):
             if curr_qs not in querysets:
                 querysets[curr_qs] = []
             querysets[curr_qs].append(obj)
-    
+
     for qs in querysets:
         i = 0
         try:
@@ -177,4 +177,3 @@ def make_spark(queryset, days=30, many=None):
         return counts["default"]["a"]
     else:
         return {k: v["a"] for k, v in counts.items()}
-

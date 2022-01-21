@@ -145,7 +145,7 @@ def req_metrics(request):
 @cache_page(60 * 60)
 def metadata_metrics(request):
     t_samplings = models.BiosourceSamplingProcess.objects.filter(collection_location_country__isnull=False).count()
-    
+
     with_collection_date = models.BiosourceSamplingProcess.objects.filter(collection_location_country__isnull=False, collection_date__isnull=False).count()
     with_adm2 = models.BiosourceSamplingProcess.objects.filter(collection_location_country__isnull=False, collection_location_adm2__isnull=False).exclude(collection_location_adm2="").count()
     with_adm2_private = models.BiosourceSamplingProcess.objects.filter(collection_location_country__isnull=False, private_collection_location_adm2__isnull=False).exclude(private_collection_location_adm2="").count()

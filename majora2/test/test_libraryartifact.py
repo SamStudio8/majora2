@@ -167,4 +167,3 @@ class OAuthLibraryArtifactTest(OAuthAPIClientBase):
         j = response.json()
         self.assertEqual(j["errors"], 1)
         self.assertIn("'biosamples' appears malformed", "".join(j["messages"]))
-

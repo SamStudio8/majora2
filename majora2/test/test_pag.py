@@ -162,4 +162,3 @@ class OAuthSuppressPAGTest(OAuthAPIClientBase):
         assert pag.is_suppressed is True
         assert pag.suppressed_reason == "WRONG_SEQUENCE"
         assert pag.suppressed_date.date() == datetime.date.today()
-

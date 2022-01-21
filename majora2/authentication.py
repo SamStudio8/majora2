@@ -98,4 +98,3 @@ class APIKeyPermission(permissions.BasePermission):
             tflex.save()
         # TODO Add an extra permflex in has_object_permission
         return True
-

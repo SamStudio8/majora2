@@ -17,4 +17,3 @@ def list_dataviews(request):
     return render(request, 'private/special/dataview_list.html', {
         "dataviews": models.MajoraDataview.objects.all(),
     })
-

@@ -328,7 +328,7 @@ def handle_testdigitalresource(form, user=None, api_o=None, request=None):
 
             if not bio.pipe_kind or len(bio.pipe_kind) == 0:
                 bio.pipe_kind = "Pipeline" # for ease of finding later
- 
+
         bio.save()
 
         for sg in form.cleaned_data.get("source_group"):

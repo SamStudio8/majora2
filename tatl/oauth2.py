@@ -73,4 +73,3 @@ class PermissionScopes(BaseScopes):
 
     def get_default_scopes(self, application=None, request=None, *args, **kwargs):
         return []
-

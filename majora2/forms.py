@@ -910,4 +910,3 @@ class TestFileForm(forms.Form):
             ("consensus", "consensus"),
         ],
     )
-
