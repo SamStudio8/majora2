@@ -27,3 +27,4 @@ django-cors-headers==3.5.0
 requests==2.23.0
 boto3==1.13.1
 markdown==3.3.4 # Newer version breaks build by requiring a version of importlib that is too new
+pre-commit==2.17.0
