@@ -469,6 +469,14 @@ class TestSequencingForm(forms.Form):
                 self.add_error("run_name", "run_name cannot contain a reserved character: %s" % str(reserved_ch))
                 break
 
+        if self.cleaned_data.get("start_time"):
+            if self.cleaned_data["start_time"] > timezone.now():
+                self.add_error("start_time", "Sequencing run cannot start in the future")
+
+        if self.cleaned_data.get("end_time"):
+            if self.cleaned_data["end_time"] > timezone.now():
+                self.add_error("end_time", "Sequencing run cannot end in the future")
+
 
 class MajoraPossiblePartialModelForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
