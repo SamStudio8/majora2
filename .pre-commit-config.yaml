@@ -1,0 +1,14 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files
+-  repo: https://github.com/SamStudio8/pre-commit-django-uncommitted-migrations
+   rev: 4efbca5e609c2e198037e434bd73afc9fc4b0985
+   hooks:
+   -   id: django-uncommitted-migrations

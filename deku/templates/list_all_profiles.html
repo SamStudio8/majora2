@@ -189,12 +189,12 @@ $(document).ready(function() {
                       var val = $.fn.dataTable.util.escapeRegex(
                           $(this).val()
                       );
- 
+
                       column
                           .search( val ? '^'+val+'$' : '', true, false )
                           .draw();
                   } );
- 
+
               {% for code in site_codes %}
                   select.append( '<option value="{{ code|escape }}">{{ code|escape }}</option>' )
               {% endfor %}
@@ -206,7 +206,3 @@ $(document).ready(function() {
 </script>
 
 {% include 'footer.html' %}
-
-
-
-

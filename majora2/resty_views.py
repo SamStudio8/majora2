@@ -216,4 +216,3 @@ class PublishedArtifactGroupView(
             else:
                 queryset = queryset.filter(is_public=False)
         return queryset
-

@@ -19,7 +19,7 @@ from oauth2_provider.settings import oauth2_settings
 OAUTH_APPLICATION_MODEL = oauth2_settings.APPLICATION_MODEL
 
 class MajoraArtifact(PolymorphicModel):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
     dice_name = models.CharField(max_length=96, blank=True, null=True, unique=True)
     meta_name = models.CharField(max_length=96, blank=True, null=True)
 
@@ -315,9 +315,9 @@ class MajoraArtifactGroupLink(models.Model):
 # TODO This will become the MajoraGroup
 class MajoraArtifactGroup(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
-    unique_name = models.CharField(max_length=128, blank=True, null=True, unique=True) #TODO graduate away from meta_name, needs to be project unique rather than global, but it will work here 
+    unique_name = models.CharField(max_length=128, blank=True, null=True, unique=True) #TODO graduate away from meta_name, needs to be project unique rather than global, but it will work here
 
-    dice_name = models.CharField(max_length=96, blank=True, null=True, unique=True) 
+    dice_name = models.CharField(max_length=96, blank=True, null=True, unique=True)
     meta_name = models.CharField(max_length=96, blank=True, null=True) # TODO force unique?
 
     group_path = models.CharField(max_length=1024, blank=True, null=True, unique=True)
@@ -1311,7 +1311,7 @@ class MajoraArtifactProcess(PolymorphicModel):
 
 class MajoraArtifactProcessGroup(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
-    dice_name = models.CharField(max_length=48, blank=True, null=True, unique=True) 
+    dice_name = models.CharField(max_length=48, blank=True, null=True, unique=True)
     meta_name = models.CharField(max_length=48, blank=True, null=True) # TODO force unique?
 
     root_group = models.ForeignKey('MajoraArtifactProcessGroup', blank=True, null=True, on_delete=models.PROTECT, related_name="process_leaves")
@@ -1691,7 +1691,7 @@ class ProfileAgreementDefinition(models.Model):
 
 #TODO Store this in Tatl?
 class ProfileAgreement(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
     agreement = models.ForeignKey('ProfileAgreementDefinition', on_delete=models.PROTECT)
     profile = models.ForeignKey('Profile', on_delete=models.PROTECT, related_name="agreements")
     signature_timestamp = models.DateTimeField()

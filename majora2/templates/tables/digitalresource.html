@@ -77,12 +77,12 @@ $(document).ready(function() {
                         var val = $.fn.dataTable.util.escapeRegex(
                             $(this).val()
                         );
- 
+
                         column
                             .search( val ? '^'+val+'$' : '', true, false )
                             .draw();
                     } );
- 
+
                 column.data().unique().sort().each( function ( d, j ) {
                     select.append( '<option value="'+d+'">'+d+'</option>' )
                 } );
@@ -126,15 +126,15 @@ $(document).ready(function() {
    });
 
    // https://www.gyrocode.com/projects/jquery-datatables-checkboxes/
-   // Handle form submission event 
+   // Handle form submission event
    $('#frm-example').on('submit', function(e){
       var form = this;
-      
+
       var rows_selected = table.column(0).checkboxes.selected();
 
       // Iterate over all selected checkboxes
       $.each(rows_selected, function(index, rowId){
-         // Create a hidden element 
+         // Create a hidden element
          $(form).append(
              $('<input>')
                 .attr('type', 'hidden')
@@ -145,18 +145,18 @@ $(document).ready(function() {
 
       // FOR DEMONSTRATION ONLY
       // The code below is not needed in production
-      
-      // Output form data to a console     
+
+      // Output form data to a console
       $('#example-console-rows').text(rows_selected.join(","));
-      
-      // Output form data to a console     
+
+      // Output form data to a console
       $('#example-console-form').text($(form).serialize());
-       
+
       // Remove added elements
       $('input[name="id\[\]"]', form).remove();
-       
+
       // Prevent actual form submission
       e.preventDefault();
-   });   
+   });
 });
 </script>

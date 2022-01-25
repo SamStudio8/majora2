@@ -338,7 +338,7 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
         for pool in biosample_pooling:
             sord = biosample_pooling[pool].get("sequencing_org_received_date")
             if sord:
-                biosample_pooling[pool]["sequencing_org_received_date"] = sord.strftime("%Y-%m-%d")                
+                biosample_pooling[pool]["sequencing_org_received_date"] = sord.strftime("%Y-%m-%d")
         if run_name not in run_to_library_lookup:
             run_to_library_lookup[run_name] = {}
         run_to_library_lookup[run_name].update(biosample_pooling)
@@ -389,15 +389,15 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
 
         # str dates
         if bs["collection_date"]:
-            bs["collection_date"] = bs["collection_date"].strftime("%Y-%m-%d") 
+            bs["collection_date"] = bs["collection_date"].strftime("%Y-%m-%d")
         if bs["received_date"]:
-            bs["received_date"] = bs["received_date"].strftime("%Y-%m-%d") 
+            bs["received_date"] = bs["received_date"].strftime("%Y-%m-%d")
         if bs["is_surveillance"] is None:
             bs["is_surveillance"] = ""
         if not bs["submission_org_credit_name"] or len(bs["submission_org_credit_name"]) == 0:
             bs["submission_org_credit_name"] = bs["submission_org"]
 
-    # get files 
+    # get files
     artifacts = models.DigitalResourceArtifact.objects.filter(
         groups__id__in=pag_ids, # get files in the selected pag set
     ).values(

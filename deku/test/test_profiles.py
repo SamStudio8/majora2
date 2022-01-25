@@ -47,4 +47,3 @@ class DekuAdminTest(TestCase):
     def test_dekuscrub_cannot_list_profiles(self):
         response = self.c_noperm.get(reverse('list_all_profiles'), secure=True)
         self.assertEqual(response.status_code, 403)
-

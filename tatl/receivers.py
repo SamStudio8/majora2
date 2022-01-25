@@ -124,4 +124,3 @@ def task_postrun_slack(signal=None, sender=None, task_id=None, task=None, args=N
             "footer_icon": "https://avatars.slack-edge.com/2019-05-03/627972616934_a621b7d3a28c2b6a7bd1_512.jpg",
             "ts": int(timezone.now().timestamp()),
         }])
-

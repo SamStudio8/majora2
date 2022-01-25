@@ -175,4 +175,3 @@ class ProfileAPIKeyTest(TestCase):
         self.assertEqual(1, len(self.user_0g1a.profile.get_generated_api_keys()))
 
         self.user_0g1a.profile.get_generated_api_keys()[0].delete() # destroy the key
-

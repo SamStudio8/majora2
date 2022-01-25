@@ -96,9 +96,3 @@ class Command(BaseCommand):
                     )
                 else:
                     continue
-
-
-
-
-
-
