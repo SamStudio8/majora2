@@ -549,7 +549,8 @@ def task_get_pagfiles(request, api_o, json_data, user=None, **kwargs):
     artifacts = models.DigitalResourceArtifact.objects.filter(groups__id__in=pag_ids, groups__publishedartifactgroup__quality_groups__test_group = t_group)
 
     # Collapse into list items
-    artifacts = list(artifacts.values_list('groups__publishedartifactgroup__published_name', 'current_kind', 'current_path', 'current_hash', 'current_size', 'groups__publishedartifactgroup__quality_groups__is_pass'))
+    # 2022-01-25 Slot is_suppressed at -2 index because Ocarina assumes QC data is at index -1 for some god forsaken reason
+    artifacts = list(artifacts.values_list('groups__publishedartifactgroup__published_name', 'current_kind', 'current_path', 'current_hash', 'current_size', 'groups__publishedartifactgroup__is_suppressed', 'groups__publishedartifactgroup__quality_groups__is_pass'))
 
     try:
         api_o["get"] = {}
