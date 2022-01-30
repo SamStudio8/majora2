@@ -718,6 +718,13 @@ def add_qc(request):
         ereport_g.is_pass = is_pass
         ereport_g.save()
 
+        # Hack a fact to count good pags quickly
+        if test_name == "cog-uk-elan-minimal-qc" and is_pass:
+            try:
+                util.create_or_increment_fact(namespace="pag", key="minimal_qc_pass")
+            except:
+                pass
+
         for tv in test_data:
             report_g, created = models.PAGQualityReportGroup.objects.get_or_create(
                     pag = pag,
