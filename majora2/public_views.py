@@ -76,6 +76,11 @@ def list_accessions(request):
     })
 
 
+def view_facts(request):
+    qs = models.MajoraFact.objects.filter(restricted=False).values("namespace", "key", "value_type", "value", "counter", "timestamp")
+    qs_json = json.dumps(list(qs), default=str) # use default to co-erce ts
+    return HttpResponse(qs_json, content_type="application/json")
+
 def sample_sequence_count_total(request):
     good_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc", is_pass=True, pag__is_latest=True, pag__is_suppressed=False).count()
     bad_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc", is_pass=False, pag__is_latest=True, pag__is_suppressed=False).count()
