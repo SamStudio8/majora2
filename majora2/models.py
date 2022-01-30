@@ -2094,6 +2094,9 @@ class MajoraFact(models.Model):
 
     timestamp = models.DateTimeField(blank=True, null=True)
 
+    # Do not show on public/facts
+    restricted = models.BooleanField(default=False)
+
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["namespace", "key"], name="is_only_key_in_namespace"),
