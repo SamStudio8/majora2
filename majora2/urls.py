@@ -53,7 +53,6 @@ urlpatterns = [
 
     # PUBLIC
     path('public/dashboard', public_views.sample_sequence_count_dashboard),
-    path('public/count', public_views.sample_sequence_count_total),
     path('public/facts', public_views.view_facts),
     path('public/accessions', public_views.list_accessions),
 

@@ -81,17 +81,6 @@ def view_facts(request):
     qs_json = json.dumps(list(qs), default=str) # use default to co-erce ts
     return HttpResponse(qs_json, content_type="application/json")
 
-def sample_sequence_count_total(request):
-    good_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc", is_pass=True, pag__is_latest=True, pag__is_suppressed=False).count()
-    bad_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc", is_pass=False, pag__is_latest=True, pag__is_suppressed=False).count()
-    return HttpResponse(json.dumps(
-        {
-            "count_pass_pags": good_pags,
-            "count_fail_pags": bad_pags,
-            "count_all_pags": good_pags + bad_pags,
-        }
-    ), content_type="application/json")
-
 @cache_page(60 * 60)
 def sample_sequence_count_dashboard(request):
     collections = models.BiosourceSamplingProcess.objects.values("collected_by").annotate(Count("collected_by")).order_by("-collected_by__count")
