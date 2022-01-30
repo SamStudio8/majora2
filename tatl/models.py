@@ -9,6 +9,8 @@ from django.utils.translation import gettext_lazy as _
 
 from oauth2_provider.models import AbstractApplication
 
+from majora2.util import create_or_increment_fact
+
 class TatlRequest(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="requests")
     substitute_user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.PROTECT, related_name="su_requests")
@@ -27,6 +29,17 @@ class TatlRequest(models.Model):
     response_uuid = models.UUIDField(default=uuid.uuid4, blank=True, null=True, unique=True) #TODO I want this to be the UUID but its not trivial now
 
     is_api = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if self.is_api and self.status_code > 0:
+            # Roughly catch a successful looking API request
+            # The treq is saved a few times and the status_code is one of the last things that are changed
+            try:
+                create_or_increment_fact(namespace="tatl", key="api_requests")
+            except:
+                pass
+        super().save(*args, **kwargs)
+
 
 class TatlTask(models.Model):
     celery_uuid = models.UUIDField(unique=True)
