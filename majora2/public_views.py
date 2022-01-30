@@ -12,6 +12,8 @@ from . import models
 from tatl import models as tmodels
 from . import util
 
+import json
+
 from django_datatables_view.base_datatable_view import BaseDatatableView
 
 class OrderListJson(BaseDatatableView):
@@ -73,6 +75,17 @@ def list_accessions(request):
         "site_codes": sorted(models.Institute.objects.all().values_list('code', flat=True)),
     })
 
+
+def sample_sequence_count_total(request):
+    good_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc", is_pass=True, pag__is_latest=True, pag__is_suppressed=False).count()
+    bad_pags = models.PAGQualityReportEquivalenceGroup.objects.filter(test_group__slug="cog-uk-elan-minimal-qc", is_pass=False, pag__is_latest=True, pag__is_suppressed=False).count()
+    return HttpResponse(json.dumps(
+        {
+            "count_pass_pags": good_pags,
+            "count_fail_pags": bad_pags,
+            "count_all_pags": good_pags + bad_pags,
+        }
+    ), content_type="application/json")
 
 @cache_page(60 * 60)
 def sample_sequence_count_dashboard(request):

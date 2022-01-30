@@ -53,6 +53,7 @@ urlpatterns = [
 
     # PUBLIC
     path('public/dashboard', public_views.sample_sequence_count_dashboard),
+    path('public/count', public_views.sample_sequence_count_total),
     path('public/accessions', public_views.list_accessions),
 
     # PRIV MAJORA-TOKEN
