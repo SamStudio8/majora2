@@ -1,10 +1,11 @@
 from . import models
+
 from dateutil.rrule import rrule, DAILY
 import datetime
 import re
 from django.utils import timezone
 from dateutil.parser import parse
-from django.db.models import prefetch_related_objects
+from django.db.models import F, prefetch_related_objects
 
 def get_mdv_fields(mdv_codename):
     mdv = models.MajoraDataview.objects.filter(code_name=mdv_codename).first()
@@ -177,3 +178,7 @@ def make_spark(queryset, days=30, many=None):
         return counts["default"]["a"]
     else:
         return {k: v["a"] for k, v in counts.items()}
+
+def create_or_increment_fact(namespace, key):
+    models.MajoraFact.objects.get_or_create(namespace=namespace, key=key, value_type="counter")
+    models.MajoraFact.objects.filter(namespace=namespace, key=key).update(counter=F("counter") + 1, timestamp=timezone.now())

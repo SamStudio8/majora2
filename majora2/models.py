@@ -2089,6 +2089,14 @@ class MajoraFact(models.Model):
     value_type = models.CharField(max_length=48)
     value = models.CharField(max_length=128, blank=True, null=True)
 
+    # Optional count value
+    counter = models.PositiveIntegerField(default=0)
+
     timestamp = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["namespace", "key"], name="is_only_key_in_namespace"),
+        ]
 
 from . import receivers
