@@ -2080,5 +2080,15 @@ class MajoraDataviewFilterField(models.Model):
             else:
                 return type_(self.filter_value)
 
+class MajoraFact(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    namespace = models.CharField(max_length=64)
+    key = models.CharField(max_length=64)
+
+    value_type = models.CharField(max_length=48)
+    value = models.CharField(max_length=128, blank=True, null=True)
+
+    timestamp = models.DateTimeField(blank=True, null=True)
 
 from . import receivers
