@@ -232,6 +232,7 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
             credit_lab_name=F('gisaid_lab_name'),
             credit_lab_addr=F('gisaid_lab_addr'),
             credit_lab_list=F('gisaid_list'),
+            credit_code_only=F('credit_code_only'),
     )}
     for code, c in v1_credits_lookup.items():
         if not c["credit_lab_name"] or len(c["credit_lab_name"]) == 0:
@@ -380,8 +381,17 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
         ic = {}
         if credit_code:
             ic = credit_codes_lookup.get(pags[published_name]["owner_institute_code"], {}).get(credit_code, {})
+        else:
+            # Check whether the org happens to be a governmental organisation
+            # that is annoying and fussy and wants to prevent submissions
+            # without a credit code, so lets nuke it from the reply
+            if v1_credits_lookup.get(pags[published_name]["owner_institute_code"], {}).get("credit_code_only"):
+                del pags[published_name]
+                continue
+
         if not ic:
             ic = v1_credits_lookup.get(pags[published_name]["owner_institute_code"], {})
+
         pags[published_name].update(ic)
 
         # trans adm1 (for task_get_pag_by_qc)
