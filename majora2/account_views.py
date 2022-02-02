@@ -181,6 +181,7 @@ def form_institute(request):
             org.gisaid_lab_addr = form.cleaned_data.get("gisaid_lab_addr")
             org.gisaid_list = form.cleaned_data.get("gisaid_list")
             org.ena_assembly_opted = form.cleaned_data.get("ena_assembly_opted")
+            org.credit_code_only = form.cleaned_data.get("credit_code_only")
             if org.gisaid_list:
                 org.gisaid_list = org.gisaid_list.replace('\t', ' ').replace('\r', '').replace('\n', ',').replace(",,", ',').replace(' ,', ',') # sigh
             org.save()

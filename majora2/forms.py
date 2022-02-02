@@ -85,6 +85,8 @@ class InstituteForm(forms.Form):
 
     ena_assembly_opted = forms.BooleanField(required=False, label="ENA assembly Opt-in", help_text="Check this box to opt-in to COG-UK automated submissions of consensus sequences to ENA and INSDC")
 
+    credit_code_only = forms.BooleanField(required=False, label="Upload samples with credit_code only", help_text="Check this box if you do not want Majora to upload samples unless they have been tagged with a credit_code. If this is off, Majora will upload samples with a majora.credit metadata tag with default authorship. Turning this off will process previous data.")
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -104,6 +106,10 @@ class InstituteForm(forms.Form):
                 ),
                 Row(
                     Column('ena_assembly_opted', css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                ),
+                Row(
+                    Column('credit_code_only', css_class="form-group col-md-6 mb-0"),
                     css_class="form-row",
                 ),
             ),
