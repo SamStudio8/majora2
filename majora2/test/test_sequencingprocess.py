@@ -97,7 +97,6 @@ class OAuthLibraryArtifactTest(OAuthAPIClientBase):
 
         j = response.json()
         self.assertEqual(j["errors"], 1) # only one error is emitted for a bad form, but check both errors are emitted below
-        print(j["messages"])
 
         message_strs = []
         for message in j["messages"]:

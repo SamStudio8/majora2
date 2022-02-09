@@ -23,7 +23,7 @@ import json
 import uuid
 import datetime
 
-from tatl.models import TatlVerb
+from tatl.models import TatlVerb, TatlTask
 
 MINIMUM_CLIENT_VERSION = "0.44.0"
 
@@ -1625,6 +1625,26 @@ def get_task_result(request):
         if not task_id:
             api_o["messages"].append("'task_id' key missing or empty")
             api_o["errors"] += 1
+            return
+
+        try:
+            tatl_task = TatlTask.objects.get(celery_uuid=task_id)
+        except TatlTask.DoesNotExist:
+            api_o["messages"].append("Task does not exist")
+            api_o["errors"] += 1
+            api_o["task"] = {
+                "id": task_id,
+                "state": "DOES_NOT_EXIST",
+            }
+            return
+
+        if tatl_task.user != user:
+            api_o["messages"].append("You do not have permission to read this task result")
+            api_o["errors"] += 1
+            api_o["task"] = {
+                "id": task_id,
+                "state": "PERMISSION_DENIED",
+            }
             return
 
         from mylims.celery import app
