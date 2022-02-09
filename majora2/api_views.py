@@ -1677,39 +1677,6 @@ def get_task_result(request):
 
     return wrap_api_v2(request, f)
 
-def del_task_result(request):
-    def f(request, api_o, json_data, user=None, partial=False):
-        task_id = json_data.get("task_id")
-        if not task_id:
-            api_o["messages"].append("'task_id' key missing or empty")
-            api_o["errors"] += 1
-            return
-
-        from mylims.celery import app
-        res = app.AsyncResult(task_id)
-        was_deleted = False
-        if res.state == "SUCCESS":
-            try:
-                # Not sure wtf is going on here but the current version of celery s3 seems to bug out that k is bytes
-                k = app.backend.get_key_for_task(res.id).decode("utf-8")
-                app.backend.delete(k)
-                api_o["deleted"] = k
-                was_deleted = True
-            except Exception as e:
-                api_o["errors"] += 1
-                api_o["messages"].append(str(e))
-        else:
-            api_o["warnings"] += 1
-            api_o["messages"].append("Task is not (yet) SUCCESS...")
-
-        api_o["task"] = {
-            "id": task_id,
-            "state": res.state,
-            "deleted": was_deleted,
-        }
-
-    return wrap_api_v2(request, f)
-
 def get_mag(request):
     def f(request, api_o, json_data, user=None, partial=False):
         path = json_data.get("path")
