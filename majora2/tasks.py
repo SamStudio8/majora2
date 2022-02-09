@@ -226,13 +226,13 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
 
     # get v1 credit
     v1_credits_lookup = {x["institute_code"]: x for x in models.Institute.objects.values(
+            'credit_code_only',
             credit_code=F('code'),
             institute_code=F('code'),
             credit_lab_org_name=F('name'),
             credit_lab_name=F('gisaid_lab_name'),
             credit_lab_addr=F('gisaid_lab_addr'),
             credit_lab_list=F('gisaid_list'),
-            credit_code_only=F('credit_code_only'),
     )}
     for code, c in v1_credits_lookup.items():
         if not c["credit_lab_name"] or len(c["credit_lab_name"]) == 0:
