@@ -1631,7 +1631,7 @@ def get_task_result(request):
             tatl_task = TatlTask.objects.get(celery_uuid=task_id)
         except TatlTask.DoesNotExist:
             api_o["messages"].append("Task does not exist")
-            api_o["errors"] += 1
+            api_o["warnings"] += 1 # emit a warning rather than an error and let clients decide as tasks are added to TatlTask async
             api_o["task"] = {
                 "id": task_id,
                 "state": "DOES_NOT_EXIST",

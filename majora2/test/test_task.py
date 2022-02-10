@@ -65,7 +65,7 @@ class OAuthTaskTest(OAuthAPIClientBase):
         response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
         self.assertEqual(200, response.status_code)
         j = response.json()
-        self.assertEqual(j["errors"], 1)
+        self.assertEqual(j["warnings"], 1)
         self.assertEqual(j["task"]["id"], str(unknown_id))
         self.assertEqual(j["task"]["state"], "DOES_NOT_EXIST")
 
