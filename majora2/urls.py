@@ -2,6 +2,7 @@ from django.urls import path, re_path, include
 from django.views.generic import TemplateView
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from django.views.generic.base import RedirectView
 
 from . import views
 from . import account_views
@@ -52,7 +53,9 @@ urlpatterns = [
     path('private/dataviews', private_views.list_dataviews),
 
     # PUBLIC
-    path('public/dashboard', public_views.sample_sequence_count_dashboard),
+
+
+    path('public/dashboard', RedirectView.as_view(url='https://status.covid19.climb.ac.uk/')),
     path('public/facts', public_views.view_facts),
     path('public/accessions', public_views.list_accessions),
 
