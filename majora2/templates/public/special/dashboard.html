@@ -115,19 +115,6 @@
 </div>
 
 <hr>
-<div class="row">
-<div class="col-md-2">
-<h2 style="font-size:2em">Requests</h2>
-</div>
-<div class="col-md-8">
-    {% for rs_name, rs_arr in request_sparks.items %}
-    <b>{{ rs_name }}</b>
-    <div style="width:100%" id="s-request-spark-{{rs_name}}"></div>
-    {% endfor %}
-</div>
-<div class="col-md-2"></div>
-</div>
-</div>
 </div>
 
 
@@ -183,9 +170,6 @@ var line = d3.svg.line()
 
 $( document ).ready(function() {
     sparkline('#consensus-spark', "consensus-spark-data");
-    {% for rs_name, rs_arr in request_sparks.items %}
-    sparkline('#s-request-spark-{{rs_name}}', "{{rs_name}}");
-    {% endfor %}
 });
 
 </script>
