@@ -1,6 +1,6 @@
 <div align="center">
 <p align="center">
-   <img src="/images/inbound-ops-patch.png" alt="Inbound Data Operations Badge" width="250">
+   <img src="/static/inbound-ops-patch.png" alt="Inbound Data Operations Badge" width="250">
 </p>
 <h1 align="center">Majora</h1>
 <h3 align="center">The Malleable All-seeing Journal Of Research Artifacts</h3>
