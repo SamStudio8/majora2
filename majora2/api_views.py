@@ -1627,30 +1627,39 @@ def get_task_result(request):
             api_o["errors"] += 1
             return
 
-        try:
-            tatl_task = TatlTask.objects.get(celery_uuid=task_id)
-        except TatlTask.DoesNotExist:
-            api_o["messages"].append("Task does not exist")
-            api_o["warnings"] += 1 # emit a warning rather than an error and let clients decide as tasks are added to TatlTask async
-            api_o["task"] = {
-                "id": task_id,
-                "state": "DOES_NOT_EXIST",
-            }
-
-        if tatl_task.user != user:
-            api_o["messages"].append("You do not have permission to read this task result")
-            api_o["errors"] += 1
-            api_o["task"] = {
-                "id": task_id,
-                "state": "PERMISSION_DENIED",
-            }
-            return
-
         from mylims.celery import app
         res = app.AsyncResult(task_id)
         state = res.state
+
+        tatl_task = None
+        try:
+            tatl_task = TatlTask.objects.get(celery_uuid=task_id)
+        except TatlTask.DoesNotExist:
+            api_o["messages"].append("Task does not exist: it may not have been added to the Task Database yet...")
+            api_o["warnings"] += 1 # emit a warning rather than an error and let clients decide as tasks are added to TatlTask async
+            # no longer write state as DOES_NOT_EXIST
+
         cleaned = False
         if state == "SUCCESS":
+
+            # Do not allow a user to read a task result if we cannot verify the owner
+            if not tatl_task:
+                api_o["messages"].append("You do not have permission to read this task result as the task is not in the task database yet")
+                api_o["warnings"] += 1 # emit a warning to allow ocarina to keep waiting with default settings
+                api_o["task"] = {
+                    "id": task_id,
+                    "state": "PENDING", # task is technically pending
+                }
+                return
+            elif tatl_task.user != user:
+                api_o["messages"].append("You do not have permission to read this task result as your are not the task owner")
+                api_o["errors"] += 1
+                api_o["task"] = {
+                    "id": task_id,
+                    "state": "PERMISSION_DENIED",
+                }
+                return
+
             try:
                 api_o.update(res.get())
             except Exception as e:
