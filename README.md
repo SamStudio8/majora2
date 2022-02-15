@@ -31,7 +31,11 @@ Although not used for COG, Majora has some other notable features:
 
 ## How can I use it?
 
-**You should not**. The priority right now is to maintain a single instance for COG-UK and as such Majora is made available with no support. Running Majora for your own purposes without support would be a risky endeavour but you're welcome to wing it. Over the past two years, Majora has been updated with many bits of COG-UK specific business code that will make it hard for one to take this and easily use it in a different environment. We'd suggest that academics and public health agencies [see our paper](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02395-y) for suggestions on what a successful model system should look like.
+**You should not**! The functionality of Majora2 is now frozen and current development serves only to maintain ongoing research use by COG-UK.
+Majora2 is built upon Django 2.2 which will reach end of life (EOL) in 2022; by extension Majora2 is now considered EOL.
+
+Over the past two years, Majora has been updated with many bits of COG-UK specific business code that will make it hard for one to take this and easily use it in a different environment. We'd suggest that academics and public health agencies [see our paper](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02395-y) for suggestions on what a successful model system should look like.
+
 
 ## License
 
