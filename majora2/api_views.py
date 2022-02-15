@@ -1571,53 +1571,6 @@ def get_pag_by_qc_celery(request):
 
     return wrap_api_v2(request, f, permission="majora2.temp_can_read_pags_via_api")
 
-def stream_task_result(request):
-    def f(request, api_o, json_data, user=None, partial=False):
-
-        import requests, boto3
-        from botocore.exceptions import ClientError
-
-        task_id = json_data.get("task_id")
-        if not task_id:
-            api_o["messages"].append("'task_id' key missing or empty")
-            api_o["errors"] += 1
-            return
-
-        from mylims.celery import app
-        res = app.AsyncResult(task_id)
-        if res.state == "SUCCESS":
-            try:
-                s3 = boto3.client('s3',
-                        aws_access_key_id=settings.CELERY_S3_ACCESS_KEY_ID,
-                        aws_secret_access_key=settings.CELERY_S3_SECRET_ACCESS_KEY,
-                        endpoint_url=settings.CELERY_S3_ENDPOINT_URL,
-                        region_name=None,
-                )
-
-                purl = s3.generate_presigned_url('get_object',
-                        Params={
-                            'Bucket': settings.CELERY_S3_BUCKET,
-                            'Key': app.backend.get_key_for_task(res.id).decode("utf-8"),
-                        },
-                        ExpiresIn=10,
-                )
-
-                r = requests.get(url=purl, stream=True)
-                return StreamingHttpResponse(r.raw, content_type="application/json")
-
-            except ClientError as e:
-                api_o["errors"] += 1
-                api_o["messages"].append(str(e))
-        else:
-            api_o["warnings"] += 1
-            api_o["messages"].append("Task is not (yet) SUCCESS...")
-
-        api_o["task"] = {
-            "id": task_id,
-            "state": res.state,
-        }
-
-    return wrap_api_v2(request, f, stream=True)
 
 def get_task_result(request):
     def f(request, api_o, json_data, user=None, partial=False):

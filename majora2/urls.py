@@ -96,7 +96,6 @@ urlpatterns = [
     path('api/v2/group/pag/suppress/', csrf_exempt(api_views.suppress_pag), name="api.group.pag.suppress"),
 
     path('api/v2/majora/task/get/', csrf_exempt(api_views.get_task_result), name="api.majora.task.get"),
-    path('api/v2/majora/task/stream/', csrf_exempt(api_views.stream_task_result), name="api.majora.task.stream"),
 
     path('api/datatable/pag/', public_views.OrderListJson.as_view(), name='api.datatable.pag.get'),
     path('api/datatable/biosample/', login_required(tables.BiosampleOrderListJson.as_view()), name='api.datatable.biosample.get'),
