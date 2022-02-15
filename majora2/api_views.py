@@ -1636,7 +1636,6 @@ def get_task_result(request):
                 "id": task_id,
                 "state": "DOES_NOT_EXIST",
             }
-            return
 
         if tatl_task.user != user:
             api_o["messages"].append("You do not have permission to read this task result")
