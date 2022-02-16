@@ -2,7 +2,7 @@
 <p align="center">
    <img src="/static/inbound-ops-patch.png" alt="Inbound Data Operations Badge" width="250">
 </p>
-<h1 align="center">Majora</h1>
+<h1 align="center">Majora 2</h1>
 <h3 align="center">The Malleable All-seeing Journal Of Research Artifacts</h3>
 </div>
 
@@ -10,7 +10,7 @@ Majora is a Django-based wet-and-dry information management system.
 Majora comprises of the database models for storing metadata on samples, files and the processes that create and link them; a web interface for users to manage their accounts and retrieve limited metadata; and a set of APIs to add, update and retrieve metadata from the database.
 
 Majora was initially designed for a small-scale clinical metagenomics laboratory, but in March 2020 was commandeered to act as the central metadata repository for the COVID-19 Genomics UK Consortium (COG-UK) in response to the outbreak of SARS-CoV-2.
-Majora has been rapidly developed and successfully scaled through several orders of sample magnitude. For more information on how Majora (and friends) has been used to underpin the analysis of well over a million SARS-CoV-2 genomes by COG-UK, [see our article published in Genome Biology](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02395-y).
+Majora has been rapidly developed and successfully scaled through several orders of sample magnitude. For more information on how Majora (and friends) has been used to underpin the analysis of well over two million SARS-CoV-2 genomes by COG-UK, [see our article published in Genome Biology](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02395-y).
 
 ## What makes it useful?
 
@@ -31,7 +31,11 @@ Although not used for COG, Majora has some other notable features:
 
 ## How can I use it?
 
-**You should not**. The priority right now is to maintain a single instance for COG-UK and as such Majora is made available with no support. Running Majora for your own purposes without support would be a risky endeavour but you're welcome to wing it. Over the past two years, Majora has been updated with many bits of COG-UK specific business code that will make it hard for one to take this and easily use it in a different environment. We'd suggest that academics and public health agencies [see our paper](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02395-y) for suggestions on what a successful model system should look like.
+**You should not**! The functionality of Majora2 is now frozen and current development serves only to maintain ongoing research use by COG-UK.
+Majora2 is built upon Django 2.2 which will reach end of life (EOL) in 2022; by extension Majora2 is now considered EOL.
+
+Over the past two years, Majora has been updated with many bits of COG-UK specific business code that will make it hard for one to take this and easily use it in a different environment. We'd suggest that academics and public health agencies [see our paper](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02395-y) for suggestions on what a successful model system should look like.
+
 
 ## License
 
