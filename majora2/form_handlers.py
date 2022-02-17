@@ -117,14 +117,16 @@ def handle_testsequencing(form, user=None, api_o=None, request=None):
             current_name="sequencing-dummy-tree-%s" % run_name,
             physical=False
     )
-    rec, rec_created = models.DNASequencingProcessRecord.objects.get_or_create(
-        process=p,
-        in_artifact=form.cleaned_data.get("library_name"),
-        out_group=dgroup,
-    )
-    rec.save()
 
     if dgroup_created:
+        # Try and protect DNASequencingProcessRecord from multi-create
+        rec, rec_created = models.DNASequencingProcessRecord.objects.get_or_create(
+            process=p,
+            in_artifact=form.cleaned_data.get("library_name"),
+            out_group=dgroup,
+        )
+        rec.save()
+
         # Placeholder basecalling
         bio = models.AbstractBioinformaticsProcess(
             who = user,
