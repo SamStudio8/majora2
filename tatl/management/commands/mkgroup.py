@@ -23,8 +23,16 @@ class Command(BaseCommand):
         if group:
             sys.stderr.write("[NOTE] %s group %s\n" % (group.name, "CREATED" if created else "RETRIEVED"))
 
+        if '&' in permissions:
+            sep = '&'
+        elif ' ' in permissions:
+            sep = ' '
+        else:
+            sys.stderr.write("[FAIL] Cannot determine permission separator, use space or ampersand!\n")
+            sys.exit(1)
+
         valid_permissions = []
-        for p in options["permissions"].split("&"):
+        for p in options["permissions"].split(sep):
             p = p.split('.')[-1]
             try:
                 permission = Permission.objects.get(codename=p)
