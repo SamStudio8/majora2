@@ -61,7 +61,6 @@ class Command(BaseCommand):
         dest_mag_o = util.get_mag(node, dest_mag)
         if not dest_mag_o:
             mags, mags_created = util.mkmag(root=models.DigitalResourceNode.objects.get(unique_name=node), path=dest_mag)
-            print(sum(mags_created), "mags created")
             dest_mag_o = mags[-1]
 
         if not dest_mag_o:
