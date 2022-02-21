@@ -22,6 +22,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
+        mag_cache = {}
+
         user = User.objects.get(username=options["username"])
         if not user:
             sys.stderr.write("No such user\n")
@@ -41,15 +43,22 @@ class Command(BaseCommand):
         treq.save()
 
         fh = open(options["filename"])
+
         for line in fh:
             new_mv, old_mag, old_name, new_mag, new_name, new_path = line.strip().split('\t')
-            if int(new_mv) == 1:
-                exit, dra = self.mv(treq=treq, node=options["node"], src_mag=old_mag, src_name=old_name, dest_mag=new_mag, dest_name=new_name, dest_path=new_path)
+            if int(new_mv) > 0:
+                exit, dra = self.mv(mag_cache=mag_cache, treq=treq, node=options["node"], src_mag=old_mag, src_name=old_name, dest_mag=new_mag, dest_name=new_name, dest_path=new_path)
                 print(exit, old_mag, old_name)
-                
 
-    def mv(self, treq, node, src_mag, src_name, dest_mag, dest_name, dest_path):
-        src_mag_o = util.get_mag(node, src_mag)
+    def mv(self, mag_cache, treq, node, src_mag, src_name, dest_mag, dest_name, dest_path):
+        src_mag_o = None
+        if src_mag not in mag_cache:
+            src_mag_o = util.get_mag(node, src_mag)
+            if src_mag_o:
+                mag_cache[src_mag] = src_mag_o
+        else:
+            src_mag_o = mag_cache[src_mag]
+
         if not src_mag_o:
             return 1, None
 
@@ -58,7 +67,14 @@ class Command(BaseCommand):
         except models.DigitalResourceArtifact.DoesNotExist:
             return 2, None
 
-        dest_mag_o = util.get_mag(node, dest_mag)
+        dest_mag_o = None
+        if dest_mag not in mag_cache:
+            dest_mag_o = util.get_mag(node, dest_mag)
+            if dest_mag_o:
+                mag_cache[dest_mag] = dest_mag_o
+        else:
+            dest_mag_o = mag_cache[dest_mag]
+
         if not dest_mag_o:
             mags, mags_created = util.mkmag(root=models.DigitalResourceNode.objects.get(unique_name=node), path=dest_mag)
             dest_mag_o = mags[-1]
