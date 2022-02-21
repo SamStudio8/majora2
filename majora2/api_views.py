@@ -1140,6 +1140,8 @@ def add_library(request):
                 library, library_created = form_handlers.handle_testlibrary(form, user=user, api_o=api_o, request=request)
                 if not library:
                     api_o["ignored"].append(library_name)
+                    api_o["messages"].append("Failed to get or create a LibraryArtifact. Possible race condition detected.")
+                    api_o["messages"].append("Likely caught other process in the middle of adding a LibraryArtifact, attempt to resubmit")
                     api_o["errors"] += 1
             else:
                 api_o["errors"] += 1

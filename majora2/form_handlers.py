@@ -210,6 +210,14 @@ def handle_testlibrary(form, user=None, api_o=None, request=None):
         )
         pool_p.save()
         library.created = pool_p
+    else:
+        # 20220221
+        # Abort if we fetched the library without `created` as it means we have
+        # caught the library between being created and finally finished
+        # If I had a time machine I would have made the process first and then
+        # saved the library with created as a kwarg, but `created` was an afterthought
+        if not library.created:
+            return None, None
 
     # Note that deep=False prevents fetching the biosamples, meaning we'll only
     # compare the attributes of the library (and any k:v metadata)
