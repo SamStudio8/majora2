@@ -120,6 +120,19 @@ def handle_testsequencing(form, user=None, api_o=None, request=None):
 
     if dgroup_created:
         # Try and protect DNASequencingProcessRecord from multi-create
+        #
+        # If you're here because of another race condition incident, the background
+        # is I made the mistake of abusing get_or_create to create objects without
+        # a uniqueness constraint... Unfortunately you can't just add a constraint
+        # on (process, in_artifact, out_group) because the model was designed to
+        # be super flexible and add any combination of these that you like.
+        # Adding that constraint in models.py is likely going to cause a load of
+        # constaint violations when it comes to running the database migration.
+        #
+        # My suggestion would be to add a new unique field to the base
+        # MajoraArtifactProcessRecord and use that here as the only argument for
+        # get_or_create and populate the process and in/outputs after fetching.
+        #  Good luck!
         rec, rec_created = models.DNASequencingProcessRecord.objects.get_or_create(
             process=p,
             in_artifact=form.cleaned_data.get("library_name"),
@@ -210,6 +223,14 @@ def handle_testlibrary(form, user=None, api_o=None, request=None):
         )
         pool_p.save()
         library.created = pool_p
+    else:
+        # 20220221
+        # Abort if we fetched the library without `created` as it means we have
+        # caught the library between being created and finally finished
+        # If I had a time machine I would have made the process first and then
+        # saved the library with created as a kwarg, but `created` was an afterthought
+        if not library.created:
+            return None, None
 
     # Note that deep=False prevents fetching the biosamples, meaning we'll only
     # compare the attributes of the library (and any k:v metadata)

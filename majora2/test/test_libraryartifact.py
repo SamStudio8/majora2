@@ -167,3 +167,36 @@ class OAuthLibraryArtifactTest(OAuthAPIClientBase):
         j = response.json()
         self.assertEqual(j["errors"], 1)
         self.assertIn("'biosamples' appears malformed", "".join(j["messages"]))
+
+
+    def test_race_condition_err_msg(self):
+
+        library_name = "HOOT-LIB-1"
+        models.LibraryArtifact(
+            dice_name=library_name,
+        ).save() # force add a library without a created process
+
+        payload = {
+            "biosamples": [
+                {
+                    "central_sample_id": "HOOT-00001",
+                    "library_source": "VIRAL_RNA",
+                    "library_selection": "PCR",
+                    "library_strategy": "AMPLICON",
+                }
+            ],
+            "library_layout_config": "SINGLE",
+            "library_name": library_name,
+            "library_seq_kit": "KIT",
+            "library_seq_protocol": "PROTOCOL",
+            "username": "OAUTH",
+            "token": "OAUTH"
+        }
+
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        j = response.json()
+        self.assertEqual(j["errors"], 1)
+        self.assertIn("Failed to get or create a LibraryArtifact. Possible race condition detected", "".join(j["messages"]))
+        self.assertIn("Likely caught other process in the middle of adding a LibraryArtifact, attempt to resubmit", "".join(j["messages"]))
