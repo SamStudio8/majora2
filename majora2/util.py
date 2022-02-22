@@ -74,7 +74,7 @@ def mkroot(node_name):
         meta_name = node_name,
         node_name = node_name,
     )
-    return node
+    return node, created
 
 def mkmag(path, sep="/", parents=True, artifact=False, physical=True, root=None, kind=None):
 
