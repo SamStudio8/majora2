@@ -366,6 +366,7 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
     # get biosample credits
     biosample_credits = {x["artifact__dice_name"]: x["value"].upper() for x in models.MajoraMetaRecord.objects.filter(artifact__groups__id__in=pag_ids, meta_tag='majora', meta_name='credit').values('artifact__dice_name', 'value')}
 
+    deleted_pags = set([])
     for bs in biosamples:
         published_name = bs["groups__publishedartifactgroup__published_name"]
         del bs["groups__publishedartifactgroup__published_name"]
@@ -381,16 +382,18 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
         ic = {}
         if credit_code:
             ic = credit_codes_lookup.get(pags[published_name]["owner_institute_code"], {}).get(credit_code, {})
-        else:
+
+        if not ic:
             # Check whether the org happens to be a governmental organisation
             # that is annoying and fussy and wants to prevent submissions
             # without a credit code, so lets nuke it from the reply
             if v1_credits_lookup.get(pags[published_name]["owner_institute_code"], {}).get("credit_code_only"):
                 del pags[published_name]
+                deleted_pags.add(published_name)
                 continue
-
-        if not ic:
-            ic = v1_credits_lookup.get(pags[published_name]["owner_institute_code"], {})
+            else:
+                # Fill with v1 credits
+                ic = v1_credits_lookup.get(pags[published_name]["owner_institute_code"], {})
 
         pags[published_name].update(ic)
 
@@ -433,7 +436,8 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
         published_name = dra["groups__publishedartifactgroup__published_name"]
         del dra["groups__publishedartifactgroup__published_name"]
 
-        pags[published_name]["artifacts"][dra["current_kind"]] = [dra]
+        if published_name not in deleted_pags:
+            pags[published_name]["artifacts"][dra["current_kind"]] = [dra]
 
     try:
         api_o["get"] = {}
