@@ -386,11 +386,14 @@ def task_get_pag_v2(request, api_o, json_data, user=None, **kwargs):
         if not ic:
             # Check whether the org happens to be a governmental organisation
             # that is annoying and fussy and wants to prevent submissions
-            # without a credit code, so lets nuke it from the reply
+            # without a credit code, so lets revoke the owner opt-in, even if it is True
+            # 20220225 Nuking the PAGs from the reply was dumb and caused unexpected behaviour
+            #          and one would do well to not do that again
+            #          https://github.com/COG-UK/dipi-group/issues/192
             if v1_credits_lookup.get(pags[published_name]["owner_institute_code"], {}).get("credit_code_only"):
-                del pags[published_name]
-                deleted_pags.add(published_name)
-                continue
+                pags[published_name]["owner_org_gisaid_opted"] = False
+                pags[published_name]["owner_org_ena_opted"] = False
+                pags[published_name]["owner_org_ena_assembly_opted"] = False
             else:
                 # Fill with v1 credits
                 ic = v1_credits_lookup.get(pags[published_name]["owner_institute_code"], {})
