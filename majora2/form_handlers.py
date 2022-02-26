@@ -122,10 +122,14 @@ def handle_testsequencing(form, user=None, api_o=None, request=None):
     # One time I put this under the dgroup_created if statement and put thousands
     # of genomes down the back of the proverbial sofa so don't do that
     # See https://github.com/COG-UK/dipi-group/issues/193
+    # Assign a unique_name to try and prevent race conditions adding the same
+    #  process record multiple times
+    in_library = form.cleaned_data.get("library_name")
     rec, rec_created = models.DNASequencingProcessRecord.objects.get_or_create(
         process=p,
-        in_artifact=form.cleaned_data.get("library_name"),
+        in_artifact=in_library,
         out_group=dgroup,
+        unique_name="%s-%s" % (run_name, in_library.dice_name),
     )
     rec.save()
 

@@ -68,6 +68,11 @@ class OAuthLibraryArtifactTest(OAuthAPIClientBase):
                 pipe_version=payload["runs"][0]["bioinfo_pipe_version"],
         ).count() == 1
 
+        # Check the sequencing process record
+        assert models.DNASequencingProcessRecord.objects.filter(
+                unique_name="%s-%s" % (run_name, self.library_name)
+        ).count() == 1
+
 
     def test_m70_add_sequencing_with_future_start_rejected(self):
         run_name = "YYMMDD_AB000000_1234_ABCDEFGHI0"
@@ -149,6 +154,12 @@ class OAuthLibraryArtifactTest(OAuthAPIClientBase):
         process = models.DNASequencingProcess.objects.get(run_name=run_name)
         assert process.records.count() == 1
 
+        # Check the sequencing process record
+        assert models.DNASequencingProcessRecord.objects.filter(
+                process=process,
+                unique_name="%s-%s" % (run_name, library_name_1)
+        ).count() == 1
+
         # Link second lib
         payload["library_name"] = library_name_2
         response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
@@ -160,3 +171,9 @@ class OAuthLibraryArtifactTest(OAuthAPIClientBase):
         # Assert process is linked with second dnasequencingprocessrecord
         process = models.DNASequencingProcess.objects.get(run_name=run_name)
         assert process.records.count() == 2
+
+        # Check the sequencing process record
+        assert models.DNASequencingProcessRecord.objects.filter(
+                process=process,
+                unique_name="%s-%s" % (run_name, library_name_2)
+        ).count() == 1
