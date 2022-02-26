@@ -1257,7 +1257,7 @@ class MajoraArtifactProcessRecord(PolymorphicModel):
     # * this was added as a result of DNASequencingProcessRecord race conditions
     # * note we use null and unique which allows us to only worry about integritychecks for cases where unique_name is set
     #   so we dont have to roll this out throughout majora unless needed (eg. future race conditions)
-    unique_name = models.CharField(max_length=128, null=True, unique=True)
+    unique_name = models.CharField(max_length=256, null=True, unique=True)
 
 class MajoraArtifactProcess(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
