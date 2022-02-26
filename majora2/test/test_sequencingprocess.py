@@ -105,3 +105,58 @@ class OAuthLibraryArtifactTest(OAuthAPIClientBase):
 
         self.assertIn("Sequencing run cannot start in the future", message_strs)
         self.assertIn("Sequencing run cannot end in the future", message_strs)
+
+
+    def test_193_can_link_multiple_libraries_to_run_ok(self):
+
+        library_name_1 = "HOOT-LIBRARY-ONE"
+        library_o = models.LibraryArtifact(dice_name=library_name_1)
+        library_o.save()
+
+        library_name_2 = "HOOT-LIBRARY-TWO"
+        library_o = models.LibraryArtifact(dice_name=library_name_2)
+        library_o.save()
+
+        run_name = "YYMMDD_AB000000_1234_ABCDEFGHI0"
+        payload = {
+            "runs": [
+                {
+                    "bioinfo_pipe_name": "ARTIC Pipeline (iVar)",
+                    "bioinfo_pipe_version": "1.3.0",
+                    "end_time": "2022-02-26 12:00",
+                    "flowcell_id": "ABCDEF",
+                    "flowcell_type": "v3",
+                    "instrument_make": "ILLUMINA",
+                    "instrument_model": "MiSeq",
+                    "run_name": run_name,
+                    "start_time": "2022-02-26 05:00"
+                }
+            ],
+            "token": "oauth",
+            "username": "oauth"
+        }
+
+        # Create sequencing process and link first lib
+        payload["library_name"] = library_name_1
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(j["errors"], 0)
+
+        # Assert run exists and process has a dnasequencingprocessrecord
+        assert models.DNASequencingProcess.objects.filter(run_name=run_name).count() == 1
+        process = models.DNASequencingProcess.objects.get(run_name=run_name)
+        assert process.records.count() == 1
+
+        # Link second lib
+        payload["library_name"] = library_name_2
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(j["errors"], 0)
+
+        # Assert process is linked with second dnasequencingprocessrecord
+        process = models.DNASequencingProcess.objects.get(run_name=run_name)
+        assert process.records.count() == 2

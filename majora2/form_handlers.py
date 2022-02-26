@@ -118,28 +118,18 @@ def handle_testsequencing(form, user=None, api_o=None, request=None):
             physical=False
     )
 
-    if dgroup_created:
-        # Try and protect DNASequencingProcessRecord from multi-create
-        #
-        # If you're here because of another race condition incident, the background
-        # is I made the mistake of abusing get_or_create to create objects without
-        # a uniqueness constraint... Unfortunately you can't just add a constraint
-        # on (process, in_artifact, out_group) because the model was designed to
-        # be super flexible and add any combination of these that you like.
-        # Adding that constraint in models.py is likely going to cause a load of
-        # constaint violations when it comes to running the database migration.
-        #
-        # My suggestion would be to add a new unique field to the base
-        # MajoraArtifactProcessRecord and use that here as the only argument for
-        # get_or_create and populate the process and in/outputs after fetching.
-        #  Good luck!
-        rec, rec_created = models.DNASequencingProcessRecord.objects.get_or_create(
-            process=p,
-            in_artifact=form.cleaned_data.get("library_name"),
-            out_group=dgroup,
-        )
-        rec.save()
+    # Create a DNASequencingProcessRecord to link library to run
+    # One time I put this under the dgroup_created if statement and put thousands
+    # of genomes down the back of the proverbial sofa so don't do that
+    # See https://github.com/COG-UK/dipi-group/issues/193
+    rec, rec_created = models.DNASequencingProcessRecord.objects.get_or_create(
+        process=p,
+        in_artifact=form.cleaned_data.get("library_name"),
+        out_group=dgroup,
+    )
+    rec.save()
 
+    if dgroup_created:
         # Placeholder basecalling
         bio = models.AbstractBioinformaticsProcess(
             who = user,
