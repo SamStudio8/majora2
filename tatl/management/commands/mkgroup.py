@@ -23,9 +23,9 @@ class Command(BaseCommand):
         if group:
             sys.stderr.write("[NOTE] %s group %s\n" % (group.name, "CREATED" if created else "RETRIEVED"))
 
-        if '&' in permissions:
+        if '&' in options["permissions"]:
             sep = '&'
-        elif ' ' in permissions:
+        elif ' ' in options["permissions"]:
             sep = ' '
         else:
             sys.stderr.write("[FAIL] Cannot determine permission separator, use space or ampersand!\n")

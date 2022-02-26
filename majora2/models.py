@@ -1251,6 +1251,14 @@ class MajoraArtifactProcessRecord(PolymorphicModel):
     out_artifact= models.ForeignKey('MajoraArtifact', blank=True, null=True, related_name='after_process', on_delete=models.CASCADE)
     out_group = models.ForeignKey('MajoraArtifactGroup', blank=True, null=True, related_name='after_process', on_delete=models.CASCADE)
 
+    # we cannot bind uniqueness on any combination of processes and artifacts as it would restrict the utility of the process record tree
+    # instead we can just toss some garbage in a unique_name field to reduce the risk of get_or_create creating multiple process records
+    # with the same process and in/out artifacts
+    # * this was added as a result of DNASequencingProcessRecord race conditions
+    # * note we use null and unique which allows us to only worry about integritychecks for cases where unique_name is set
+    #   so we dont have to roll this out throughout majora unless needed (eg. future race conditions)
+    unique_name = models.CharField(max_length=128, null=True, unique=True)
+
 class MajoraArtifactProcess(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #
     when = models.DateTimeField(blank=True, null=True)
