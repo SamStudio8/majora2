@@ -10,3 +10,4 @@ venv*/
 wsgi.ini
 restart.sh
 private/*
+majora_version_file
