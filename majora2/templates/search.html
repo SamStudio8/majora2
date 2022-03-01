@@ -90,7 +90,7 @@
     <div class="container text-center">
             <form class="form-inline" action="{% url 'search' %}">
             <div class="input-group col-md-12">
-              <input class="form-control form-control-lg" name="q" type="text" placeholder="Search UUID or Dicename">
+              <input class="form-control form-control-lg" name="q" type="text" placeholder="Search for sample, library, run name or PAG...">
               <div class="input-group-append">
                 <button class="btn btn-success" type="submit">&#128269;</button>
               </div>
@@ -99,38 +99,4 @@
     </div>
 </div>
 
-<div class="mast2" style="background-color: #DDD; color:#000;">
-	<div class="container">
-        <div class="row">
-            <div class="col-md-6">
-                <h2>Favourites</h2>
-                    {% if groups %}
-                        {% for group, favs in groups.items %}
-                        <h6><b>{{ group.group_kind }}</b></h6>
-                        {% for g in favs %}
-                        <a href="{% url 'group_artifact' g.id %}">{{ g.name }}</a></br>
-                        {% endfor %}
-                        <hr>
-                        {% endfor %}
-                    {% else %}
-                            No favourites...
-                    {% endif %}
-            </div>
-            <div class="col-md-6">
-                <h2>Recent Activity</h2>
-                    {% if processes %}
-                        {% for proc, procs in processes.items %}
-                        <h6><b>{{ proc.process_kind }}</b></h6>
-                        {% for p in procs %}
-                        <a href="{% url 'detail_process' p.id %}">{{ p.process_kind }}</a> ({{ p.n_records }} records)
-                        {% endfor %}
-                        <hr>
-                        {% endfor %}
-                    {% else %}
-                            You're doing great. Have a nice day.
-                    {% endif %}
-            </div>
-        </div>
-	</div>
-</div>
 {% include 'footer.html' %}

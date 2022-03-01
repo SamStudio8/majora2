@@ -173,6 +173,20 @@ def search(request):
         except Exception:
             pass
 
+    # god what the fuck is all this about
+    # if you cant beat them join them
+    if not group:
+        try:
+            group = models.PublishedArtifactGroup.objects.filter(published_name=query).first()
+        except Exception:
+            pass
+
+    if not process:
+        try:
+            process = models.DNASequencingProcess.objects.filter(run_name=query).first()
+        except Exception:
+            pass
+
     if artifact:
         return redirect(reverse('detail_artifact', kwargs={'artifact_uuid': artifact.id}))
     elif process:
