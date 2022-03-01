@@ -1,4 +1,7 @@
 [uwsgi]
+for-readline = majora_version_file
+  env = %(_)
+endfor =
 chdir=/var/www/majora/
 module=mylims.wsgi:application
 master=True

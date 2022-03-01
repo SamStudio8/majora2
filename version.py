@@ -1,1 +1,1 @@
-__VERSION__="0.0.0"
+__VERSION__="12.8.4-climbcovid"
