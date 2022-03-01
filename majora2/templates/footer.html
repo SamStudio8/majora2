@@ -1,4 +1,6 @@
+{% load cache %}
 {% load instance %}
+
 <hr>
 <div class="container text-center">
     <span style="color:#999">
@@ -7,7 +9,12 @@
         {% else %}
              You are not authenticated. | <a href="{% url 'form_register' %}">Register</a> or <a href="{% url 'two_factor:login' %}">Log in</a>
         {% endif %}
-        <br/>{% footer %}</p>
+
+	{% cache None footer %}
+        <br/>{% footer %}
+	<br/><span style="font-size: 0.25em">{% mask %} Majora Version <b>{{ majora_version }}</b> (<code>{{ majora_commit }}</code>)</span>
+	</p>
+	{% endcache %}
     </span>
 </div>
     </div>
