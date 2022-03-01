@@ -254,8 +254,7 @@ class RegistrationForm(forms.Form):
             self.add_error("password2", "Passwords do not match.")
 
         if User.objects.filter(username=generate_username(cleaned_data)).count() > 0:
-            #raise forms.ValidationError('This username has already been registered. You may be in the approval queue.')
-            self.add_error("username", 'This username has already been registered. You may be in the approval queue.')
+            self.add_error("username", 'This username has already been registered. You may be in the approval queue, or have an existing active account that needs to be revoked before you can register again.')
 
     def clean_ssh_key(self):
         return majora_clean_ssh_key(self.cleaned_data.get("ssh_key"))

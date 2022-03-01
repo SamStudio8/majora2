@@ -30,7 +30,8 @@ def generate_username(cleaned_data):
     potentially_existing_profiles = models.Profile.objects.filter(user__username__startswith=proposed_username)
     if potentially_existing_profiles.count() > 0:
         for existing_profile in potentially_existing_profiles:
-            if existing_profile.user.email == cleaned_data.get("email"):
+            if existing_profile.user.email == cleaned_data.get("email") and existing_profile.user.is_active:
+                # stop users who already exist registering another account unless it has been made inactive
                 return proposed_username # return this username and cause the form to error out on duplicate
 
         # this person is probably a different person with the same name as someone else
