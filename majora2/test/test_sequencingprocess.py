@@ -177,3 +177,38 @@ class OAuthLibraryArtifactTest(OAuthAPIClientBase):
                 process=process,
                 unique_name="%s-%s" % (run_name, library_name_2)
         ).count() == 1
+
+
+    def test_add_basic_sequencing_name_too_short(self):
+        process_count = models.DNASequencingProcess.objects.count()
+
+        run_name = "lol"
+        payload = {
+            "library_name": self.library_name,
+            "runs": [
+                {
+                    "bioinfo_pipe_name": "ARTIC Pipeline (iVar)",
+                    "bioinfo_pipe_version": "1.3.0",
+                    "end_time": "2022-01-25 15:00",
+                    "flowcell_id": "ABCDEF",
+                    "flowcell_type": "v3",
+                    "instrument_make": "ILLUMINA",
+                    "instrument_model": "MiSeq",
+                    "run_name": run_name,
+                    "start_time": "2022-01-25 05:00"
+                }
+            ],
+            "token": "oauth",
+            "username": "oauth"
+        }
+
+        response = self.c.post(self.endpoint, payload, secure=True, content_type="application/json", HTTP_AUTHORIZATION="Bearer %s" % self.token)
+        self.assertEqual(200, response.status_code)
+
+        j = response.json()
+        self.assertEqual(j["errors"], 1)
+        message_strs = []
+        for message in j["messages"]:
+            for k, v in message.items():
+                message_strs.extend([x.get("message") for x in v])
+        self.assertIn("Ensure this value has at least 5 characters", "".join(message_strs))

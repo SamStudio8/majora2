@@ -469,10 +469,14 @@ class TestSequencingForm(forms.Form):
             if not run_name:
                 self.add_error("run_name", "If you don't provide a sequencing_id, you must provide a run_name")
         reserved_ch = [".", "/", "\\"]
-        for ch in reserved_ch:
-            if ch in run_name:
-                self.add_error("run_name", "run_name cannot contain a reserved character: %s" % str(reserved_ch))
-                break
+
+        # check the run_name is defined before trying to find bad chars in it
+        # if the run_name is not provided OR is too short, it will be set to None for clean!
+        if run_name:
+            for ch in reserved_ch:
+                if ch in run_name:
+                    self.add_error("run_name", "run_name cannot contain a reserved character: %s" % str(reserved_ch))
+                    break
 
         if self.cleaned_data.get("start_time"):
             if self.cleaned_data["start_time"] > timezone.now():
