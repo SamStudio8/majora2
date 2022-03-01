@@ -25,4 +25,5 @@ class Command(BaseCommand):
                 user.last_name,
                 site_code,
                 "active" if user.is_active else "inactive", 
+                str(user.last_login),
             ]))
