@@ -115,17 +115,14 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework.routers import DefaultRouter
 from . import resty_views
 
+# v3 API did not really take off because the performance was garbage
+# only thing left using v3 is the majora data view (MDV) which needs deprecating eventually too
 router = DefaultRouter()
-#router.register(r'biosample', resty_views.BiosampleView)
-#router.register(r'pag', resty_views.PublishedArtifactGroupView)
 router.register(r'mdv', resty_views.RestyDataview, basename="api.v3.majora.mdv")
 
 
 urlpatterns += [
     # Exciting new v3 API
-    #path('api/v3/artifact/get/<uuid:pk>', resty_views.ArtifactDetail.as_view(), name="api.v3.artifact.get"),
-    path('api/v3/task/<uuid:tid>/', resty_views.TaskView.as_view()),
-
     path('api/v3/', include(router.urls)),
 
     # Exciting new v3 docs
