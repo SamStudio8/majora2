@@ -71,6 +71,34 @@ def handle_testsequencing(form, user=None, api_o=None, request=None):
     if not p:
         return None, False
 
+    if sequencing_created:
+        # Try and infer a date from the library name...
+        _dt = util.try_date(run_name)
+        created_dt = None
+        if p.start_time:
+            created_dt = p.start_time
+        elif _dt:
+            created_dt = _dt
+        else:
+            created_dt = timezone.now()
+
+        p.who = user
+        p.when = created_dt
+
+        if api_o:
+            api_o["new"].append(_format_tuple(p))
+            TatlVerb(request=request.treq, verb="CREATE", content_object=p).save()
+    else:
+        if not p.who:
+            # abort as CREATE has not finished
+            # we can tell because p.who should be set here
+            return None, False
+
+        if api_o:
+            api_o["updated"].append(_format_tuple(p))
+            TatlVerb(request=request.treq, verb="UPDATE", content_object=p).save()
+
+    # Fill in process
     run_group = form.cleaned_data.get("run_group")
     if not run_group:
         run_group = run_name
@@ -86,27 +114,6 @@ def handle_testsequencing(form, user=None, api_o=None, request=None):
     if p.start_time and p.end_time:
         duration = p.end_time - p.start_time
 
-    if sequencing_created:
-        if api_o:
-            api_o["new"].append(_format_tuple(p))
-            TatlVerb(request=request.treq, verb="CREATE", content_object=p).save()
-
-        # Try and infer a date from the library name...
-        _dt = util.try_date(run_name)
-        created_dt = None
-        if p.start_time:
-            created_dt = p.start_time
-        elif _dt:
-            created_dt = _dt
-        else:
-            created_dt = timezone.now()
-
-        p.who = user
-        p.when = created_dt
-    else:
-        if api_o:
-            api_o["updated"].append(_format_tuple(p))
-            TatlVerb(request=request.treq, verb="UPDATE", content_object=p).save()
     p.save()
 
 

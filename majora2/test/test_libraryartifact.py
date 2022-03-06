@@ -199,4 +199,4 @@ class OAuthLibraryArtifactTest(OAuthAPIClientBase):
         j = response.json()
         self.assertEqual(j["errors"], 1)
         self.assertIn("Failed to get or create a LibraryArtifact. Possible race condition detected", "".join(j["messages"]))
-        self.assertIn("Likely caught other process in the middle of adding a LibraryArtifact, attempt to resubmit", "".join(j["messages"]))
+        self.assertIn("Likely caught other process in the middle of adding a LibraryArtifact, advised to resubmit", "".join(j["messages"]))
