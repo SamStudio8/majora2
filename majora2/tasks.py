@@ -11,6 +11,7 @@ from django.db.models import Q, F
 
 import datetime
 
+from majora2 import mdv_tasks
 from tatl.models import TatlVerb, TatlRequest
 
 @shared_task
@@ -608,15 +609,26 @@ def task_get_mdv_v3(ids, context={}, **kwargs):
         treq = TatlRequest.objects.get(response_uuid=kwargs.get("response_uuid"))
         TatlVerb(request=treq, verb="RETRIEVE", content_object=mdv).save()
 
-    model = apps.get_model("majora2", mdv.entry_point)
-    queryset = model.objects.filter(id__in=ids)
+    if mdv.code_name == "PHE1-FAST":
+        # 2022-03-06 PHE1 dataview has grown too large and suffers from the N+1 Query problem
+        # badly during resty serialisation due to the way the `created` objects are fetched
+        # for each artifact -- which is why I never wanted to add the received and created
+        # dates to that view in the first place... As a parting gift for Frank and co.,
+        # we override the resty-based serialisation here and run a more efficient values()
+        # fetch from the database and cram it into the shape that matches the original MDV
+        # NOTE Requires the dummy PHE1-FAST definition to be loaded
+        # NOTE Users must be granted access to the PHE1-FAST MDV -- it is not inherited from PHE1
+        api_o = {
+            "data": mdv_tasks.subtask_get_mdv_v3_phe1_faster()
+        }
+    else:
+        model = apps.get_model("majora2", mdv.entry_point)
+        queryset = model.objects.filter(id__in=ids)
+        context["mdv_fields"] = util.get_mdv_fields(context["mdv"])
+        serializer = model.get_resty_serializer()(queryset, many=True, context=context)
 
-    context["mdv_fields"] = util.get_mdv_fields(context["mdv"])
-    serializer = model.get_resty_serializer()(queryset, many=True, context=context)
-
-    api_o = {
-        "data": serializer.data,
-    }
-
+        api_o = {
+            "data": serializer.data,
+        }
 
     return api_o

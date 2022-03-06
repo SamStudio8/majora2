@@ -1,0 +1,13 @@
+PHE1-FAST
+Faster sample ID lookup for PHE
+Faster sample ID lookup for PHE as per Agreement eng-sendersampleid-phe-1
+MajoraFact
+# MDV defines no ModelField (MF) or FilterField (FF) lines as
+# the PHE1-FAST dataview is hardcoded as a subtask in majora2/mdv_tasks.py
+# and is not configured dynamically from the database like the PHE1 view.
+#
+# The MDV entrypoint definition is mandatory and used to generate a
+# queryset as part of the init for an MDV, but the queryset is ignored.
+# As the queryset is ignored it is a waste of time to generate a long list
+# of IDs of objects that is immediately discarded!
+# We use MajoraFact as the entrypoint as it is the smallest queryset.

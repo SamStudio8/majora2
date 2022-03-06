@@ -61,7 +61,7 @@ class MajoraCeleryListingMixin(object):
                 api_o["params"] = request.query_params
                 api_o["expected_n"] = len(queryset)
                 api_o["tasks"] = [celery_task.id]
-                api_o["messages"] = ["This is an experimental API and can change at any time.", "Call api.majora.task.get with the appropriate task ID later..."]
+                api_o["messages"] = ["This is an experimental API and can change at any time.", "Call api.majora.task.get with the appropriate task ID later...", "`expected_n` value will be incorrect for FAST views"]
             else:
                 api_o["errors"] = 1
                 api_o["messages"] = "Could not add requested task to Celery..."
