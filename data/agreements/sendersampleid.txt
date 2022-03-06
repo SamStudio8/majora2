@@ -1,0 +1,27 @@
+eng-sendersampleid-phe-1
+Share UK-ENG sender_sample_id with Public Health England
+Shares central_sample_id and sender_sample_id for UK-ENG samples with PHE
+2	2020-07-13	2020-04-06
+*
+I confirm that the following fields of metadata uploaded to Majora from my account can be provided to Public Health England to allow linkage to wider datasets:
+
+    * sender_sample_id (Sample ID assigned by the sending laboratory and communnicated to SGSS)
+    * central_sample_id (COG-UK sample ID)
+
+On 2021-05-17 this agreement was unilaterally updated to additionally provide the following fields to assist in sender_sample_id disambiguation, effective 2021-05-24:
+
+    * collection_date (Date sample was collected)
+    * received_date (Date sample was received)
+
+## Criteria
+
+* Biosamples I have uploaded where adm1 is set to UK-ENG.
+* Existing biosamples uploaded since 2020-04-06
+* Future biosamples uploaded by my account where adm1 is set to UK-ENG.
+
+## Termination
+
+This agreement can be terminated through this interface at any time.
+Terminating this agreement will stop these fields from being shared with PHE as part of future data sets.
+Terminating this agreement will not 'unshare' previously shared identifiers with PHE.
+
