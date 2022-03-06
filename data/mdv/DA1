@@ -1,0 +1,10 @@
+DA1
+National orphaned identifiers
+National orphaned identifiers
+BiosampleArtifact
+MF	BiosampleArtifact	central_sample_id
+MF	BiosampleArtifact	sender_sample_id
+MF	BiosourceSamplingProcess	adm1
+MF	BiosourceSamplingProcess	collection_date
+MF	BiosourceSamplingProcess	received_date
+FF	created__biosourcesamplingprocess__collection_location_adm1	isnull	bool	1

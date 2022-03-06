@@ -1,0 +1,11 @@
+PHE1
+Sample ID lookup for PHE
+Sample ID lookup for PHE as per Agreement eng-sendersampleid-phe-1
+BiosampleArtifact
+MF	BiosampleArtifact	central_sample_id
+MF	BiosampleArtifact	sender_sample_id
+MF	BiosourceSamplingProcess	collection_date
+MF	BiosourceSamplingProcess	received_date
+FF	created__biosourcesamplingprocess__collection_location_adm1	exact	str	UK-ENG
+FF	created__who__profile__agreements__agreement__slug	exact	str	eng-sendersampleid-phe-1
+FF	created__who__profile__agreements__is_terminated	exact	bool	0
