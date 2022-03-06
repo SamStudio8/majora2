@@ -28,7 +28,8 @@ def syslog_verb(sender, instance, **kwargs):
         ts = str(instance.request.timestamp)
         is_api = instance.request.is_api
         if hasattr(instance.request, "user"):
-            req_user = instance.request.user.username
+            if instance.request.user:
+                req_user = instance.request.user.username
     else:
         req_uuid = "NONE"
         req_user = "NONE"
