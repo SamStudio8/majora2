@@ -8,7 +8,6 @@ from . import views
 from . import account_views
 from . import bot_views
 from . import public_views
-from . import private_views
 from . import api_views
 from . import tables
 
@@ -49,12 +48,7 @@ urlpatterns = [
     # BOT ######################################################################
     path('bot/accounts/approve', csrf_exempt(bot_views.bot_approve_registration)),
 
-    # PRIVATE
-    path('private/dataviews', private_views.list_dataviews),
-
     # PUBLIC
-
-
     path('public/dashboard', RedirectView.as_view(url='https://status.covid19.climb.ac.uk/')),
     path('public/facts', public_views.view_facts),
     path('public/accessions', public_views.list_accessions),
