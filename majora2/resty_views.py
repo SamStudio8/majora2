@@ -1,28 +1,16 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404
-from django.utils import timezone
 from django.apps import apps
 
 from rest_framework.response import Response
-from rest_framework.renderers import JSONRenderer
-from rest_framework.views import APIView
-from rest_framework import generics
 from rest_framework import viewsets
-from rest_framework import mixins
 from rest_framework import permissions
 from rest_framework.status import HTTP_400_BAD_REQUEST
-from rest_condition import Or
 
 from majora2 import tasks
 from majora2 import models
-from majora2 import resty_serializers as serializers
-from majora2.authentication import TatlTokenAuthentication, APIKeyPermission, TaskOwnerReadPermission, DataviewReadPermission
+from majora2.authentication import TaskOwnerReadPermission, DataviewReadPermission
 from tatl.models import TatlRequest, TatlPermFlex
 
-from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope, TokenHasScope
-
-import uuid
-import json
+from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 class RequiredParamRetrieveMixin(object):
 
@@ -76,9 +64,6 @@ class RestyDataview(
                     MajoraCeleryListingMixin,
                     viewsets.GenericViewSet):
 
-    #NOTE Although DataviewReadPermission implies APIKeyPermission, the latter
-    # actually checks the API Key being used is suitable for the permission requested
-    # so we need to check both here
     permission_classes = [permissions.IsAuthenticated & DataviewReadPermission & TokenHasScope]
     majora_api_permission = "majora2.can_read_dataview_via_api" #TODO Integrate with model
     required_scopes = ['majora2.can_read_dataview_via_api']
