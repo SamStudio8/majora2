@@ -14,7 +14,6 @@ from . import models
 from . import util
 from . import forms
 from . import signals
-from tatl import signals as tsignals
 from tatl.util import django_2fa_mixin_hack
 
 import json
