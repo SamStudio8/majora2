@@ -65,7 +65,6 @@ urlpatterns = [
     path('api/v2/artifact/biosample/get/', csrf_exempt(api_views.get_biosample), name="api.artifact.biosample.get"),
     path('api/v2/artifact/library/add/', csrf_exempt(api_views.add_library), name="api.artifact.library.add"),
     path('api/v2/artifact/file/add/', csrf_exempt(api_views.add_digitalresource), name="api.artifact.file.add"),
-    #path('api/v2/process/pipeline/add/', csrf_exempt(api_views.add_pipeline), name="api.process.pipeline.add"),
     path('api/v2/process/sequencing/add/', csrf_exempt(api_views.add_sequencing), name="api.process.sequencing.add"),
     path('api/v2/process/sequencing/get/', csrf_exempt(api_views.get_sequencing), name="api.process.sequencing.get"),
     path('api/v2/process/sequencing/get2/', csrf_exempt(api_views.get_sequencing2), name="api.process.sequencing.get2"),
@@ -77,13 +76,8 @@ urlpatterns = [
     path('api/v2/majora/summary/get/', csrf_exempt(api_views.get_dashboard_metrics), name="api.majora.summary.get"),
     path('api/v2/outbound/summary/get/', csrf_exempt(api_views.get_outbound_summary), name="api.outbound.summary.get"),
 
-    # TEMPORARY SPECIAL PARTIALS
-    #path('api/v2/artifact/biosample/update/sender', csrf_exempt(api_views.partial_update_sender), name="api.artifact.biosample.upate.sender"),
-
     # TEMPORARY SPECIAL QUERIES
     path('api/v2/artifact/biosample/query/validity/', csrf_exempt(api_views.biosample_query_validity), name="api.artifact.biosample.query.validity"),
-
-    #path('api/v2/artifact/digitalresource/add/', csrf_exempt(api_views.add_digitalresource), name="api.artifact.digitalresource.add"),
 
     path('api/v2/group/mag/get/', csrf_exempt(api_views.get_mag), name="api.group.mag.get"),
     path('api/v2/group/pag/suppress/', csrf_exempt(api_views.suppress_pag), name="api.group.pag.suppress"),
