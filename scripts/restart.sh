@@ -12,4 +12,4 @@ CURRENT_MAJORA_NAME=$(tail -n1 version.py | cut -f2 -d'=' | tr -d '"')
 echo "CURRENT_MAJORA_NAME=$CURRENT_MAJORA_NAME" >> majora_version_file
 
 uwsgi --ini wsgi.ini;
-celery -A mylims worker -l info --concurrency 8 > /var/www/majora/majora-celery.log  2>&1 &
+celery -A mylims worker -l info --concurrency 6 --max-tasks-per-child 1 > /var/www/majora/majora-celery.log  2>&1 &
