@@ -83,6 +83,10 @@ def view_facts(request):
     return HttpResponse(qs_json, content_type="application/json")
 
 
-@cache_page(60 * 60)
+@cache_page(60 * 90)
 def render_architect(request):
+    try:
+        util.create_or_increment_fact(namespace="tatl", key="cached_architects")
+    except:
+        pass
     return HttpResponse('<img src="data:image/png;base64,%s" />' % public_util.select_egg())
