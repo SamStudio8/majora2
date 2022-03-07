@@ -13,7 +13,6 @@ from . import tables
 
 urlpatterns = [
     #search
-    path('artifact/tabulate/', views.tabulate_artifact, name='tabulate_artifact'),
     path('search/', views.search, name='search'),
 
     path('artifact/<uuid:artifact_uuid>/', views.detail_artifact, name='detail_artifact'),
