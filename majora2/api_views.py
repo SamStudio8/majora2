@@ -1718,12 +1718,21 @@ def suppress_pag(request):
                 api_o["messages"].append("Your organisation (%s) does not own %s (%s)" % (user.profile.institute.code, pag_name, pag.owner.profile.institute.code))
                 continue
 
+            # Decrement published PAG fact if this PAG had passed QC
+            if pag.quality_groups.filter(test_group__slug="cog-uk-elan-minimal-qc", is_pass=True).count() >= 1:
+                try:
+                    util.decrement_fact(namespace="pag", key="minimal_qc_pass")
+                    api_o["messages"].append("PAG counter decremented")
+                except:
+                    pass
+
             pag.is_suppressed = True
             pag.suppressed_date = timezone.now()
             pag.suppressed_reason = reason.upper()
             pag.save()
             api_o["updated"].append(_format_tuple(pag))
             TatlVerb(request=request.treq, verb="SUPPRESS", content_object=pag).save()
+
 
     return wrap_api_v2(request, f, permission="majora2.can_suppress_pags_via_api", oauth_permission="majora2.can_suppress_pags_via_api")
 

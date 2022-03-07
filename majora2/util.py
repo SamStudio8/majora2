@@ -182,3 +182,10 @@ def make_spark(queryset, days=30, many=None):
 def create_or_increment_fact(namespace, key):
     models.MajoraFact.objects.get_or_create(namespace=namespace, key=key, value_type="counter")
     models.MajoraFact.objects.filter(namespace=namespace, key=key).update(counter=F("counter") + 1, timestamp=timezone.now())
+
+def decrement_fact(namespace, key):
+    try:
+        models.MajoraFact.objects.get(namespace=namespace, key=key, value_type="counter")
+    except models.MajoraFact.DoesNotExist:
+        return
+    models.MajoraFact.objects.filter(namespace=namespace, key=key).update(counter=F("counter") - 1, timestamp=timezone.now())
