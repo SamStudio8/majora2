@@ -1,6 +1,7 @@
 from django import template
 from django.conf import settings
 from django.utils.safestring import mark_safe
+from django.urls import reverse
 
 register = template.Library()
 
@@ -13,7 +14,7 @@ def footer():
 
 @register.simple_tag
 def mask():
-    return mark_safe('<img src="/static/mask_50.png" height="15px" alt="Mask of Majora" title="You\'ve met with a terrible fate, haven\'t you?" />')
+    return mark_safe('<a href="%s"><img src="/static/mask_50.png" height="15px" alt="Mask of Majora" title="You\'ve met with a terrible fate, haven\'t you?" /></a>' % reverse("architect"))
 
 @register.simple_tag
 def instance_name():

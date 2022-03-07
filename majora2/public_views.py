@@ -11,6 +11,7 @@ import datetime
 from . import models
 from tatl import models as tmodels
 from . import util
+from . import public_util
 
 import json
 
@@ -80,3 +81,8 @@ def view_facts(request):
     qs = models.MajoraFact.objects.filter(restricted=False).values("namespace", "key", "value_type", "value", "counter", "timestamp")
     qs_json = json.dumps(list(qs), default=str) # use default to co-erce ts
     return HttpResponse(qs_json, content_type="application/json")
+
+
+@cache_page(60 * 60)
+def render_architect(request):
+    return HttpResponse('<img src="data:image/png;base64,%s" />' % public_util.select_egg())

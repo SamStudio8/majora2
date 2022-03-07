@@ -58,6 +58,7 @@ urlpatterns = [
     path('public/dashboard', RedirectView.as_view(url='https://status.covid19.climb.ac.uk/')),
     path('public/facts', public_views.view_facts),
     path('public/accessions', public_views.list_accessions),
+    path('public/author', public_views.render_architect, name="architect"),
 
     # PRIV MAJORA-TOKEN
     path('accounts/keys/', account_views.list_ssh_keys, name='list_ssh_keys'),
