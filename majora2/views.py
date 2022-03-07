@@ -197,28 +197,3 @@ def search(request):
         return redirect(reverse('group_artifact', kwargs={'group_uuid': group.id}))
     else:
         return HttpResponseBadRequest("Sorry, I've searched everywhere and that identifier does not appear in Majora.")
-
-
-##############################################################################
-# Forms
-from . import form_handlers
-from . import fixed_data
-##############################################################################
-@login_required
-def form_sampletest(request):
-    initial = fixed_data.fill_fixed_data("api.biosample.add", request.user)
-
-    if request.method == "POST":
-        form = forms.TestSampleForm(request.POST, initial=initial)
-        if form.is_valid():
-            form.cleaned_data.update(initial)
-            sample, sample_created = form_handlers.handle_testsample(form, request.user)
-            if sample:
-                return HttpResponse(json.dumps({
-                    "success": True,
-                }), content_type="application/json")
-    else:
-        form = forms.TestSampleForm(
-            initial=initial,
-        )
-    return render(request, 'forms/testsample.html', {'form': form})

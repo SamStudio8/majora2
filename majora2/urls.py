@@ -37,7 +37,6 @@ urlpatterns = [
     path('dm/<uuid:uuid>/', views.barcode, name="barcode"),
 
     # FORMS ####################################################################
-    #path('forms/testsample/', views.form_sampletest, name='form_sampletest'),
     path('forms/account/', account_views.form_account, name='form_account'),
     path('forms/register/', account_views.form_register, name='form_register'),
     path('forms/institute/', account_views.form_institute, name='form_institute'),
