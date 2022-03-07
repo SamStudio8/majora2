@@ -1821,31 +1821,6 @@ class County(models.Model):
         return self.name
 
 
-'''
-class LiquidArtifact(MajoraArtifact):
-    container_x = models.PositiveSmallIntegerField()
-    container_y = models.PositiveSmallIntegerField()
-
-    tube_type = models.CharField(max_length=48, blank=True, null=True)
-    sample_type = models.CharField(max_length=48, blank=True, null=True)
-    storage_medium = models.CharField(max_length=24)
-
-    lid_label = models.CharField(max_length=24, blank=True, null=True)
-    # dicewareversion / labelersion
-
-    #biosample = models.ForeignKey("BiosampleArtifact", blank=True, null=True, on_delete=models.PROTECT, related_name="aliquots")
-    #pool = models.BooleanField(default=False)
-
-    biosamples = models.ManyToManyField('BiosampleArtifact', related_name="biosamples", blank=True, null=True)
-
-    @property
-    def artifact_kind(self):
-        return 'Sample Aliquot'
-    @property
-    def name(self):
-        return self.dice_name
-'''
-
 class LibraryArtifact(MajoraArtifact):
     layout_config = models.CharField(max_length=24, blank=True, null=True)
     layout_read_length = models.PositiveIntegerField(blank=True, null=True)
