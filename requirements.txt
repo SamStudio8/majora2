@@ -1,4 +1,4 @@
-Django==2.2.27
+Django==2.2.28
 django-autocomplete-light==3.5.1
 diceware==0.9.6
 slackclient==2.5.0
