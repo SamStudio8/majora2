@@ -11,7 +11,7 @@ django-crispy-forms==1.9.0
 mysqlclient==1.4.6
 sshpubkeys==3.1.0
 celery==4.4.2
-django-celery-results==1.2.1 # Cannot be updated to 2.2.0 without a major update to Celery 5 which is incompatible with Majora
+django-celery-results==2.4.0 # Cannot be updated to 2.2.0 without a major update to Celery 5 which is incompatible with Majora
 celery-s3==1.0.1
 phonenumberslite==8.12.3
 django-two-factor-auth==1.12.1
