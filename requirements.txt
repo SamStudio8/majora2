@@ -5,7 +5,7 @@ slackclient==2.5.0
 django-slack==5.14.3
 django-polymorphic==2.1.2
 pylibdmtx==0.1.9
-Pillow==8.4.0
+Pillow==9.3.0
 python-dateutil==2.8.1
 django-crispy-forms==1.9.0
 mysqlclient==1.4.6
