@@ -24,6 +24,10 @@ class Command(BaseCommand):
                 user.first_name,
                 user.last_name,
                 site_code,
-                "active" if user.is_active else "inactive", 
+                "is_site_approved" if hasattr(user, "profile") and user.profile.is_site_approved else "not_site_approved",
+                "is_active" if user.is_active else "not_active",
+                "is_revoked" if hasattr(user, "profile") and user.profile.is_revoked else "not_revoked",
+                "is_staff" if user.is_staff else "not_staff",
+                "is_superuser" if user.is_superuser else "not_superuser",
                 str(user.last_login),
             ]))
