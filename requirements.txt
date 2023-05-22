@@ -24,7 +24,7 @@ django-markdownify==0.8.0
 rest_condition==1.0.3
 django-oauth-toolkit==1.4.1 # Broken by missing algorithm field on model in 1.5.0 https://github.com/jazzband/django-oauth-toolkit/commit/b56987e604d37737e50634e04c3a4559d695f6cb
 django-cors-headers==3.5.0
-requests==2.23.0
+requests==2.31.0
 boto3==1.13.1
 markdown==3.3.4 # Newer version breaks build by requiring a version of importlib that is too new
 pre-commit==2.17.0
